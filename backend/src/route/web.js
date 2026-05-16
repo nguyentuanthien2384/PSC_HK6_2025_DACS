@@ -6,10 +6,6 @@ let initwebRoutes = (app) => {
     return res.send("hello");
   });
 
-  router.get("/health", (req, res) => {
-    return res.status(200).json({ status: "OK" });
-  });
-
   return app.use("/", router);
 };
 

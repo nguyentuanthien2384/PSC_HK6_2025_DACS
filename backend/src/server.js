@@ -1,11 +1,12 @@
-﻿import connectDB from "./config/connectDB";
-import express from "express";
+﻿import express from "express";
 import bodyParser from "body-parser";
 import viewEngine from "./config/viewEngine";
 import initwebRoutes from "./route/web";
-
+import connectDB from "./config/connectDB";
+import http from "http";
+import { sendMessage } from "./services/messageService";
 require("dotenv").config();
-
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 let app = express();
 
 app.use(function (req, res, next) {
@@ -27,9 +28,31 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 viewEngine(app);
 initwebRoutes(app);
-connectDB();
-let port = process.env.PORT || 8003;
+connectDB(app);
 
-app.listen(port, () => {
+const server = http.createServer(app);
+
+const socketIo = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+});
+socketIo.on("connection", (socket) => {
+  console.log("New client connected" + socket.id);
+
+  socket.on("sendDataClient", function (data) {
+    sendMessage(data);
+    socketIo.emit("sendDataServer", { data });
+  });
+  socket.on("loadRoomClient", function (data) {
+    socketIo.emit("loadRoomServer", { data });
+  });
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+let port = process.env.PORT || 6969;
+
+server.listen(port, () => {
   console.log("Backend Nodejs is running on the port : " + port);
 });
