@@ -1,58 +1,19 @@
-﻿import express from "express";
+﻿import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
+import authRoute from "./route/auth.route";
+import userRoute from "./route/user.route";
 import bodyParser from "body-parser";
-import viewEngine from "./config/viewEngine";
-import initwebRoutes from "./route/web";
-import connectDB from "./config/connectDB";
-import http from "http";
-import { sendMessage } from "./services/messageService";
-require("dotenv").config();
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-let app = express();
-
-app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE",
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type,Authorization",
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
-});
-
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-
-viewEngine(app);
-initwebRoutes(app);
-connectDB(app);
-
-const server = http.createServer(app);
-
-const socketIo = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-  },
-});
-socketIo.on("connection", (socket) => {
-  console.log("New client connected" + socket.id);
-
-  socket.on("sendDataClient", function (data) {
-    sendMessage(data);
-    socketIo.emit("sendDataServer", { data });
-  });
-  socket.on("loadRoomClient", function (data) {
-    socketIo.emit("loadRoomServer", { data });
-  });
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
-let port = process.env.PORT || 6969;
-
-server.listen(port, () => {
-  console.log("Backend Nodejs is running on the port : " + port);
+import initWebRoutes from "./route/web";
+dotenv.config();
+const app = express();
+app.use(cors({ origin: true, credentials: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/api/auth", authRoute);
+app.use("/api/users", userRoute);
+initWebRoutes(app);
+const port = process.env.PORT || 6969;
+app.listen(port, () => {
+  console.log(`Backend running at http://localhost:${port}`);
 });
