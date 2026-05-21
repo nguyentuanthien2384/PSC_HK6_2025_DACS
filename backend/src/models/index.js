@@ -44,6 +44,7 @@ fs.readdirSync(__dirname)
       file.indexOf(".test.js") === -1
     );
   })
+  .sort()
   .forEach((file) => {
     const model = require(path.join(__dirname, file))(
       sequelize,

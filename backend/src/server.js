@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import authRoute from "./route/auth.route";
 import userRoute from "./route/user.route";
+import productRoute from "./routes/product.route";
 import bodyParser from "body-parser";
 import initWebRoutes from "./route/web";
 dotenv.config();
@@ -12,6 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
+app.use("/api/products", productRoute);
 initWebRoutes(app);
 const port = process.env.PORT || 6969;
 app.listen(port, () => {
