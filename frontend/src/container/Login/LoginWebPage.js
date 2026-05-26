@@ -360,5 +360,4 @@ const LoginWebPage = () => {
         </>
     );
 };
-
 export default LoginWebPage;
