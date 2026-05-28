@@ -39,6 +39,8 @@ const Header = (props) => {
         });
     };
     scrollHeader();
+    const profileLink =
+        user && user.id ? `/user/detail/${user.id}` : "/login";
 
     return (
         <header className="header_area">
@@ -141,7 +143,7 @@ const Header = (props) => {
                                                 to={"/user/messenger"}
                                                 className="icons"
                                             >
-                                                <i class="fa-brands fa-facebook-messenger"></i>
+                                                <i className="fa-brands fa-facebook-messenger"></i>
                                             </Link>
                                             {quantityMessage > 0 && (
                                                 <span className="box-message-quantity">
@@ -162,11 +164,7 @@ const Header = (props) => {
                                         </li>
                                         <li className="nav-item">
                                             <Link
-                                                to={`/user/detail/${
-                                                    user && user.id
-                                                        ? user.id
-                                                        : ""
-                                                }`}
+                                                to={profileLink}
                                                 className="icons"
                                             >
                                                 <i

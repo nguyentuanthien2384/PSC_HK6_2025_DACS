@@ -3,6 +3,9 @@ import userController from '../controllers/userController';
 import allcodeController from '../controllers/allcodeController';
 import productController from '../controllers/productController';
 import shopCartController from '../controllers/shopCartController';
+import orderController from '../controllers/orderController';
+import addressUserController from '../controllers/addressUserController';
+import typeshipController from '../controllers/typeshipController';
 import middlewareControllers from '../middlewares/jwtVerify';
 let router = express.Router();
 
@@ -64,6 +67,35 @@ let initwebRoutes = (app) => {
     router.post('/api/add-shopcart', middlewareControllers.verifyTokenUser, shopCartController.addShopCart)
     router.get('/api/get-all-shopcart-by-userId', middlewareControllers.verifyTokenUser, shopCartController.getAllShopCartByUserId)
     router.delete('/api/delete-item-shopcart', middlewareControllers.verifyTokenUser, shopCartController.deleteItemShopCart)
+
+    //=================API ORDER=============================//
+    router.post('/api/create-new-order', middlewareControllers.verifyTokenUser, orderController.createNewOrder)
+    router.get('/api/get-all-order', orderController.getAllOrders)
+    router.get('/api/get-detail-order', orderController.getDetailOrderById)
+    router.put('/api/update-status-order', middlewareControllers.verifyTokenUser, orderController.updateStatusOrder)
+    router.get('/api/get-all-order-by-user', middlewareControllers.verifyTokenUser, orderController.getAllOrdersByUser)
+    router.post('/api/payment-order', middlewareControllers.verifyTokenUser, orderController.paymentOrder)
+    router.post('/api/payment-order-success', middlewareControllers.verifyTokenUser, orderController.paymentOrderSuccess)
+    router.post('/api/payment-order-vnpay-success', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpaySuccess)
+    router.put('/api/confirm-order', orderController.confirmOrder)
+    router.get('/api/get-all-order-by-shipper', orderController.getAllOrdersByShipper)
+    router.post('/api/payment-order-vnpay', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpay)
+    router.post('/api/vnpay_return', orderController.confirmOrderVnpay)
+    router.put('/api/update-image-order', orderController.updateImageOrder)
+
+    //=====================API ADDRESS USER=======================//
+    router.post('/api/create-new-address-user', middlewareControllers.verifyTokenUser, addressUserController.createNewAddressUser)
+    router.get('/api/get-all-address-user', middlewareControllers.verifyTokenUser, addressUserController.getAllAddressUserByUserId)
+    router.delete('/api/delete-address-user', middlewareControllers.verifyTokenUser, addressUserController.deleteAddressUser)
+    router.put('/api/edit-address-user', middlewareControllers.verifyTokenUser, addressUserController.editAddressUser)
+    router.get('/api/get-detail-address-user-by-id', middlewareControllers.verifyTokenUser, addressUserController.getDetailAddressUserById)
+
+    //====================API TYPE SHIP==========================//
+    router.post('/api/create-new-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.createNewTypeShip)
+    router.get('/api/get-detail-typeship', typeshipController.getDetailTypeshipById)
+    router.get('/api/get-all-typeship', typeshipController.getAllTypeship)
+    router.put('/api/update-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.updateTypeship)
+    router.delete('/api/delete-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.deleteTypeship)
 
     return app.use("/", router);
 }

@@ -7,8 +7,13 @@ import ShopPage from "./container/Shop/ShopPage";
 import DetailProductPage from "./container/DetailProduct/DetailProductPage";
 import ShopCartPage from "./container/ShopCart/ShopCartPage";
 import LoginWebPage from "./container/Login/LoginWebPage";
-import { ToastContainer } from "react-toastify";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import OrderHomePage from "./container/Order/OrderHomePage";
+import VnpayPaymentPage from "./container/Order/VnpayPaymentPage";
+import VnpayPaymentSuccess from "./container/Order/VnpayPaymentSuccess";
+import PaymentSuccess from "./container/User/PaymentSuccess";
+import UserHomePage from "./container/User/UseHomePage";
+import TopMenu from "./container/Header/TopMenu";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
     return (
@@ -47,6 +52,36 @@ function App() {
                         </>
                     }
                 />
+                <Route
+                    path="/blog"
+                    element={
+                        <>
+                            <Header />
+                            <HomePage />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/voucher"
+                    element={
+                        <>
+                            <Header />
+                            <HomePage />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/about"
+                    element={
+                        <>
+                            <Header />
+                            <HomePage />
+                            <Footer />
+                        </>
+                    }
+                />
                 {/* Day 15: Chi tiết sản phẩm */}
                 <Route
                     path="/detail-product/:id"
@@ -69,12 +104,63 @@ function App() {
                         </>
                     }
                 />
+                {/* Day 19: Đặt hàng */}
+                <Route
+                    path="/order/:userId"
+                    element={
+                        <>
+                            <TopMenu />
+                            <OrderHomePage />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/payment/success"
+                    element={
+                        <>
+                            <Header />
+                            <PaymentSuccess />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/payment/vnpay"
+                    element={
+                        <>
+                            <TopMenu />
+                            <VnpayPaymentPage />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/payment/vnpay_return"
+                    element={
+                        <>
+                            <TopMenu />
+                            <VnpayPaymentSuccess />
+                            <Footer />
+                        </>
+                    }
+                />
+                <Route
+                    path="/user/*"
+                    element={
+                        JSON.parse(localStorage.getItem("userData")) ? (
+                            <>
+                                <Header />
+                                <UserHomePage />
+                                <Footer />
+                            </>
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-            <ToastContainer
-                position="top-right"
-                autoClose={4000}
-                hideProgressBar={false}
-            />
         </Router>
     );
 }
