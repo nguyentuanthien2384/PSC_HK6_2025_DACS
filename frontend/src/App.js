@@ -8,6 +8,7 @@ import DetailProductPage from "./container/DetailProduct/DetailProductPage";
 import ShopCartPage from "./container/ShopCart/ShopCartPage";
 import LoginWebPage from "./container/Login/LoginWebPage";
 import OrderHomePage from "./container/Order/OrderHomePage";
+import VoucherHomePage from "./container/Voucher/VoucherHomePage";
 import VnpayPaymentPage from "./container/Order/VnpayPaymentPage";
 import VnpayPaymentSuccess from "./container/Order/VnpayPaymentSuccess";
 import PaymentSuccess from "./container/User/PaymentSuccess";
@@ -67,7 +68,7 @@ function App() {
                     element={
                         <>
                             <Header />
-                            <HomePage />
+                            <VoucherHomePage />
                             <Footer />
                         </>
                     }

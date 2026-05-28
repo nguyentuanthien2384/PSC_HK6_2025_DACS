@@ -29,6 +29,18 @@ function CategoryUser(props) {
                     ></img>{" "}
                     <Link to={`/user/order/${props.id}`}>Đơn mua</Link>
                 </li>
+                <li>
+                    <img
+                        width="20px"
+                        height="20px"
+                        style={{ marginLeft: "-3px" }}
+                        src="/resources/img/storeVoucher.png"
+                        alt=""
+                    ></img>{" "}
+                    <Link to={`/user/store-voucher/${props.id}`}>
+                        Kho voucher
+                    </Link>
+                </li>
             </ul>
         </div>
     );

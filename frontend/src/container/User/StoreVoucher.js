@@ -1,28 +1,28 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-
-import moment from 'moment';
-import { toast } from 'react-toastify';
-
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
-import '../User/StoreVoucher.scss';
+import React, { useState, useEffect } from 'react';
+import VoucherItem from '../Voucher/VoucherItem';
+import logoVoucher from '../../../src/resources/img/logoVoucher.png'
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    Redirect
+} from "react-router-dom";
+import './StoreVoucher.scss';
+import VoucherItemSmall from './VoucherItemSmall';
 import { getAllVoucherByUserIdService } from '../../services/userService';
+import moment, { now } from 'moment';
+import { toast } from 'react-toastify';
+import { PAGINATION } from '../../utils/constant';
 import CommonUtils from '../../utils/CommonUtils';
-import VoucherItemSmall from '../User/VoucherItemSmall';
-
-
-const VoucherModal = (props) => {
+function StoreVoucher(props) {
     const [inputValues, setInputValues] = useState({
         codeVoucher: '', activeBtn: false
     });
     const [dataVoucher, setdataVoucher] = useState([])
-    let handleCloseModal = () => {
-        props.closeModal()
-    }
+    const [count, setCount] = useState('')
+    const [numberPage, setnumberPage] = useState('')
     function compareDates(d1, d2) {
-        //  lon hon la false
-        //  be hon la true
-
         var parts = d1.split('/');
         var d1 = Number(parts[2] + parts[1] + parts[0]);
         parts = d2.split('/');
@@ -32,14 +32,13 @@ const VoucherModal = (props) => {
 
     }
     useEffect(() => {
-
         let id = props.id
         if (id) {
             let fetchData = async () => {
                 let arrData = await getAllVoucherByUserIdService({
 
-                    limit: '',
-                    offset: '',
+                    limit: PAGINATION.pagerow,
+                    offset: 0,
                     id: props.id
                 })
                 let arrTemp = []
@@ -51,47 +50,35 @@ const VoucherModal = (props) => {
                         let toDate = moment.unix(arrData.data[i].voucherData.toDate / 1000).format('DD/MM/YYYY')
                         let amount = arrData.data[i].voucherData.amount
                         let usedAmount = arrData.data[i].voucherData.usedAmount
-                        let minValue = arrData.data[i].voucherData.typeVoucherOfVoucherData.minValue
-
-                        if (amount > usedAmount && compareDates(toDate, nowDate) === false && compareDates(fromDate, nowDate) === true && minValue <= props.price) {
+                        if (amount !== usedAmount && compareDates(toDate, nowDate) === false && compareDates(fromDate, nowDate) === true) {
                             arrTemp[i] = arrData.data[i]
 
                         }
                     }
                     setdataVoucher(arrTemp)
-
+                    setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
                 }
             }
             fetchData()
         }
 
-    }, [props.isOpenModal])
-    const handleOnChange = event => {
-        const { name, value } = event.target;
+    }, [props.id])
 
-        if (value !== '') {
-            setInputValues({ ...inputValues, ["activeBtn"]: true, [name]: value })
-        } else {
-            setInputValues({ ...inputValues, ["activeBtn"]: false, [name]: value })
-        }
-    };
-
-    let closeModalFromVoucherItem = () => {
-        props.closeModalFromVoucherItem()
-    }
+   
+ 
     return (
-        <div className="">
-            <Modal isOpen={props.isOpenModal} className={'booking-modal-container'}
-                size="md" centered
-            >
-                <div className="modal-header">
-                    <h5 className="modal-title">Chọn Eiser Voucher</h5>
-                    <button onClick={handleCloseModal} type="button" className="btn btn-time" aria-label="Close">X</button>
-                </div>
-                <ModalBody>
 
-
-                    <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }} className="container-voucher">
+        <div className="container rounded bg-white mt-5 mb-5">
+            <div className="row">
+                <div className="col-md-12 border-right border-left">
+                    <div className="box-heading">
+                        <div className="content-left">
+                            <span>Ví voucher</span>
+                        </div>
+                     
+                    </div>
+                 
+                    <div className="container-voucher">
                         {dataVoucher && dataVoucher.length > 0 &&
                             dataVoucher.map((item, index) => {
                                 let percent = ""
@@ -105,25 +92,18 @@ const VoucherModal = (props) => {
                                 let MaxValue = CommonUtils.formatter.format(item.voucherData.typeVoucherOfVoucherData.maxValue)
 
                                 return (
-                                    <VoucherItemSmall closeModalFromVoucherItem={closeModalFromVoucherItem} data={item} id={item.id} key={index} name={item.voucherData.codeVoucher} maxValue={MaxValue} usedAmount={Math.round((item.voucherData.usedAmount * 100 / item.voucherData.amount) * 10) / 10} typeVoucher={percent} />
+                                    <VoucherItemSmall id={item.id} key={index} name={item.voucherData.codeVoucher} widthPercent={item.voucherData.usedAmount * 100 / item.voucherData.amount} maxValue={MaxValue} usedAmount={Math.round((item.voucherData.usedAmount * 100 / item.voucherData.amount) * 10) / 10} typeVoucher={percent} />
                                 )
                             })
                         }
 
 
                     </div>
+                </div>
+            </div>
+        </div>
 
-                </ModalBody>
-                <ModalFooter>
-
-                    {' '}
-                    <Button onClick={handleCloseModal}>
-                        Hủy
-                    </Button>
-                </ModalFooter>
-            </Modal>
-
-        </div >
-    )
+    );
 }
-export default VoucherModal;
+
+export default StoreVoucher;

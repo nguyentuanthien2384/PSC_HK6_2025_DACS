@@ -1,4 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import VoucherItem from '../Voucher/VoucherItem';
+import logoVoucher from '../../../src/resources/img/logoVoucher.png'
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    Redirect
+} from "react-router-dom";
 import './VoucherItemSmall.scss';
 import { useDispatch } from 'react-redux';
 import { ChooseVoucherStart } from '../../action/ShopCartAction';
@@ -18,7 +27,7 @@ function VoucherItemSmall(props) {
 
         <div className="box-voucher-small">
             <div className="content-left">
-                <img src="/resources/img/logoVoucher.png" alt=""></img>
+                <img src={logoVoucher}></img>
                 <span>{props.name}</span>
             </div>
             <div className="border-center">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import DetailUserPage from "./DetailUserPage";
 import CategoryUser from "./CategoryUser";
+import StoreVoucher from "./StoreVoucher";
 import AddressUser from "./AddressUser";
 import OrderUser from "./OrderUser";
 
@@ -27,6 +28,10 @@ function UserHomePage(props) {
                 <Route
                     path="order/:id"
                     element={<OrderUser id={user && user.id} />}
+                />
+                <Route
+                    path="store-voucher/:id"
+                    element={<StoreVoucher id={user && user.id} />}
                 />
                 <Route
                     path="*"
