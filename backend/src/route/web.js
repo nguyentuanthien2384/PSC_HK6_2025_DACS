@@ -1,12 +1,17 @@
 ﻿import express from "express";
 import userController from '../controllers/userController';
 import allcodeController from '../controllers/allcodeController';
+import bannerController from '../controllers/bannerController';
 import productController from '../controllers/productController';
 import shopCartController from '../controllers/shopCartController';
 import orderController from '../controllers/orderController';
 import addressUserController from '../controllers/addressUserController';
 import typeshipController from '../controllers/typeshipController';
 import voucherController from '../controllers/voucherController';
+import blogController from '../controllers/blogController';
+import commentController from '../controllers/commentController';
+import supplierController from '../controllers/supplierController';
+import receiptController from '../controllers/receiptController';
 import middlewareControllers from '../middlewares/jwtVerify';
 let router = express.Router();
 
@@ -33,8 +38,16 @@ let initwebRoutes = (app) => {
     router.put('/api/update-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleUpdateAllCode)
     router.delete('/api/delete-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleDeleteAllCode)
     router.get('/api/get-all-code', allcodeController.getAllCodeService)
+    router.get('/api/get-all-category-blog', allcodeController.getAllCategoryBlog)
     router.get('/api/get-list-allcode', allcodeController.getListAllCodeService)
     router.get('/api/get-detail-all-code-by-id', allcodeController.getDetailAllCodeById)
+
+    //==================API BANNER=============================//
+    router.post('/api/create-new-banner', middlewareControllers.verifyTokenAdmin, bannerController.createNewBanner)
+    router.get('/api/get-detail-banner', bannerController.getDetailBanner)
+    router.get('/api/get-all-banner', bannerController.getAllBanner)
+    router.put('/api/update-banner', middlewareControllers.verifyTokenAdmin, bannerController.updateBanner)
+    router.delete('/api/delete-banner', middlewareControllers.verifyTokenAdmin, bannerController.deleteBanner)
 
     //==================API PRODUCT=========================//
     router.post('/api/create-new-product', middlewareControllers.verifyTokenAdmin, productController.createNewProduct)
@@ -113,6 +126,40 @@ let initwebRoutes = (app) => {
     router.delete('/api/delete-voucher', middlewareControllers.verifyTokenAdmin, voucherController.deleteVoucher)
     router.post('/api/save-user-voucher', middlewareControllers.verifyTokenUser, voucherController.saveUserVoucher)
     router.get('/api/get-all-voucher-by-userid', voucherController.getAllVoucherByUserId)
+
+    //=====================API BLOG=========================//
+    router.post('/api/create-new-blog', middlewareControllers.verifyTokenAdmin, blogController.createNewBlog)
+    router.get('/api/get-detail-blog', blogController.getDetailBlogById)
+    router.get('/api/get-all-blog', blogController.getAllBlog)
+    router.put('/api/update-blog', middlewareControllers.verifyTokenAdmin, blogController.updateBlog)
+    router.delete('/api/delete-blog', middlewareControllers.verifyTokenAdmin, blogController.deleteBlog)
+    router.get('/api/get-feature-blog', blogController.getFeatureBlog)
+    router.get('/api/get-new-blog', blogController.getNewBlog)
+    //=======================API REVIEW======================//
+    router.post('/api/create-new-review', middlewareControllers.verifyTokenUser, commentController.createNewReview)
+    router.get('/api/get-all-review-by-productId', commentController.getAllReviewByProductId)
+    router.post('/api/reply-review', middlewareControllers.verifyTokenAdmin, commentController.ReplyReview)
+    router.delete('/api/delete-review', middlewareControllers.verifyTokenAdmin, commentController.deleteReview)
+    //=======================API COMMENT======================//
+    router.post('/api/create-new-comment', middlewareControllers.verifyTokenUser, commentController.createNewComment)
+    router.get('/api/get-all-comment-by-blogId', commentController.getAllCommentByBlogId)
+    router.post('/api/reply-comment', middlewareControllers.verifyTokenAdmin, commentController.ReplyComment)
+    router.delete('/api/delete-comment', middlewareControllers.verifyTokenAdmin, commentController.deleteComment)
+
+    //=================API SUPPLIER================================//
+    router.post('/api/create-new-supplier', middlewareControllers.verifyTokenAdmin, supplierController.createNewSupplier)
+    router.get('/api/get-detail-supplier', supplierController.getDetailSupplierById)
+    router.get('/api/get-all-supplier', supplierController.getAllSupplier)
+    router.put('/api/update-supplier', middlewareControllers.verifyTokenAdmin, supplierController.updateSupplier)
+    router.delete('/api/delete-supplier', middlewareControllers.verifyTokenAdmin, supplierController.deleteSupplier)
+
+    //=================API RECEIPT================================//
+    router.post('/api/create-new-receipt', middlewareControllers.verifyTokenAdmin, receiptController.createNewReceipt)
+    router.get('/api/get-detail-receipt', receiptController.getDetailReceiptById)
+    router.get('/api/get-all-receipt', receiptController.getAllReceipt)
+    router.put('/api/update-receipt', middlewareControllers.verifyTokenAdmin, receiptController.updateReceipt)
+    router.delete('/api/delete-receipt', middlewareControllers.verifyTokenAdmin, receiptController.deleteReceipt)
+    router.post('/api/create-new-detail-receipt', middlewareControllers.verifyTokenAdmin, receiptController.createNewReceiptDetail)
 
     return app.use("/", router);
 }
