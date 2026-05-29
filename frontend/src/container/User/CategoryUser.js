@@ -41,6 +41,10 @@ function CategoryUser(props) {
                         Kho voucher
                     </Link>
                 </li>
+                <li>
+                    <i style={{ color: "#1e5bb8" }} className="fa-brands fa-facebook-messenger"></i>{" "}
+                    <Link to={`/user/messenger`}>Tin nhắn</Link>
+                </li>
             </ul>
         </div>
     );

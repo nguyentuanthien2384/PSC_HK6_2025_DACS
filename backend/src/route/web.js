@@ -12,6 +12,7 @@ import blogController from '../controllers/blogController';
 import commentController from '../controllers/commentController';
 import supplierController from '../controllers/supplierController';
 import receiptController from '../controllers/receiptController';
+import messageController from '../controllers/messageController';
 import middlewareControllers from '../middlewares/jwtVerify';
 let router = express.Router();
 
@@ -160,6 +161,13 @@ let initwebRoutes = (app) => {
     router.put('/api/update-receipt', middlewareControllers.verifyTokenAdmin, receiptController.updateReceipt)
     router.delete('/api/delete-receipt', middlewareControllers.verifyTokenAdmin, receiptController.deleteReceipt)
     router.post('/api/create-new-detail-receipt', middlewareControllers.verifyTokenAdmin, receiptController.createNewReceiptDetail)
+
+    //=================API MESSAGE================================//
+    router.post('/api/create-new-room', middlewareControllers.verifyTokenUser, messageController.createNewRoom)
+    router.post('/api/send-message', middlewareControllers.verifyTokenUser, messageController.sendMessage)
+    router.get('/api/load-message', middlewareControllers.verifyTokenUser, messageController.loadMessage)
+    router.get('/api/list-room-of-user', middlewareControllers.verifyTokenUser, messageController.listRoomOfUser)
+    router.get('/api/list-room-of-admin', middlewareControllers.verifyTokenAdmin, messageController.listRoomOfAdmin)
 
     return app.use("/", router);
 }

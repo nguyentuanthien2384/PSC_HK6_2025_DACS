@@ -5,6 +5,7 @@ import CategoryUser from "./CategoryUser";
 import StoreVoucher from "./StoreVoucher";
 import AddressUser from "./AddressUser";
 import OrderUser from "./OrderUser";
+import MessagePage from "../Message/MessagePage";
 
 function UserHomePage(props) {
     const [user, setUser] = useState({});
@@ -33,6 +34,7 @@ function UserHomePage(props) {
                     path="store-voucher/:id"
                     element={<StoreVoucher id={user && user.id} />}
                 />
+                <Route path="messenger" element={<MessagePage />} />
                 <Route
                     path="*"
                     element={

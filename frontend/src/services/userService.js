@@ -337,18 +337,18 @@ const createNewRoom = (data) => {
     return axios.post(`/api/create-new-room`, data)
 }
 const sendMessage = (data) => {
-    return axios.post(`/api/sendMessage`, data)
+    return axios.post(`/api/send-message`, data)
 }
 const loadMessage = (roomId, userId) => {
-    return axios.get(`/api/loadMessage?roomId=${roomId}&userId=${userId}`)
+    return axios.get(`/api/load-message?roomId=${roomId}&userId=${userId}`)
 
 }
 const listRoomOfUser = (userId) => {
-    return axios.get(`/api/listRoomOfUser?userId=${userId}`)
+    return axios.get(`/api/list-room-of-user?userId=${userId}`)
 
 }
 const listRoomOfAdmin = () => {
-    return axios.get(`/api/listRoomOfAdmin`)
+    return axios.get(`/api/list-room-of-admin`)
 
 }
 //========================COMMENT=======================
