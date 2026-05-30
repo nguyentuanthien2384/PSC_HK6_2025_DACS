@@ -25,7 +25,7 @@ function ProductFeature(props) {
                 <div className="row box-productFeature">
                     <Slider {...settings}>
                         {props.data &&
-                            props.data.length > 3 &&
+                            props.data.length > 0 &&
                             props.data.map((item, index) => {
                                 return (
                                     <ItemProduct

@@ -45,7 +45,7 @@ const LoginWebPage = () => {
             localStorage.setItem("userData", JSON.stringify(res.user));
             localStorage.setItem("token", JSON.stringify(res.accessToken));
             if (res.user.roleId === "R1" || res.user.roleId === "R4") {
-                window.location.href = "/admin";
+                window.location.href = "/system/home";
             } else {
                 window.location.href = "/";
             }
@@ -67,7 +67,7 @@ const LoginWebPage = () => {
             localStorage.setItem("userData", JSON.stringify(res.user));
             localStorage.setItem("token", JSON.stringify(res.accessToken));
             if (res.user.roleId === "R1" || res.user.roleId === "R4") {
-                window.location.href = "/admin";
+                window.location.href = "/system/home";
             } else {
                 window.location.href = "/";
             }

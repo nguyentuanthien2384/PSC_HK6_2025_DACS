@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import userController from '../controllers/userController';
 import allcodeController from '../controllers/allcodeController';
 import bannerController from '../controllers/bannerController';

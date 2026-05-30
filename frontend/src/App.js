@@ -16,6 +16,7 @@ import VnpayPaymentSuccess from "./container/Order/VnpayPaymentSuccess";
 import PaymentSuccess from "./container/User/PaymentSuccess";
 import UserHomePage from "./container/User/UseHomePage";
 import TopMenu from "./container/Header/TopMenu";
+import HomePageAdmin from "./container/System/HomePageAdmin";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -167,6 +168,19 @@ function App() {
                                 <UserHomePage />
                                 <Footer />
                             </>
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
+                />
+                {/* Day 27: Admin shell */}
+                <Route
+                    path="/system/home/*"
+                    element={
+                        JSON.parse(localStorage.getItem("userData")) &&
+                        (JSON.parse(localStorage.getItem("userData")).roleId === "R1" ||
+                            JSON.parse(localStorage.getItem("userData")).roleId === "R4") ? (
+                            <HomePageAdmin />
                         ) : (
                             <Navigate to="/login" />
                         )
