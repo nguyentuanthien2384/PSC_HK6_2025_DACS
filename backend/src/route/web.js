@@ -13,6 +13,7 @@ import commentController from '../controllers/commentController';
 import supplierController from '../controllers/supplierController';
 import receiptController from '../controllers/receiptController';
 import messageController from '../controllers/messageController';
+import statisticController from '../controllers/statisticController';
 import middlewareControllers from '../middlewares/jwtVerify';
 let router = express.Router();
 
@@ -164,10 +165,26 @@ let initwebRoutes = (app) => {
 
     //=================API MESSAGE================================//
     router.post('/api/create-new-room', middlewareControllers.verifyTokenUser, messageController.createNewRoom)
+    // kebab-case routes (frontend mới đang dùng)
     router.post('/api/send-message', middlewareControllers.verifyTokenUser, messageController.sendMessage)
     router.get('/api/load-message', middlewareControllers.verifyTokenUser, messageController.loadMessage)
     router.get('/api/list-room-of-user', middlewareControllers.verifyTokenUser, messageController.listRoomOfUser)
     router.get('/api/list-room-of-admin', middlewareControllers.verifyTokenAdmin, messageController.listRoomOfAdmin)
+    // camelCase routes (tương thích source zip cũ)
+    router.post('/api/sendMessage', middlewareControllers.verifyTokenUser, messageController.sendMessage)
+    router.get('/api/loadMessage', middlewareControllers.verifyTokenUser, messageController.loadMessage)
+    router.get('/api/listRoomOfUser', middlewareControllers.verifyTokenUser, messageController.listRoomOfUser)
+    router.get('/api/listRoomOfAdmin', middlewareControllers.verifyTokenAdmin, messageController.listRoomOfAdmin)
+
+    //=================API STATISTIC==============================//
+    router.get('/api/get-count-card-statistic', middlewareControllers.verifyTokenAdmin, statisticController.getCountCardStatistic)
+    router.get('/api/get-count-status-order', middlewareControllers.verifyTokenAdmin, statisticController.getCountStatusOrder)
+    router.get('/api/get-statistic-by-month', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticByMonth)
+    router.get('/api/get-statistic-by-day', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticByDay)
+    router.get('/api/get-statistic-overturn', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticOverturn)
+    router.get('/api/get-statistic-revenue', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticOverturn)
+    router.get('/api/get-statistic-profit', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticProfit)
+    router.get('/api/get-statistic-stock-product', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticStockProduct)
 
     return app.use("/", router);
 }

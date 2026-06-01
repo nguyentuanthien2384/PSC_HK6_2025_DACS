@@ -39,6 +39,9 @@ import ManageSupplier from "./Supplier/ManageSupplier";
 import AddReceipt from "./Receipt/AddReceipt";
 import ManageReceipt from "./Receipt/ManageReceipt";
 import DetailReceipt from "./Receipt/DetailReceipt";
+import Turnover from "./Statistic/Turnover";
+import Profit from "./Statistic/Profit";
+import StockProduct from "./Statistic/StockProduct";
 
 const AdminLayout = ({ children }) => (
     <div className="sb-nav-fixed">
@@ -98,6 +101,10 @@ function HomePageAdmin() {
                 <Route path="list-receipt" element={<ManageReceipt />} />
                 <Route path="add-receipt" element={<AddReceipt />} />
                 <Route path="detail-receipt/:id" element={<DetailReceipt />} />
+
+                <Route path="turnover" element={<Turnover />} />
+                <Route path="profit" element={<Profit />} />
+                <Route path="stock-product" element={<StockProduct />} />
 
                 <Route path="*" element={<Navigate to="/system/home" replace />} />
             </Routes>

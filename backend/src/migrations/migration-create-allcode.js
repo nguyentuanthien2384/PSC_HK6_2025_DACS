@@ -4,17 +4,20 @@ const { sequelize } = require("../models");
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Carts', {
+        await queryInterface.createTable('Allcodes', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            userId: {
-                type: Sequelize.INTEGER
+            type: {
+                type: Sequelize.STRING
             },
-            status: {
+            value: {
+                type: Sequelize.STRING
+            },
+            code: {
                 type: Sequelize.STRING
             },
             createdAt: {
@@ -28,6 +31,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Carts');
+        await queryInterface.dropTable('Allcodes');
     }
 };
