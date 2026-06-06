@@ -43,6 +43,16 @@ import Turnover from "./Statistic/Turnover";
 import Profit from "./Statistic/Profit";
 import StockProduct from "./Statistic/StockProduct";
 
+import ManageCategory from "./Category/ManageCategory";
+import AddCategory from "./Category/AddCategory";
+import ManageBrand from "./Brand/ManageBrand";
+import AddBrand from "./Brand/AddBrand";
+import ManageSubject from "./Subject/ManageSubject";
+import AddSubject from "./Subject/AddSubject";
+import ManageTypeShip from "./TypeShip/ManageTypeShip";
+import AddTypeShip from "./TypeShip/AddTypeShip";
+import Message from "./Message/Message";
+
 const AdminLayout = ({ children }) => (
     <div className="sb-nav-fixed">
         <Header />
@@ -101,6 +111,24 @@ function HomePageAdmin() {
                 <Route path="list-receipt" element={<ManageReceipt />} />
                 <Route path="add-receipt" element={<AddReceipt />} />
                 <Route path="detail-receipt/:id" element={<DetailReceipt />} />
+
+                <Route path="list-category" element={<ManageCategory />} />
+                <Route path="add-category" element={<AddCategory />} />
+                <Route path="edit-category/:id" element={<AddCategory />} />
+
+                <Route path="list-brand" element={<ManageBrand />} />
+                <Route path="add-brand" element={<AddBrand />} />
+                <Route path="edit-brand/:id" element={<AddBrand />} />
+
+                <Route path="list-subject" element={<ManageSubject />} />
+                <Route path="add-subject" element={<AddSubject />} />
+                <Route path="edit-subject/:id" element={<AddSubject />} />
+
+                <Route path="list-typeship" element={<ManageTypeShip />} />
+                <Route path="add-typeship" element={<AddTypeShip />} />
+                <Route path="edit-typeship/:id" element={<AddTypeShip />} />
+
+                <Route path="chat" element={<Message />} />
 
                 <Route path="turnover" element={<Turnover />} />
                 <Route path="profit" element={<Profit />} />

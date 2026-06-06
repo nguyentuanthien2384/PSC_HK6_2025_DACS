@@ -17,6 +17,7 @@ import PaymentSuccess from "./container/User/PaymentSuccess";
 import UserHomePage from "./container/User/UseHomePage";
 import TopMenu from "./container/Header/TopMenu";
 import HomePageAdmin from "./container/System/HomePageAdmin";
+import VerifyEmail from "./container/System/Email/VerifyEmail";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -92,6 +93,17 @@ function App() {
                         <>
                             <Header />
                             <HomePage />
+                            <Footer />
+                        </>
+                    }
+                />
+                {/* Day 28: Xác thực email từ link gửi qua mail */}
+                <Route
+                    path="/verify-email"
+                    element={
+                        <>
+                            <Header />
+                            <VerifyEmail />
                             <Footer />
                         </>
                     }
