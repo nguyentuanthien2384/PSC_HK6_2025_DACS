@@ -51,6 +51,7 @@ export default function LoginWebPage() {
             {register && <div className="form-group"><label htmlFor="phonenumber">Số điện thoại</label><input id="phonenumber" name="phonenumber" type="tel" value={values.phonenumber} onChange={onChange} autoComplete="tel" /></div>}
             <div className="form-group"><label htmlFor="loginPassword">Mật khẩu</label><input id="loginPassword" name="password" type="password" value={values.password} onChange={onChange} autoComplete={register ? "new-password" : "current-password"} minLength={register ? 8 : undefined} required /></div>
             {register && <div className="form-group"><label htmlFor="passwordCon">Xác nhận mật khẩu</label><input id="passwordCon" name="passwordCon" type="password" value={values.passwordCon} onChange={onChange} autoComplete="new-password" minLength={8} required /></div>}
+            {!register && <p><a href="/forgot-password">Quên mật khẩu?</a></p>}
             <div className="CTA"><input type="submit" disabled={busy} value={busy ? "Đang xử lý…" : register ? "Đăng ký" : "Đăng nhập"} />
                 <button type="button" className="switch-account" disabled={busy} onClick={() => setRegister(!register)}>{register ? "Tôi đã có tài khoản" : "Tạo tài khoản mới"}</button>
             </div>

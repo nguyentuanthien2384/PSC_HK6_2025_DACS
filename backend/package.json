@@ -10,7 +10,8 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:status": "sequelize-cli db:migrate:status",
     "db:seed": "sequelize-cli db:seed:all",
-    "db:check": "node scripts/check-db.cjs"
+    "db:check": "node scripts/check-db.cjs",
+    "test:integration": "node --test test/integration.test.cjs"
   },
   "keywords": [],
   "author": "",

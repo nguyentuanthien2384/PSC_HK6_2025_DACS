@@ -63,7 +63,7 @@ let ActiveProduct = async (req, res) => {
 }
 let getDetailProductById = async (req, res) => {
     try {
-        let data = await productService.getDetailProductById(req.query.id);
+        let data = await productService.getDetailProductById(req.query.id, req.user);
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)
@@ -291,7 +291,7 @@ let getProductNew = async (req, res) => {
 }
 let getProductShopCart = async (req, res) => {
     try {
-        let data = await productService.getProductShopCart(req.query);
+        let data = await productService.getProductShopCart({ ...req.query, userId: req.user.id });
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)

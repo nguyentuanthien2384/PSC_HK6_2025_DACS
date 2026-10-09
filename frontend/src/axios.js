@@ -7,7 +7,7 @@ const instance = axios.create({ baseURL: API_BASE_URL, timeout: 20000 });
 
 // Read the current token on every request, including after login and logout.
 instance.interceptors.request.use((config) => {
-  const target = new URL(config.url, config.baseURL || window.location.origin);
+  const target = new URL(config.url, config.baseURL || API_BASE_URL);
   const apiOrigin = new URL(API_BASE_URL, window.location.origin).origin;
   const token = getToken();
   if (token && target.origin === apiOrigin) {

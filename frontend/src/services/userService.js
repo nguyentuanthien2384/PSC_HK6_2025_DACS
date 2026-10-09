@@ -451,3 +451,5 @@ export {
     getStatisticOverturn, getStatisticProfit, getProductShopcartService, getDetailUserByEmail, getProductRecommendService,
     getStatisticStockProduct, getExchangeRate, paymentOrderVnpayService, confirmOrderVnpay, paymentOrderVnpaySuccessService
 }
+export const sendForgotPasswordEmail = data => axios.post("/api/send-forgotpassword-email", data);
+export const resetPassword = data => axios.post("/api/forgotpassword-email", data);

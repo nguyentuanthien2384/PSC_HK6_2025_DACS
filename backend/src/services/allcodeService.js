@@ -147,11 +147,11 @@ let getListAllCodeService = (data) => {
       let objectFilter = {
         where: { type: data.type },
       };
-      if (data.limit && data.offset) {
-        objectFilter.limit = +data.limit;
-        objectFilter.offset = +data.offset;
+      if (Number(data.limit) > 0) {
+        objectFilter.limit = Math.min(100, Math.max(1, Number(data.limit) || 20));
+        objectFilter.offset = Math.max(0, Number(data.offset) || 0);
       }
-      if (data.keyword !== "")
+      if (typeof data.keyword === 'string' && data.keyword.trim())
         objectFilter.where = {
           ...objectFilter.where,
           value: { [Op.substring]: data.keyword },

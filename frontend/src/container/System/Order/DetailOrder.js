@@ -31,13 +31,14 @@ function DetailOrder(props) {
                 let order = await getDetailOrder(id);
                 if (order && order.errCode == 0) {
                     setDataOrder(order.data);
-                    setpriceShip(order.data.typeShipData.price);
+                    setpriceShip(Number(order.data.shippingFee ?? order.data.typeShipData?.price ?? 0));
                 }
             };
-            fetchOrder();
+            fetchOrder().catch(error => toast.error(error.message));
         }
     };
     let totalPriceDiscount = (price, discount) => {
+        if (DataOrder.subtotal != null) return Number(DataOrder.subtotal) - Number(DataOrder.discountAmount || 0);
         try {
             if (discount.typeVoucherOfVoucherData.typeVoucher === "percent") {
                 if (
@@ -174,8 +175,7 @@ function DetailOrder(props) {
                                                     (item, index) => {
                                                         price +=
                                                             item.quantity *
-                                                            item.productDetail
-                                                                .discountPrice;
+                                                            item.realPrice;
 
                                                         let name = `${item.product.name} - ${item.productDetail.nameDetail} - ${item.productDetailSize.sizeData.value}`;
                                                         return (
@@ -190,17 +190,13 @@ function DetailOrder(props) {
                                                                 key={index}
                                                                 name={name}
                                                                 price={
-                                                                    item
-                                                                        .productDetail
-                                                                        .discountPrice
+                                                                    item.realPrice
                                                                 }
                                                                 quantity={
                                                                     item.quantity
                                                                 }
                                                                 image={
-                                                                    item
-                                                                        .productImage[0]
-                                                                        .image
+                                                                    item.productImage?.[0]?.image || ""
                                                                 }
                                                             />
                                                         );

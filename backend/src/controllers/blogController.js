@@ -2,7 +2,7 @@ import blogService from '../services/blogService';
 
 let createNewBlog = async (req, res) => {
     try {
-        let data = await blogService.createNewBlog(req.body);
+        let data = await blogService.createNewBlog({ ...req.body, userId: req.user.id });
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)

@@ -34,6 +34,7 @@ async function hydrateOrder(order) {
         line.product = line.productDetail ? await db.Product.findOne({ where: { id: line.productDetail.productId }, raw: true }) : null;
         line.productImage = line.productDetail ? await db.ProductImage.findAll({ where: { productdetailId: line.productDetail.id }, raw: true }) : [];
         line.productImage.forEach(image => { image.image = decodeImage(image.image); });
+        if (!line.productImage.length) line.productImage.push({ image: '' });
         line.productDetailSize = line.productDetailSize || { id: line.productId, sizeData: { value: '' } };
         line.productDetail = line.productDetail || { nameDetail: 'Sản phẩm không còn trong danh mục', discountPrice: line.realPrice };
         line.product = line.product || { name: 'Sản phẩm đã mua' };
@@ -144,7 +145,7 @@ async function newSession(data, provider) {
         const checkout = await commerce.quote(data, tx);
         if (checkout.totalPrice <= 0) fail('Giá trị thanh toán trực tuyến phải lớn hơn 0.');
         const currency = provider === 'paypal' ? 'USD' : 'VND';
-        const providerAmount = provider === 'paypal' ? (checkout.totalPrice / EXCHANGE_RATES.USD).toFixed(2) : String(checkout.totalPrice * 100);
+        const providerAmount = provider === 'paypal' ? (checkout.totalPrice / (Number(process.env.USD_EXCHANGE_RATE) || EXCHANGE_RATES.USD)).toFixed(2) : String(checkout.totalPrice * 100);
         if (Number(providerAmount) <= 0) fail('Giá trị thanh toán trực tuyến không hợp lệ.');
         return db.PaymentSession.create({ id: crypto.randomUUID(), userId: checkout.userId, provider, status: 'PENDING', totalPrice: checkout.totalPrice, currency, providerAmount, checkoutData: JSON.stringify(checkout), expiresAt: new Date(Date.now() + 30 * 60 * 1000) }, { transaction: tx });
     });
@@ -158,7 +159,7 @@ const paymentOrder = data => resultOf(async () => {
             intent: 'sale', payer: { payment_method: 'paypal' },
             redirect_urls: {
                 return_url: `${frontendUrl()}/payment/success?checkoutToken=${session.id}`,
-                cancel_url: `${frontendUrl()}/order?paymentCancelled=1`
+                cancel_url: `${frontendUrl()}/order/${data.userId}?paymentCancelled=1`
             },
             transactions: [{ amount: { currency: 'USD', total: session.providerAmount }, custom: session.id, description: 'Thanh toan don hang' }]
         });

@@ -58,7 +58,7 @@ let initwebRoutes = (app) => {
     router.get('/api/get-all-product-user', productController.getAllProductUser)
     router.post('/api/unactive-product', middlewareControllers.verifyTokenAdmin, productController.UnactiveProduct)
     router.post('/api/active-product', middlewareControllers.verifyTokenAdmin, productController.ActiveProduct)
-    router.get('/api/get-detail-product-by-id', productController.getDetailProductById)
+    router.get('/api/get-detail-product-by-id', middlewareControllers.optionalTokenUser, productController.getDetailProductById)
     router.get('/api/get-all-product-detail-by-id', productController.getAllProductDetailById)
     router.get('/api/get-all-product-detail-image-by-id', productController.getAllProductDetailImageById)
     router.post('/api/create-new-product-detail', middlewareControllers.verifyTokenAdmin, productController.createNewProductDetail)
@@ -96,7 +96,7 @@ let initwebRoutes = (app) => {
     router.put('/api/confirm-order', middlewareControllers.verifyTokenUser, orderController.confirmOrder)
     router.get('/api/get-all-order-by-shipper', middlewareControllers.verifyTokenUser, orderController.getAllOrdersByShipper)
     router.post('/api/payment-order-vnpay', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpay)
-    router.post('/api/vnpay_return', orderController.confirmOrderVnpay)
+    router.post('/api/vnpay_return', middlewareControllers.verifyTokenUser, orderController.confirmOrderVnpay)
     router.put('/api/update-image-order', middlewareControllers.verifyTokenUser, orderController.updateImageOrder)
 
     //=====================API ADDRESS USER=======================//

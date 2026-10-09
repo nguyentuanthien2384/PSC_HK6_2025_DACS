@@ -1,115 +1,15 @@
-import commentService from '../services/commentService'
-
-let createNewReview = async (req, res) => {
-    try {
-        let data = await commentService.createNewReview(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getAllReviewByProductId = async (req, res) => {
-    try {
-
-        let data = await commentService.getAllReviewByProductId(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let ReplyReview = async (req, res) => {
-    try {
-
-        let data = await commentService.ReplyReview(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let deleteReview = async (req, res) => {
-    try {
-
-        let data = await commentService.deleteReview(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let createNewComment = async (req, res) => {
-    try {
-        let data = await commentService.createNewComment(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getAllCommentByBlogId = async (req, res) => {
-    try {
-
-        let data = await commentService.getAllCommentByBlogId(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let ReplyComment = async (req, res) => {
-    try {
-
-        let data = await commentService.ReplyComment(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let deleteComment = async (req, res) => {
-    try {
-
-        let data = await commentService.deleteComment(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+const service = require('../services/commentService');
+const handle = work => async (req, res, next) => {
+  try { res.json(await work(req)); } catch (error) { next(error); }
+};
+const author = req => ({ ...req.body, userId: req.user.id });
 module.exports = {
-    createNewReview: createNewReview,
-    getAllReviewByProductId: getAllReviewByProductId,
-    ReplyReview: ReplyReview,
-    deleteReview: deleteReview,
-    createNewComment:createNewComment,
-    getAllCommentByBlogId:getAllCommentByBlogId,
-    deleteComment:deleteComment,
-    ReplyComment:ReplyComment
-
-}
+  createNewReview: handle(req => service.createNewReview(author(req))),
+  createNewComment: handle(req => service.createNewComment(author(req))),
+  ReplyReview: handle(req => service.ReplyReview(author(req))),
+  ReplyComment: handle(req => service.ReplyComment(author(req))),
+  getAllReviewByProductId: handle(req => service.getAllReviewByProductId(req.query.id)),
+  getAllCommentByBlogId: handle(req => service.getAllCommentByBlogId(req.query.id)),
+  deleteReview: handle(req => service.deleteReview(req.body)),
+  deleteComment: handle(req => service.deleteComment(req.body)),
+};

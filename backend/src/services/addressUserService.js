@@ -30,8 +30,16 @@ const getAllAddressUserByUserId = async (userId) => {
     return ok({ data: addresses });
 };
 
+const usedInOrder = async id => {
+    if (await db.OrderProduct.findOne({ where: { addressUserId: id }, attributes: ['id'], raw: true })) return true;
+    const pending = await db.PaymentSession.findAll({ where: { status: 'PENDING' }, attributes: ['checkoutData', 'expiresAt'], raw: true });
+    return pending.some(session => new Date(session.expiresAt).getTime() > Date.now() && Number(JSON.parse(session.checkoutData).addressUserId) === Number(id));
+};
 const deleteAddressUser = async (data = {}) => {
     if (!validId(data.id) || !validId(data.userId)) return fail(1, 'Thiếu mã địa chỉ hoặc người dùng');
+    const address = await db.AddressUser.findOne({ where: { id: data.id, userId: data.userId }, raw: true });
+    if (!address) return fail(2, 'Địa chỉ không tồn tại hoặc không thuộc tài khoản của bạn');
+    if (await usedInOrder(data.id)) return fail(2, 'Địa chỉ đã dùng trong đơn hàng hoặc đang thanh toán. Vui lòng thêm địa chỉ mới.');
     const deleted = await db.AddressUser.destroy({ where: { id: data.id, userId: data.userId } });
     return deleted ? ok() : fail(2, 'Địa chỉ không tồn tại hoặc không thuộc tài khoản của bạn');
 };
@@ -43,6 +51,7 @@ const editAddressUser = async (data = {}) => {
     if (error) return fail(1, error);
     const address = await db.AddressUser.findOne({ where: { id: data.id, userId: data.userId }, raw: false });
     if (!address) return fail(2, 'Địa chỉ không tồn tại hoặc không thuộc tài khoản của bạn');
+    if (await usedInOrder(data.id)) return fail(2, 'Địa chỉ đã dùng trong đơn hàng hoặc đang thanh toán. Vui lòng thêm địa chỉ mới.');
     Object.assign(address, values);
     await address.save();
     return ok({ data: address });

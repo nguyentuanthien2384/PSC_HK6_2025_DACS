@@ -7,9 +7,9 @@ export const discountedSubtotal = (subtotal, selectedVoucher) => {
   if (!rule || subtotal < Number(rule.minValue || 0)) return subtotal;
   const maximum = Number(rule.maxValue || 0);
   const discount = rule.typeVoucher === "percent"
-    ? Math.min(subtotal * Number(rule.value || 0) / 100, maximum)
-    : maximum;
-  return Math.max(0, subtotal - Math.max(0, discount));
+    ? Math.floor(subtotal * Math.min(Number(rule.value || 0), 100) / 100)
+    : (maximum || Number(rule.value || 0));
+  return Math.max(0, subtotal - Math.max(0, maximum > 0 ? Math.min(discount, maximum) : discount));
 };
 
 export const createCheckoutPayload = ({ userId, addressUserId, dataTypeShip, dataVoucher, note, dataCart }) => {

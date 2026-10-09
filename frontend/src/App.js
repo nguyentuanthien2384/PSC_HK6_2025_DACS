@@ -18,6 +18,7 @@ import UserHomePage from "./container/User/UseHomePage";
 import TopMenu from "./container/Header/TopMenu";
 import HomePageAdmin from "./container/System/HomePageAdmin";
 import VerifyEmail from "./container/System/Email/VerifyEmail";
+import ForgotPasswordPage from "./container/Login/ForgotPasswordPage";
 import RequireAuth from "./component/RequireAuth";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
@@ -25,6 +26,8 @@ function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/forgot-password" element={<><Header /><ForgotPasswordPage /><Footer /></>} />
+                <Route path="/verify-forgotpassword" element={<><Header /><ForgotPasswordPage reset /><Footer /></>} />
                 {/* Day 1-5: Trang chủ */}
                 <Route
                     path="/"

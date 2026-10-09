@@ -44,7 +44,8 @@ let getDetailBlogById = (id) => {
                     where:{id:id},
                     raw:false
                 })
-                blog.view = blog.view +1;
+                if (!blog) return resolve({errCode: 2, errMessage: 'Bài viết không tồn tại'});
+                blog.view = (blog.view || 0) +1;
                 await blog.save()
                 let res = await db.Blog.findOne({
                     where: { id: id },
@@ -55,10 +56,10 @@ let getDetailBlogById = (id) => {
                     raw: true,
                     nest: true
                 })
-                res.userData = await db.User.findOne({where:{id:res.userId}})
+                res.userData = await db.User.findOne({where:{id:res.userId}, attributes: ['id', 'firstName', 'lastName']})
               
                 if (res && res.image) {
-                    res.image = new Buffer(res.image, 'base64').toString('binary');
+                    res.image = Buffer.from(res.image, 'base64').toString('binary');
                 }
                 resolve({
                     errCode: 0,
@@ -82,20 +83,20 @@ let getAllBlog = (data) => {
                 raw: true,
                 nest: true
             }
-            if (data.limit && data.offset) {
-                objectFilter.limit = +data.limit
-                objectFilter.offset = +data.offset
+            if (Number(data.limit) > 0) {
+                objectFilter.limit = Math.min(100, Math.max(1, Number(data.limit) || 20))
+                objectFilter.offset = Math.max(0, Number(data.offset) || 0)
             }
             if(data.subjectId && data.subjectId !== ''){
             
                 objectFilter.where = {...objectFilter.where, subjectId: data.subjectId}
             }
-            if(data.keyword !=='') objectFilter.where = {...objectFilter.where, title: {[Op.substring]: data.keyword  } }
+            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where = {...objectFilter.where, title: {[Op.substring]: data.keyword  } }
             let res = await db.Blog.findAndCountAll(objectFilter)
             if (res.rows && res.rows.length > 0) {
                 for(let i=0; i< res.rows.length; i++){
-                    res.rows[i].image = new Buffer(res.rows[i].image, 'base64').toString('binary')
-                    res.rows[i].userData = await db.User.findOne({where:{id:res.rows[i].userId }})
+                    res.rows[i].image = Buffer.from(res.rows[i].image, 'base64').toString('binary')
+                    res.rows[i].userData = await db.User.findOne({where:{id:res.rows[i].userId }, attributes: ['id', 'firstName', 'lastName']})
                     res.rows[i].commentData = await db.Comment.findAll({where:{blogId:res.rows[i].id }})
                 }
                
@@ -140,7 +141,7 @@ let updateBlog = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({errCode: 2, errMessage: 'Bài viết không tồn tại'});
             }
 
         } catch (error) {
@@ -168,7 +169,7 @@ let deleteBlog = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({errCode: 2, errMessage: 'Bài viết không tồn tại'});
             }
 
         } catch (error) {
@@ -193,8 +194,8 @@ let getFeatureBlog = (data) => {
             })
             if (res && res.length > 0) {
                 for(let i=0; i< res.length; i++){
-                    res[i].image = new Buffer(res[i].image, 'base64').toString('binary')
-                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }})
+                    res[i].image = Buffer.from(res[i].image, 'base64').toString('binary')
+                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }, attributes: ['id', 'firstName', 'lastName']})
                     res[i].commentData = await db.Comment.findAll({where:{blogId:res[i].id }})
                 }
                
@@ -230,8 +231,8 @@ let getNewBlog = (data) => {
             })
             if (res && res.length > 0) {
                 for(let i=0; i< res.length; i++){
-                    res[i].image = new Buffer(res[i].image, 'base64').toString('binary')
-                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }})
+                    res[i].image = Buffer.from(res[i].image, 'base64').toString('binary')
+                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }, attributes: ['id', 'firstName', 'lastName']})
                     res[i].commentData = await db.Comment.findAll({where:{blogId:res[i].id }})
                 }
                

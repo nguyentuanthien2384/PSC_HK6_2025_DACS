@@ -184,17 +184,19 @@ let getStatisticByMonth = (data) => {
                 )
                 for (let i = 0; i < orderProduct.length; i++) {
                     orderProduct[i].orderDetail = await db.OrderDetail.findAll({ where: { orderId: orderProduct[i].id } })
-                    orderProduct[i].voucherData.typeVoucherOfVoucherData = await db.TypeVoucher.findOne({
+                    orderProduct[i].voucherData = orderProduct[i].voucherData || {};
+                    orderProduct[i].typeShipData = orderProduct[i].typeShipData || { price: 0 };
+                    orderProduct[i].voucherData.typeVoucherOfVoucherData = orderProduct[i].voucherData.typeVoucherId ? await db.TypeVoucher.findOne({
                         where: { id: orderProduct[i].voucherData.typeVoucherId }
-                    })
+                    }) : null
                     let totalprice = 0
                     for (let j = 0; j < orderProduct[i].orderDetail.length; j++) {
                         totalprice = totalprice + (orderProduct[i].orderDetail[j].realPrice * orderProduct[i].orderDetail[j].quantity)
                     }
                     if (orderProduct[i].voucherId) {
-                        orderProduct[i].totalpriceProduct = totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price))
                     } else {
-                        orderProduct[i].totalpriceProduct = totalprice + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalprice + orderProduct[i].typeShipData.price))
                     }
 
                 }
@@ -256,18 +258,20 @@ let getStatisticByDay = (data) => {
                 )
                 for (let i = 0; i < orderProduct.length; i++) {
                     orderProduct[i].orderDetail = await db.OrderDetail.findAll({ where: { orderId: orderProduct[i].id } })
-                    orderProduct[i].voucherData.typeVoucherOfVoucherData = await db.TypeVoucher.findOne({
+                    orderProduct[i].voucherData = orderProduct[i].voucherData || {};
+                    orderProduct[i].typeShipData = orderProduct[i].typeShipData || { price: 0 };
+                    orderProduct[i].voucherData.typeVoucherOfVoucherData = orderProduct[i].voucherData.typeVoucherId ? await db.TypeVoucher.findOne({
                         where: { id: orderProduct[i].voucherData.typeVoucherId }
-                    })
+                    }) : null
                     let totalprice = 0
                     for (let j = 0; j < orderProduct[i].orderDetail.length; j++) {
                         totalprice = totalprice + (orderProduct[i].orderDetail[j].realPrice * orderProduct[i].orderDetail[j].quantity)
                     }
 
                     if (orderProduct[i].voucherId) {
-                        orderProduct[i].totalpriceProduct = totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price))
                     } else {
-                        orderProduct[i].totalpriceProduct = totalprice + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalprice + orderProduct[i].typeShipData.price))
                     }
                 }
 
@@ -341,9 +345,11 @@ let getStatisticProfit = (data) => {
 
                 for (let i = 0; i < orderProduct.length; i++) {
                     orderProduct[i].orderDetail = await db.OrderDetail.findAll({ where: { orderId: orderProduct[i].id } })
-                    orderProduct[i].voucherData.typeVoucherOfVoucherData = await db.TypeVoucher.findOne({
+                    orderProduct[i].voucherData = orderProduct[i].voucherData || {};
+                    orderProduct[i].typeShipData = orderProduct[i].typeShipData || { price: 0 };
+                    orderProduct[i].voucherData.typeVoucherOfVoucherData = orderProduct[i].voucherData.typeVoucherId ? await db.TypeVoucher.findOne({
                         where: { id: orderProduct[i].voucherData.typeVoucherId }
-                    })
+                    }) : null
                     let totalprice = 0
                     let importPrice = 0
                     for (let j = 0; j < orderProduct[i].orderDetail.length; j++) {
@@ -354,18 +360,18 @@ let getStatisticProfit = (data) => {
                             avgPrice = avgPrice + (receiptDetail[k].quantity * receiptDetail[k].price)
                             avgQuantity = avgQuantity + receiptDetail[k].quantity
                         }
-                        orderProduct[i].orderDetail[j].importPrice = Math.round((avgPrice / avgQuantity))
-                        importPrice = importPrice + (Math.round((avgPrice / avgQuantity)) * orderProduct[i].orderDetail[j].quantity)
+                        orderProduct[i].orderDetail[j].importPrice = (avgQuantity ? Math.round(avgPrice / avgQuantity) : 0)
+                        importPrice = importPrice + ((avgQuantity ? Math.round(avgPrice / avgQuantity) : 0) * orderProduct[i].orderDetail[j].quantity)
                         totalprice = totalprice + (orderProduct[i].orderDetail[j].realPrice * orderProduct[i].orderDetail[j].quantity)
                     }
                     orderProduct[i].importPrice = importPrice
                     if (orderProduct[i].voucherId) {
-                        orderProduct[i].totalpriceProduct = totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price
-                        orderProduct[i].profitPrice = totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price - importPrice
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price))
+                        orderProduct[i].profitPrice = orderProduct[i].totalpriceProduct - importPrice
 
                     } else {
-                        orderProduct[i].totalpriceProduct = totalprice + orderProduct[i].typeShipData.price
-                        orderProduct[i].profitPrice = (totalprice + orderProduct[i].typeShipData.price) - importPrice
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalprice + orderProduct[i].typeShipData.price))
+                        orderProduct[i].profitPrice = orderProduct[i].totalpriceProduct - importPrice
                     }
 
                 }
@@ -442,18 +448,20 @@ let getStatisticOverturn = (data) => {
                 )
                 for (let i = 0; i < orderProduct.length; i++) {
                     orderProduct[i].orderDetail = await db.OrderDetail.findAll({ where: { orderId: orderProduct[i].id } })
-                    orderProduct[i].voucherData.typeVoucherOfVoucherData = await db.TypeVoucher.findOne({
+                    orderProduct[i].voucherData = orderProduct[i].voucherData || {};
+                    orderProduct[i].typeShipData = orderProduct[i].typeShipData || { price: 0 };
+                    orderProduct[i].voucherData.typeVoucherOfVoucherData = orderProduct[i].voucherData.typeVoucherId ? await db.TypeVoucher.findOne({
                         where: { id: orderProduct[i].voucherData.typeVoucherId }
-                    })
+                    }) : null
                     let totalprice = 0
                     for (let j = 0; j < orderProduct[i].orderDetail.length; j++) {
                         totalprice = totalprice + (orderProduct[i].orderDetail[j].realPrice * orderProduct[i].orderDetail[j].quantity)
                     }
 
                     if (orderProduct[i].voucherId) {
-                        orderProduct[i].totalpriceProduct = totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalPriceDiscount(totalprice, orderProduct[i]) + orderProduct[i].typeShipData.price))
                     } else {
-                        orderProduct[i].totalpriceProduct = totalprice + orderProduct[i].typeShipData.price
+                        orderProduct[i].totalpriceProduct = Number(orderProduct[i].totalPrice ?? (totalprice + orderProduct[i].typeShipData.price))
                     }
                 }
                 orderProduct = orderProduct.filter(item => {
@@ -543,7 +551,7 @@ let getStatisticStockProduct = (data) => {
                 }
                 for (let k = 0; k < orderDetail.length; k++) {
                     let order = await db.OrderProduct.findOne({ where: { id: orderDetail[k].orderId } })
-                    if (order.statusId != 'S7') {
+                    if (order && order.statusId != 'S7') {
 
                         quantity = quantity - orderDetail[k].quantity
                     }

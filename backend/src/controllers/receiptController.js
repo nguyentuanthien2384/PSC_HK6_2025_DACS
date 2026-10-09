@@ -1,82 +1,12 @@
-import receiptService from '../services/receiptService';
-
-let createNewReceipt = async (req, res) => {
-    try {
-        let data = await receiptService.createNewReceipt(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getDetailReceiptById = async (req, res) => {
-    try {
-        let data = await receiptService.getDetailReceiptById(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getAllReceipt = async (req, res) => {
-    try {
-        let data = await receiptService.getAllReceipt(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let updateReceipt = async (req, res) => {
-    try {
-        let data = await receiptService.updateReceipt(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let deleteReceipt = async (req, res) => {
-    try {
-        let data = await receiptService.deleteReceipt(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let createNewReceiptDetail = async (req, res) => {
-    try {
-        let data = await receiptService.createNewReceiptDetail(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+const service = require('../services/receiptService');
+const handle = work => async (req, res, next) => {
+  try { res.json(await work(req)); } catch (error) { next(error); }
+};
 module.exports = {
-    createNewReceipt:createNewReceipt,
-    getDetailReceiptById:getDetailReceiptById,
-    getAllReceipt:getAllReceipt,
-    updateReceipt:updateReceipt,
-    deleteReceipt:deleteReceipt,
-    createNewReceiptDetail:createNewReceiptDetail
-}
+  createNewReceipt: handle(req => service.createNewReceipt({ ...req.body, userId: req.user.id })),
+  createNewReceiptDetail: handle(req => service.createNewReceiptDetail(req.body)),
+  getDetailReceiptById: handle(req => service.getDetailReceiptById(req.query.id)),
+  getAllReceipt: handle(req => service.getAllReceipt(req.query)),
+  updateReceipt: handle(req => service.updateReceipt(req.body)),
+  deleteReceipt: handle(req => service.deleteReceipt(req.body)),
+};

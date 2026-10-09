@@ -64,6 +64,12 @@ function createCommerceService(db) {
         if (!positiveInteger(data.userId) || !positiveInteger(data.addressUserId) || !positiveInteger(data.typeShipId)) fail('Vui lòng chọn địa chỉ và phương thức vận chuyển.');
         const lines = normalizeLines(data.arrDataShopCart || data.result);
         await lockVariants(lines, tx);
+        // Consume an authenticated cart once, preventing duplicate COD retries.
+        const carts = await db.ShopCart.findAll({ where: { userId: data.userId, statusId: 0 }, ...lockOptions(tx), raw: true });
+        for (const line of lines) {
+            const quantity = carts.filter(cart => Number(cart.productdetailsizeId) === line.productId).reduce((sum, cart) => sum + Number(cart.quantity), 0);
+            if (quantity < line.quantity) fail('Giỏ hàng đã thay đổi hoặc đơn hàng đã được gửi. Vui lòng tải lại giỏ hàng.', 2);
+        }
         const address = await db.AddressUser.findOne({ where: { id: data.addressUserId, userId: data.userId }, ...options(tx), raw: true });
         if (!address) fail('Địa chỉ giao hàng không thuộc tài khoản của bạn.', 403);
         const shipping = await db.TypeShip.findOne({ where: { id: data.typeShipId }, ...options(tx), raw: true });
