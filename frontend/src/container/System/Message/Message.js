@@ -1,3 +1,5 @@
+import { getToken, getUser } from "../../../utils/token";
+import { API_BASE_URL } from "../../../axios";
 import React from "react";
 import { useEffect, useState, useRef } from "react";
 import { useFetchAllcode } from "../../customize/fetch";
@@ -20,22 +22,23 @@ const Message = () => {
     const [dataUser, setdataUser] = useState({});
     const [dataRoom, setdataRoom] = useState([]);
     const [selectedRoom, setselectedRoom] = useState("");
-    const host = process.env.REACT_APP_BACKEND_URL;
+    const host = API_BASE_URL;
     const socketRef = useRef();
     const [id, setId] = useState();
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host);
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
+        socketRef.current.on("connect_error", () => toast.error("Không thể kết nối hỗ trợ trực tuyến"));
+        const userData = getUser();
         setdataUser(userData);
         socketRef.current.on("getId", (data) => {
             setId(data);
         }); // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
-        fetchListRoom();
+        fetchListRoom().catch((error) => toast.error(error.message));
         socketRef.current.on("sendDataServer", (dataGot) => {
-            fetchListRoom();
+            fetchListRoom().catch((error) => toast.error(error.message));
         });
         socketRef.current.on("loadRoomServer", (dataGot) => {
-            fetchListRoom(userData.id);
+            fetchListRoom().catch((error) => toast.error(error.message));
         });
         return () => {
             socketRef.current.disconnect();

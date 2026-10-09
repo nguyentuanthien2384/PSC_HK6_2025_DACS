@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { getDetailAddressUserByIdService } from '../../services/userService';
 
 import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { toast } from 'react-toastify';
 
 const AddressUsersModal = (props) => {
     const [inputValues, setInputValues] = useState({
@@ -20,7 +21,7 @@ const AddressUsersModal = (props) => {
                     })
                 }
             }
-            fetchDetailAddress()
+            fetchDetailAddress().catch((error) => toast.error(error.message))
         }
 
 
@@ -39,6 +40,12 @@ const AddressUsersModal = (props) => {
         })
     }
     let handleSaveInfor = () => {
+        if (!inputValues.shipName.trim() || !inputValues.shipAdress.trim() || !inputValues.shipPhonenumber.trim()) {
+            toast.error("Vui lòng nhập tên, số điện thoại và địa chỉ nhận hàng"); return;
+        }
+        if (inputValues.shipEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inputValues.shipEmail)) {
+            toast.error("Email nhận hàng không hợp lệ"); return;
+        }
         props.sendDataFromModalAddress({
             shipName: inputValues.shipName,
             shipAdress: inputValues.shipAdress,

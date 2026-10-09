@@ -10,12 +10,14 @@ export const addItemCartStart = (data) => {
             if (res && res.errCode === 0) {
                 dispatch(getItemCartStart(data.userId));
                 dispatch(addItemCartSuccess());
+                toast.success("Đã thêm sản phẩm vào giỏ hàng");
             } else {
                 dispatch(addItemCartFaild());
-                toast.error(res.errMessage);
+                toast.error(res?.errMessage || "Không thể thêm sản phẩm vào giỏ hàng");
             }
         } catch (error) {
             dispatch(addItemCartFaild());
+            toast.error(error.message);
         }
     };
 };
@@ -34,6 +36,7 @@ export const addItemCartFaild = () => {
 
 export const getItemCartStart = (id) => {
     return async (dispatch, getState) => {
+        if (!id) { dispatch(getItemCartFaild()); return; }
         try {
             let res = await getAllShopCartByUserIdService(id);
             if (res && res.errCode === 0) {

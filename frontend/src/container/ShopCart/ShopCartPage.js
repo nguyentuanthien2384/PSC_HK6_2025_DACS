@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React, { useEffect, useState } from "react";
 import ShopCartItem from "../../component/ShopCart/ShopCartItem";
 import { useSelector, useDispatch } from "react-redux";
@@ -16,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import AddressUsersModal from "./AdressUserModal";
 import { toast } from "react-toastify";
 import CommonUtils from "../../utils/CommonUtils";
+import { discountedSubtotal } from "../../utils/checkout";
 
 function ShopCartPage(props) {
     const dispatch = useDispatch();
@@ -30,7 +32,7 @@ function ShopCartPage(props) {
     const [priceShip, setpriceShip] = useState(0);
 
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        const userData = getUser();
         setuser(userData);
         if (userData) {
             dispatch(getItemCartStart(userData.id));
@@ -46,12 +48,20 @@ function ShopCartPage(props) {
                 keyword: "",
             });
             if (res && res.errCode === 0) {
-                settypeShip(res.data);
+                settypeShip(res.data || []);
+                const selected = res.data?.find((ship) => ship.id === dataTypeShip?.id);
+                if (selected) {
+                    dispatch(ChooseTypeShipStart(selected));
+                    setpriceShip(Number(selected.price));
+                } else {
+                    dispatch(ChooseTypeShipStart({}));
+                    setpriceShip(0);
+                }
             }
         };
-        fetchTypeShip();
+        fetchTypeShip().catch((error) => toast.error(error.message));
         if (dataTypeShip && dataTypeShip.price) {
-            setpriceShip(dataTypeShip.price);
+            setpriceShip(Number(dataTypeShip.price));
         }
     }, []);
 
@@ -66,9 +76,13 @@ function ShopCartPage(props) {
         setisOpenModal(true);
     };
     let handleOpenAddressUserModal = async () => {
+        if (!dataCart?.length) { toast.error("Giỏ hàng đang trống"); return; }
+        if (!dataTypeShip?.id) { toast.error("Vui lòng chọn đơn vị vận chuyển"); return; }
+        try {
         if (user && user.id) {
             let res = await getAllAddressUserByUserIdService(user.id);
-            if (res && res.errCode === 0 && res.data.length > 0) {
+            if (res?.errCode !== 0) throw new Error(res.errMessage || "Không thể tải địa chỉ nhận hàng");
+            if (res.data?.length > 0) {
                 navigate(`/order/${user.id}`);
             } else {
                 setisOpenModalAddressUser(true);
@@ -76,39 +90,14 @@ function ShopCartPage(props) {
         } else {
             toast.error("Hãy đăng nhập để mua hàng");
         }
+        } catch (error) { toast.error(error.message); }
     };
-    let totalPriceDiscount = (price, discount) => {
-        if (
-            discount.voucherData.typeVoucherOfVoucherData.typeVoucher ===
-            "percent"
-        ) {
-            if (
-                (price * discount.voucherData.typeVoucherOfVoucherData.value) /
-                    100 >
-                discount.voucherData.typeVoucherOfVoucherData.maxValue
-            ) {
-                return (
-                    price -
-                    discount.voucherData.typeVoucherOfVoucherData.maxValue
-                );
-            } else {
-                return (
-                    price -
-                    (price *
-                        discount.voucherData.typeVoucherOfVoucherData.value) /
-                        100
-                );
-            }
-        } else {
-            return (
-                price - discount.voucherData.typeVoucherOfVoucherData.maxValue
-            );
-        }
-    };
+    const totalPriceDiscount = discountedSubtotal;
 
     let sendDataFromModalAddress = async (data) => {
         setisOpenModalAddressUser(false);
 
+        try {
         let res = await createNewAddressUserrService({
             shipName: data.shipName,
             shipAdress: data.shipAdress,
@@ -122,12 +111,13 @@ function ShopCartPage(props) {
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let closeModalFromVoucherItem = () => {
         setisOpenModal(false);
     };
     let hanldeOnChangeTypeShip = (item) => {
-        setpriceShip(item.price);
+        setpriceShip(Number(item.price));
         dispatch(ChooseTypeShipStart(item));
     };
 
@@ -157,6 +147,7 @@ function ShopCartPage(props) {
                                 </tr>
                             </thead>
                             <tbody>
+                                {!dataCart?.length && <tr><td colSpan={5}>Giỏ hàng đang trống. <a href="/shop">Tiếp tục mua sắm</a></td></tr>}
                                 {dataCart &&
                                     dataCart.length > 0 &&
                                     dataCart.map((item, index) => {
@@ -182,8 +173,7 @@ function ShopCartPage(props) {
                                                 }
                                                 quantity={item.quantity}
                                                 image={
-                                                    item.productDetailImage[0]
-                                                        .image
+                                                    item.productDetailImage?.[0]?.image || "/resources/img/logo.png"
                                                 }
                                             />
                                         );
@@ -273,12 +263,12 @@ function ShopCartPage(props) {
                             </span>
                         </div>
                         <div className="checkout_btn_inner">
-                            <a
+                            <button type="button" disabled={!dataCart?.length}
                                 onClick={() => handleOpenAddressUserModal()}
                                 className="main_btn"
                             >
                                 Đi đến thanh toán
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>

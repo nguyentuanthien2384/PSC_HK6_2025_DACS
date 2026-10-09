@@ -1,7 +1,6 @@
 import db from "../models/index";
-require('dotenv').config();
 const { Op } = require("sequelize");
-let createNewBanner = (data) => {
+let createNewBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.image || !data.description || !data.name) {
@@ -38,9 +37,8 @@ let getDetailBanner = (id) => {
                 let res = await db.Banner.findOne({
                     where: { id: id }
                 })
-                if (res && res.image) {
-                    res.image = new Buffer(res.image, 'base64').toString('binary');
-                }
+                if (!res) return resolve({ errCode: 2, errMessage: 'Banner không tồn tại' });
+                if (Buffer.isBuffer(res.image)) res.image = res.image.toString('utf8');
                 resolve({
                     errCode: 0,
                     data: res
@@ -51,21 +49,21 @@ let getDetailBanner = (id) => {
         }
     })
 }
-let getAllBanner = (data) => {
+let getAllBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             let objectFilter = {
                 where: { statusId: 'S1' },
              
             }
-            if (data.limit && data.offset) {
-                objectFilter.limit = +data.limit
-                objectFilter.offset = +data.offset
+            if (data.limit !== undefined) {
+                objectFilter.limit = Math.min(100, Math.max(1, parseInt(data.limit, 10) || 20));
+                objectFilter.offset = Math.max(0, parseInt(data.offset, 10) || 0);
             }
-            if(data.keyword !=='') objectFilter.where = {...objectFilter.where, name: {[Op.substring]: data.keyword  } }
+            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where.name = { [Op.substring]: data.keyword.trim() };
             let res = await db.Banner.findAndCountAll(objectFilter)
                 if (res.rows && res.rows.length > 0) {
-                    res.rows.map(item => item.image = new Buffer(item.image, 'base64').toString('binary'))
+                    res.rows.forEach(item => { if (Buffer.isBuffer(item.image)) item.image = item.image.toString('utf8'); });
                 }
                 resolve({
                     errCode: 0,
@@ -80,7 +78,7 @@ let getAllBanner = (data) => {
         }
     })
 }
-let updateBanner = (data) => {
+let updateBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id || !data.image || !data.description || !data.name) {
@@ -103,7 +101,7 @@ let updateBanner = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Banner không tồn tại' });
             }
 
         } catch (error) {
@@ -111,7 +109,7 @@ let updateBanner = (data) => {
         }
     })
 }
-let deleteBanner = (data) => {
+let deleteBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id) {
@@ -131,7 +129,7 @@ let deleteBanner = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Banner không tồn tại' });
             }
 
         } catch (error) {

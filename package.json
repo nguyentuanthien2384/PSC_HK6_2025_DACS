@@ -1,0 +1,13 @@
+{
+  "name": "dacs-ecommerce",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/dev.cjs",
+    "dev": "node scripts/dev.cjs",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test && npm --prefix frontend test -- --watchAll=false --runInBand",
+    "db:check": "npm --prefix backend run db:check",
+    "db:migrate": "npm --prefix backend run db:migrate"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,3 +1,4 @@
+import { getUser } from "../../../utils/token";
 import React from "react";
 import { useEffect, useState } from "react";
 import {
@@ -91,7 +92,7 @@ const AddBlog = (props) => {
         image: inputValues.image,
         contentMarkdown: inputValues.contentMarkdown,
         contentHTML: inputValues.contentHTML,
-        userId: JSON.parse(localStorage.getItem("userData")).id,
+        userId: getUser().id,
       });
       if (res && res.errCode === 0) {
         toast.success("Tạo mới bài đăng thành công !");

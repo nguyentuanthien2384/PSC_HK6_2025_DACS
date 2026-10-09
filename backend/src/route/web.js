@@ -22,19 +22,19 @@ let initwebRoutes = (app) => {
         return res.send("hello")
     })
     //=====================API USER==========================//
-    router.post('/api/create-new-user', userController.handleCreateNewUser)
+    router.post('/api/create-new-user', middlewareControllers.optionalTokenUser, userController.handleCreateNewUser)
     router.put('/api/update-user', middlewareControllers.verifyTokenUser, userController.handleUpdateUser)
     router.delete('/api/delete-user', middlewareControllers.verifyTokenAdmin, userController.handleDeleteUser)
     router.post('/api/login', userController.handleLogin)
     router.post('/api/changepassword', middlewareControllers.verifyTokenUser, userController.handleChangePassword)
     router.get('/api/get-all-user', middlewareControllers.verifyTokenAdmin, userController.getAllUser)
-    router.get('/api/get-detail-user-by-id', userController.getDetailUserById)
+    router.get('/api/get-detail-user-by-id', middlewareControllers.verifyTokenUser, userController.getDetailUserById)
     router.post('/api/send-verify-email', middlewareControllers.verifyTokenUser, userController.handleSendVerifyEmailUser)
-    router.post('/api/verify-email', middlewareControllers.verifyTokenUser, userController.handleVerifyEmailUser)
+    router.post('/api/verify-email', userController.handleVerifyEmailUser)
     router.post('/api/send-forgotpassword-email', userController.handleSendEmailForgotPassword)
     router.post('/api/forgotpassword-email', userController.handleForgotPassword)
     router.get('/api/check-phonenumber-email', userController.checkPhonenumberEmail)
-    router.get('/api/get-detail-user-by-email', userController.getDetailUserByEmail)
+    router.get('/api/get-detail-user-by-email', middlewareControllers.verifyTokenUser, userController.getDetailUserByEmail)
     //===================API ALLCODE========================//
     router.post('/api/create-new-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleCreateNewAllCode)
     router.put('/api/update-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleUpdateAllCode)
@@ -76,7 +76,7 @@ let initwebRoutes = (app) => {
     router.delete('/api/delete-product-detail-size', middlewareControllers.verifyTokenAdmin, productController.deleteProductDetailSize)
     router.get('/api/get-product-feature', productController.getProductFeature)
     router.get('/api/get-product-new', productController.getProductNew)
-    router.get('/api/get-product-shopcart', productController.getProductShopCart)
+    router.get('/api/get-product-shopcart', middlewareControllers.verifyTokenUser, productController.getProductShopCart)
     router.get('/api/get-product-recommend', productController.getProductRecommend)
 
     //=================API SHOPCART==========================//
@@ -86,18 +86,18 @@ let initwebRoutes = (app) => {
 
     //=================API ORDER=============================//
     router.post('/api/create-new-order', middlewareControllers.verifyTokenUser, orderController.createNewOrder)
-    router.get('/api/get-all-order', orderController.getAllOrders)
-    router.get('/api/get-detail-order', orderController.getDetailOrderById)
+    router.get('/api/get-all-order', middlewareControllers.verifyTokenAdmin, orderController.getAllOrders)
+    router.get('/api/get-detail-order', middlewareControllers.verifyTokenUser, orderController.getDetailOrderById)
     router.put('/api/update-status-order', middlewareControllers.verifyTokenUser, orderController.updateStatusOrder)
     router.get('/api/get-all-order-by-user', middlewareControllers.verifyTokenUser, orderController.getAllOrdersByUser)
     router.post('/api/payment-order', middlewareControllers.verifyTokenUser, orderController.paymentOrder)
     router.post('/api/payment-order-success', middlewareControllers.verifyTokenUser, orderController.paymentOrderSuccess)
     router.post('/api/payment-order-vnpay-success', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpaySuccess)
-    router.put('/api/confirm-order', orderController.confirmOrder)
-    router.get('/api/get-all-order-by-shipper', orderController.getAllOrdersByShipper)
+    router.put('/api/confirm-order', middlewareControllers.verifyTokenUser, orderController.confirmOrder)
+    router.get('/api/get-all-order-by-shipper', middlewareControllers.verifyTokenUser, orderController.getAllOrdersByShipper)
     router.post('/api/payment-order-vnpay', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpay)
     router.post('/api/vnpay_return', orderController.confirmOrderVnpay)
-    router.put('/api/update-image-order', orderController.updateImageOrder)
+    router.put('/api/update-image-order', middlewareControllers.verifyTokenUser, orderController.updateImageOrder)
 
     //=====================API ADDRESS USER=======================//
     router.post('/api/create-new-address-user', middlewareControllers.verifyTokenUser, addressUserController.createNewAddressUser)
@@ -127,7 +127,7 @@ let initwebRoutes = (app) => {
     router.put('/api/update-voucher', middlewareControllers.verifyTokenAdmin, voucherController.updateVoucher)
     router.delete('/api/delete-voucher', middlewareControllers.verifyTokenAdmin, voucherController.deleteVoucher)
     router.post('/api/save-user-voucher', middlewareControllers.verifyTokenUser, voucherController.saveUserVoucher)
-    router.get('/api/get-all-voucher-by-userid', voucherController.getAllVoucherByUserId)
+    router.get('/api/get-all-voucher-by-userid', middlewareControllers.verifyTokenUser, voucherController.getAllVoucherByUserId)
 
     //=====================API BLOG=========================//
     router.post('/api/create-new-blog', middlewareControllers.verifyTokenAdmin, blogController.createNewBlog)
@@ -150,15 +150,15 @@ let initwebRoutes = (app) => {
 
     //=================API SUPPLIER================================//
     router.post('/api/create-new-supplier', middlewareControllers.verifyTokenAdmin, supplierController.createNewSupplier)
-    router.get('/api/get-detail-supplier', supplierController.getDetailSupplierById)
-    router.get('/api/get-all-supplier', supplierController.getAllSupplier)
+    router.get('/api/get-detail-supplier', middlewareControllers.verifyTokenAdmin, supplierController.getDetailSupplierById)
+    router.get('/api/get-all-supplier', middlewareControllers.verifyTokenAdmin, supplierController.getAllSupplier)
     router.put('/api/update-supplier', middlewareControllers.verifyTokenAdmin, supplierController.updateSupplier)
     router.delete('/api/delete-supplier', middlewareControllers.verifyTokenAdmin, supplierController.deleteSupplier)
 
     //=================API RECEIPT================================//
     router.post('/api/create-new-receipt', middlewareControllers.verifyTokenAdmin, receiptController.createNewReceipt)
-    router.get('/api/get-detail-receipt', receiptController.getDetailReceiptById)
-    router.get('/api/get-all-receipt', receiptController.getAllReceipt)
+    router.get('/api/get-detail-receipt', middlewareControllers.verifyTokenAdmin, receiptController.getDetailReceiptById)
+    router.get('/api/get-all-receipt', middlewareControllers.verifyTokenAdmin, receiptController.getAllReceipt)
     router.put('/api/update-receipt', middlewareControllers.verifyTokenAdmin, receiptController.updateReceipt)
     router.delete('/api/delete-receipt', middlewareControllers.verifyTokenAdmin, receiptController.deleteReceipt)
     router.post('/api/create-new-detail-receipt', middlewareControllers.verifyTokenAdmin, receiptController.createNewReceiptDetail)

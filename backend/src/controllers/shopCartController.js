@@ -1,43 +1,15 @@
 import shopCartService from '../services/shopCartService';
 
-let addShopCart = async (req, res) => {
+const handle = work => async (req, res, next) => {
     try {
-        let data = await shopCartService.addShopCart(req.body);
+        if (!req.user) return res.status(401).json({ errCode: 401, errMessage: 'Vui lòng đăng nhập.' });
+        const data = await work(req);
         return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getAllShopCartByUserId = async (req, res) => {
-    try {
-        let data = await shopCartService.getAllShopCartByUserId(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let deleteItemShopCart = async (req, res) => {
-    try {
-        let data = await shopCartService.deleteItemShopCart(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+    } catch (error) { return next(error); }
+};
+
 module.exports = {
-    addShopCart: addShopCart,
-    getAllShopCartByUserId: getAllShopCartByUserId,
-    deleteItemShopCart: deleteItemShopCart
-}
+    addShopCart: handle(req => shopCartService.addShopCart({ ...req.body, userId: req.user.id })),
+    getAllShopCartByUserId: handle(req => shopCartService.getAllShopCartByUserId(req.user.id)),
+    deleteItemShopCart: handle(req => shopCartService.deleteItemShopCart({ ...req.body, userId: req.user.id }))
+};

@@ -227,7 +227,7 @@ section#formHolder {
   border: none;
   font-family: "Montserrat", sans-serif;
 }
-.form form .CTA a.switch {
+.form form .CTA a.switch, .form form .CTA .switch-account {
   font-size: 13px;
   font-weight: 400;
   font-family: "Montserrat", sans-serif;
@@ -235,6 +235,8 @@ section#formHolder {
   text-decoration: underline;
   transition: all 0.3s;
 }
+.form form .CTA .switch-account { border: 0; background: none; padding: 8px 0; cursor: pointer; }
+section#formHolder .form .form-peice { min-height: 640px; }
 .form form .CTA a.switch:hover {
   color: #f95959;
 }

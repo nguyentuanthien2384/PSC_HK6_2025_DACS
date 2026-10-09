@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React, { useState, useEffect } from 'react';
 import HomeBanner from "../../component/HomeFeature/HomeBanner";
 import MainFeature from "../../component/HomeFeature/MainFeature";
@@ -27,7 +28,7 @@ function HomePage(props) {
     }
 
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = getUser();
         if (userData) {
             fetchProductRecommend(userData.id)
         }

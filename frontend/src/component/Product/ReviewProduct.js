@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React, { useEffect, useState } from 'react';
 import './ReviewProduct.scss';
 import Lightbox from 'react-image-lightbox';
@@ -10,15 +11,15 @@ import ReviewModal from './ReviewModal';
 function ReviewProduct(props) {
     const { id } = useParams()
     const [inputValues, setInputValues] = useState({
-        activeStar: '', imageReview: '', image: '', content: '', user: JSON.parse(localStorage.getItem('userData')), dataReview: [], countStar: {}, isOpen: false,
+        activeStar: '', imageReview: '', image: '', content: '', user: getUser(), dataReview: [], countStar: {}, isOpen: false,
         isOpenModal: false, parentId: ''
     });
     useEffect(() => {
         let fetchAllReview = async () => {
             await loadAllReview()
         }
-        fetchAllReview()
-    }, [])
+        fetchAllReview().catch((error) => toast.error(error.message))
+    }, [id])
     let openPreviewImage = (url) => {
 
         setInputValues({ ...inputValues, ["imageReview"]: url, ["isOpen"]: true })
@@ -42,7 +43,7 @@ function ReviewProduct(props) {
                     star3: count3.length,
                     star2: count2.length,
                     star1: count1.length,
-                    average: ((count5.length * 5) + (count4.length * 4) + (count3.length * 3) + (count2.length * 2) + (count1.length * 1)) / (count5.length + count4.length + count3.length + count2.length + count1.length),
+                    average: ((count5.length * 5) + (count4.length * 4) + (count3.length * 3) + (count2.length * 2) + (count1.length * 1)) / (count5.length + count4.length + count3.length + count2.length + count1.length || 1),
                     quantity: count5.length + count4.length + count3.length + count2.length + count1.length
                 },
                 ["content"]: '', ["image"]: '', ["imageReview"]: '', ["activeStar"]: '', ["isOpenModal"]: false
@@ -55,6 +56,7 @@ function ReviewProduct(props) {
     let handleOnChangeImage = async (event) => {
         let data = event.target.files;
         let file = data[0];
+        if (!file) return;
         if(file.size > 31312281){
             toast.error("Dung lượng file bé hơn 30mb")
         }
@@ -71,9 +73,11 @@ function ReviewProduct(props) {
 
     };
     let handleSaveComment = async () => {
-        if (!inputValues.activeStar) toast.error("Bạn chưa chọn sao !")
+        if (!inputValues.user?.id) toast.error("Vui lòng đăng nhập để đánh giá")
+        else if (!inputValues.activeStar) toast.error("Bạn chưa chọn sao !")
         else if (!inputValues.content) toast.error("Nội dung không được để trống !")
         else {
+            try {
             let response = await createNewReviewService({
                 productId: id,
                 content: inputValues.content,
@@ -89,6 +93,7 @@ function ReviewProduct(props) {
             } else {
                 toast.error(response.errMessage)
             }
+            } catch (error) { toast.error(error.message); }
         }
     }
     let closeModal = () => {

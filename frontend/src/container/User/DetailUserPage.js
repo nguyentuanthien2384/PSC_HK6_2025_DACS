@@ -15,9 +15,10 @@ import CommonUtils from "../../utils/CommonUtils";
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 import "./DetailUserPage.scss";
+import { getUser } from "../../utils/token";
 
 function DetailUserPage(props) {
-    const { id } = useParams();
+    const id = getUser()?.id;
     const { data: dataGender } = useFetchAllcode("GENDER");
     const [birthday, setbirthday] = useState(new Date());
     const [isChangeDate, setisChangeDate] = useState(false);
@@ -35,7 +36,7 @@ function DetailUserPage(props) {
         imageReview: "",
         isOpen: false,
     });
-    console.log(dataGender);
+
     if (dataGender && dataGender.length > 0 && inputValues.genderId === null) {
         setInputValues({ ...inputValues, ["genderId"]: dataGender[0].code });
     }
@@ -46,7 +47,7 @@ function DetailUserPage(props) {
                 setStateUser(res.data);
             }
         };
-        fetchUser();
+        fetchUser().catch((error) => toast.error(error.message));
     }, [id]);
 
     let setStateUser = (data) => {
@@ -83,7 +84,8 @@ function DetailUserPage(props) {
         setisChangeDate(true);
     };
     let handleSaveInfor = async () => {
-        console.log(inputValues.image);
+        try {
+
         let res = await UpdateUserService({
             id: id,
             firstName: inputValues.firstName,
@@ -99,12 +101,16 @@ function DetailUserPage(props) {
             image: inputValues.image,
         });
         if (res && res.errCode === 0) {
+            const saved = { ...getUser(), firstName: inputValues.firstName, lastName: inputValues.lastName, image: inputValues.image };
+            localStorage.setItem("userData", JSON.stringify(saved));
             toast.success("Cập nhật người dùng thành công");
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let handleSendEmail = async () => {
+        try {
         let res = await handleSendVerifyEmail({
             id: id,
         });
@@ -113,10 +119,12 @@ function DetailUserPage(props) {
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let handleOnChangeImage = async (event) => {
         let data = event.target.files;
         let file = data[0];
+        if (!file) return;
         if (file?.size > 31312281) {
             toast.error("Dung lượng file bé hơn 30mb");
         } else {

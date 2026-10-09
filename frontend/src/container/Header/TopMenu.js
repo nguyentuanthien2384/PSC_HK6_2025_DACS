@@ -1,21 +1,22 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Header.scss";
+import { clearAuth, getUser } from "../../utils/token";
 const TopMenu = (props) => {
+  const user = props.user || getUser();
   let handleLogout = () => {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("token");
+    clearAuth();
     window.location.href = "/login";
   };
 
   let name =
-    props.user && props.user.id
+    user && user.id
       ? `${
-          props.user && props.user.firstName ? props.user.firstName : ""
-        } ${props.user.lastName}`
+          user.firstName || ""
+        } ${user.lastName || ""}`
       : "";
   const profileLink =
-    props.user && props.user.id ? `/user/detail/${props.user.id}` : "/login";
+    user && user.id ? `/user/detail/${user.id}` : "/login";
   return (
     <div className="top_menu">
       <div className="container">
@@ -30,7 +31,7 @@ const TopMenu = (props) => {
             <div className="float-right">
               <ul className="right_side">
                 <li>
-                  {props.user && props.user.id ? (
+                  {user && user.id ? (
                     <NavLink exact to={profileLink}>
                       {name}
                     </NavLink>
@@ -39,7 +40,7 @@ const TopMenu = (props) => {
                   )}
                 </li>
                 <li style={{ cursor: "pointer" }}>
-                  {props.user && props.user.id ? (
+                  {user && user.id ? (
                     <a onClick={() => handleLogout()}>Đăng xuất</a>
                   ) : (
                     <a href="/login">Đăng ký</a>

@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -8,30 +9,37 @@ import InfoDetailProduct from "../../component/Product/InfoDetailProduct";
 import ProfileProduct from "../../component/Product/ProfileProduct";
 import DescriptionProduct from "../../component/Product/DescriptionProduct";
 import ProductFeature from "../../component/HomeFeature/ProductFeature";
+import ReviewProduct from "../../component/Product/ReviewProduct";
+import { toast } from "react-toastify";
 function DetailProductPage(props) {
     const [dataProduct, setDataProduct] = useState({});
     const [dataDetailSize, setdataDetailSize] = useState({});
     const { id } = useParams();
     const [user, setUser] = useState({});
     const [dataProductRecommend, setdataProductRecommend] = useState([]);
+    const [loadError, setLoadError] = useState("");
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        const userData = getUser();
         if (userData) {
-            fetchProductFeature(userData.id);
+            fetchProductFeature(userData.id).catch((error) => toast.error(error.message));
             setUser(userData);
         }
 
         window.scrollTo(0, 0);
 
-        fetchDetailProduct();
-    }, []);
+        setDataProduct({}); setLoadError("");
+        fetchDetailProduct().catch((error) => setLoadError(error.message));
+    }, [id]);
     let sendDataFromInforDetail = (data) => {
         setdataDetailSize(data);
     };
     let fetchDetailProduct = async () => {
         let res = await getDetailProductByIdService(id);
         if (res && res.errCode === 0) {
+            if (!res.data) throw new Error("Không tìm thấy sản phẩm");
             setDataProduct(res.data);
+        } else {
+            throw new Error(res.errMessage || "Không tìm thấy sản phẩm");
         }
     };
     let fetchProductFeature = async (userId) => {
@@ -63,6 +71,7 @@ function DetailProductPage(props) {
             </section>
             <div className="product_image_area">
                 <div className="container">
+                    {loadError && <p role="alert">{loadError}</p>}
                     <InfoDetailProduct
                         userId={user && user.id ? user.id : ""}
                         dataProduct={dataProduct}
@@ -142,6 +151,7 @@ function DetailProductPage(props) {
                             role="tabpanel"
                             aria-labelledby="review-tab"
                         >
+                            <ReviewProduct productId={id} userId={user?.id} />
                         </div>
                     </div>
                 </div>

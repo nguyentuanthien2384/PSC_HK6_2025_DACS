@@ -1,9 +1,8 @@
 import db from "../models/index";
-require('dotenv').config();
 const { Op } = require("sequelize");
 
 
-let createNewSupplier = (data) => {
+let createNewSupplier = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.name || !data.address || !data.phonenumber || !data.email) {
@@ -44,6 +43,7 @@ let getDetailSupplierById = (id) => {
                 })
               
              
+                if (!res) return resolve({ errCode: 2, errMessage: 'Nhà cung cấp không tồn tại' });
                 resolve({
                     errCode: 0,
                     data: res
@@ -54,15 +54,15 @@ let getDetailSupplierById = (id) => {
         }
     })
 }
-let getAllSupplier = (data) => {
+let getAllSupplier = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             let objectFilter = {}
-            if (data.limit && data.offset) {
-                objectFilter.limit = +data.limit
-                objectFilter.offset = +data.offset
+            if (data.limit !== undefined) {
+                objectFilter.limit = Math.min(100, Math.max(1, parseInt(data.limit, 10) || 20));
+                objectFilter.offset = Math.max(0, parseInt(data.offset, 10) || 0);
             }
-            if(data.keyword !=='') objectFilter.where = {...objectFilter.where, name: {[Op.substring]: data.keyword  } }
+            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where = { name: { [Op.substring]: data.keyword.trim() } };
             let res = await db.Supplier.findAndCountAll(objectFilter)    
             resolve({
                 errCode: 0,
@@ -74,7 +74,7 @@ let getAllSupplier = (data) => {
         }
     })
 }
-let updateSupplier = (data) => {
+let updateSupplier = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id ||!data.name || !data.address || !data.phonenumber || !data.email) {
@@ -99,7 +99,7 @@ let updateSupplier = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Nhà cung cấp không tồn tại' });
             }
 
         } catch (error) {
@@ -107,7 +107,7 @@ let updateSupplier = (data) => {
         }
     })
 }
-let deleteSupplier = (data) => {
+let deleteSupplier = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id) {
@@ -127,7 +127,7 @@ let deleteSupplier = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Nhà cung cấp không tồn tại' });
             }
 
         } catch (error) {

@@ -4,6 +4,7 @@ import './ChangePassword.scss';
 import { handleChangePassword } from '../../../services/userService';
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
+import { getUser } from "../../../utils/token";
 const ChangePassword = () => {
     const { id } = useParams()
     const [inputValues, setInputValues] = useState({
@@ -22,17 +23,20 @@ const ChangePassword = () => {
             toast.error("Mật khẩu nhập lại không trùng khớp !")
         }
         else {
+            try {
             let res = await handleChangePassword({
-                id: id,
+                id: getUser()?.id || id,
                 password: inputValues.confirmpassword,
                 oldpassword: inputValues.oldpassword
             })
             if (res && res.errCode === 0) {
+                if (res.accessToken) localStorage.setItem("token", JSON.stringify(res.accessToken));
                 toast.success("Đổi mật khẩu thành công")
                 setInputValues({ ...inputValues, ["newpassword"]: '', ["confirmpassword"]: '', ["oldpassword"]: '' })
             } else {
                 toast.error(res.errMessage)
             }
+            } catch (error) { toast.error(error.message); }
         }
     }
     return (

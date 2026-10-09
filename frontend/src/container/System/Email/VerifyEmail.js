@@ -1,39 +1,20 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import "react-toastify/dist/ReactToastify.css";
-import "./VerifyEmail.scss";
+import React, { useEffect, useRef, useState } from "react";
 import { handleVerifyEmail } from "../../../services/userService";
-const VerifyEmail = () => {
-    const [status, setstatus] = useState(false);
+import "./VerifyEmail.scss";
 
+export default function VerifyEmail() {
+    const started = useRef(false);
+    const [message, setMessage] = useState("Đang xác thực email…");
     useEffect(() => {
-        let token = getParam("token");
-        let id = getParam("userId");
-        let fetchVerifyEmail = async () => {
-            let res = await handleVerifyEmail({
-                token: token,
-                id: id,
-            });
-            console.log(res.errCode);
-            if (res.errCode === 0) {
-                setstatus(true);
-            }
-        };
-        fetchVerifyEmail();
-    });
-    let getParam = (param) => {
-        let url = new URL(window.location.href);
-        return url.searchParams.get(param);
-    };
-    console.log("check status", status);
-    return (
-        <div className="container-verify-email">
-            <h3 className="text-verify-email">
-                {status === true && "Xác thực email thành công !"}
-                {status === false &&
-                    "Email đã được xác thực hoặc không tồn tại !"}
-            </h3>
-        </div>
-    );
-};
-export default VerifyEmail;
+        if (started.current) return;
+        started.current = true;
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id") || params.get("userId");
+        const token = params.get("token");
+        if (!id || !token) { setMessage("Đường dẫn xác thực email không hợp lệ"); return; }
+        handleVerifyEmail({ id, token }).then((result) => {
+            setMessage(result.errCode === 0 ? "Xác thực email thành công!" : result.errMessage || "Đường dẫn đã hết hạn hoặc không hợp lệ");
+        }).catch((error) => setMessage(error.message));
+    }, []);
+    return <div className="container-verify-email"><h3 className="text-verify-email" aria-live="polite">{message}</h3></div>;
+}

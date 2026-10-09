@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { getUser } from "../../utils/token";
+import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import DetailUserPage from "./DetailUserPage";
 import CategoryUser from "./CategoryUser";
@@ -8,12 +9,7 @@ import OrderUser from "./OrderUser";
 import MessagePage from "../Message/MessagePage";
 
 function UserHomePage(props) {
-    const [user, setUser] = useState({});
-
-    useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem("userData"));
-        setUser(userData);
-    }, []);
+    const user = getUser();
 
     return (
         <div

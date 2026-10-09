@@ -1,70 +1,20 @@
-import messageService from '../services/messageService'
-
-let createNewRoom = async (req, res) => {
-    try {
-        let data = await messageService.createNewRoom(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let sendMessage = async (req, res) => {
-    try {
-        let data = await messageService.sendMessage(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let loadMessage = async (req, res) => {
-    try {
-        let data = await messageService.loadMessage(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let listRoomOfUser = async (req, res) => {
-    try {
-        let data = await messageService.listRoomOfUser(req.query.userId);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let listRoomOfAdmin = async (req, res) => {
-    try {
-        let data = await messageService.listRoomOfAdmin();
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+const service = require('../services/messageService');
+const { notifyRoom } = require('../socket');
+const respond = handler => async (req, res, next) => {
+  try {
+    const result = await handler(req);
+    const { room, ...response } = result;
+    res.status(result.errCode === 403 ? 403 : 200).json(response);
+  } catch (error) { next(error); }
+};
 module.exports = {
-    createNewRoom: createNewRoom,
-    sendMessage:sendMessage,
-    loadMessage:loadMessage,
-    listRoomOfUser:listRoomOfUser,
-    listRoomOfAdmin:listRoomOfAdmin
-   
-}
+  createNewRoom: respond(req => service.createNewRoom(req.body, req.user)),
+  sendMessage: respond(async req => {
+    const result = await service.sendMessage(req.body, req.user);
+    if (result.errCode === 0) notifyRoom(req.app.get('io'), result.room);
+    return result;
+  }),
+  loadMessage: respond(req => service.loadMessage(req.query, req.user)),
+  listRoomOfUser: respond(req => service.listRoomOfUser(req.query.userId, req.user)),
+  listRoomOfAdmin: respond(req => service.listRoomOfAdmin(req.user)),
+};

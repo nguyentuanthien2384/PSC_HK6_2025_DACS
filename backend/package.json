@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec ./node_modules/.bin/babel-node src/server.js",
-    "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js"
+    "start": "node -r @babel/register src/server.js",
+    "dev": "nodemon --exec \"node -r @babel/register\" src/server.js",
+    "test": "node --test test/*.test.cjs",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:status": "sequelize-cli db:migrate:status",
+    "db:seed": "sequelize-cli db:seed:all",
+    "db:check": "node scripts/check-db.cjs"
   },
   "keywords": [],
   "author": "",
@@ -39,13 +43,17 @@
     "sequelize": "^6.37.8",
     "sha256": "^0.2.0",
     "socket.io": "^4.8.3",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.5",
+    "@babel/register": "^7.29.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
     "@babel/node": "^7.29.0",
-    "@babel/preset-env": "^7.29.5",
     "nodemon": "^3.1.14",
     "sequelize-cli": "^6.6.5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -1,186 +1,26 @@
 import orderService from '../services/orderService';
 
-let createNewOrder = async (req, res) => {
+const handle = work => async (req, res, next) => {
     try {
-        let data = await orderService.createNewOrder(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let getAllOrders = async (req, res) => {
-    try {
-        let data = await orderService.getAllOrders(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let getDetailOrderById = async (req, res) => {
-    try {
-        let data = await orderService.getDetailOrderById(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let updateStatusOrder = async (req, res) => {
-    try {
-        let data = await orderService.updateStatusOrder(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let getAllOrdersByUser = async (req, res) => {
-    try {
-        let data = await orderService.getAllOrdersByUser(req.query.userId);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let paymentOrder = async (req, res) => {
-    try {
-        let data = await orderService.paymentOrder(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let paymentOrderSuccess = async (req, res) => {
-    try {
-        let data = await orderService.paymentOrderSuccess(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let paymentOrderVnpaySuccess = async (req, res) => {
-    try {
-        let data = await orderService.paymentOrderVnpaySuccess(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let confirmOrder = async (req, res) => {
-    try {
-        let data = await orderService.confirmOrder(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let getAllOrdersByShipper = async (req, res) => {
-    try {
-        let data = await orderService.getAllOrdersByShipper(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let paymentOrderVnpay = async (req, res) => {
-    try {
-        let data = await orderService.paymentOrderVnpay(req);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let confirmOrderVnpay = async (req, res) => {
-    try {
-        let data = await orderService.confirmOrderVnpay(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-
-let updateImageOrder = async (req, res) => {
-    try {
-        let data = await orderService.updateImageOrder(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+        if (!req.user) return res.status(401).json({ errCode: 401, errMessage: 'Vui lòng đăng nhập.' });
+        const data = await work(req);
+        return res.status(data.errCode === 403 ? 403 : 200).json(data);
+    } catch (error) { return next(error); }
+};
+const checkout = req => ({ ...req.body, userId: req.user.id });
 
 module.exports = {
-    createNewOrder: createNewOrder,
-    getAllOrders: getAllOrders,
-    getDetailOrderById: getDetailOrderById,
-    updateStatusOrder: updateStatusOrder,
-    getAllOrdersByUser: getAllOrdersByUser,
-    paymentOrder: paymentOrder,
-    paymentOrderSuccess: paymentOrderSuccess,
-    confirmOrder: confirmOrder,
-    getAllOrdersByShipper: getAllOrdersByShipper,
-    paymentOrderVnpay: paymentOrderVnpay,
-    confirmOrderVnpay: confirmOrderVnpay,
-    paymentOrderVnpaySuccess: paymentOrderVnpaySuccess,
-    updateImageOrder: updateImageOrder
-}
+    createNewOrder: handle(req => orderService.createNewOrder(checkout(req))),
+    getAllOrders: handle(req => orderService.getAllOrders(req.query, req.user)),
+    getDetailOrderById: handle(req => orderService.getDetailOrderById(req.query.id, req.user)),
+    updateStatusOrder: handle(req => orderService.updateStatusOrder(req.body, req.user)),
+    getAllOrdersByUser: handle(req => orderService.getAllOrdersByUser(req.user.id)),
+    getAllOrdersByShipper: handle(req => orderService.getAllOrdersByShipper(req.query, req.user)),
+    confirmOrder: handle(req => orderService.confirmOrder(req.body, req.user)),
+    updateImageOrder: handle(req => orderService.updateImageOrder(req.body, req.user)),
+    paymentOrder: handle(req => orderService.paymentOrder(checkout(req))),
+    paymentOrderSuccess: handle(req => orderService.paymentOrderSuccess(checkout(req))),
+    paymentOrderVnpay: handle(req => orderService.paymentOrderVnpay({ body: checkout(req), ip: req.ip, socket: req.socket })),
+    paymentOrderVnpaySuccess: handle(req => orderService.paymentOrderVnpaySuccess(checkout(req))),
+    confirmOrderVnpay: handle(req => orderService.confirmOrderVnpay(req.body))
+};

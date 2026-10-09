@@ -40,7 +40,7 @@ const Information = () => {
                 setStateUser(res.data);
             }
         };
-        fetchUser();
+        fetchUser().catch((error) => toast.error(error.message));
     }, []);
     let setStateUser = (data) => {
         setInputValues({
@@ -75,7 +75,8 @@ const Information = () => {
         setisChangeDate(true);
     };
     let handleSaveInfor = async () => {
-        console.log(inputValues.image);
+        try {
+
         let res = await UpdateUserService({
             id: id,
             firstName: inputValues.firstName,
@@ -95,8 +96,10 @@ const Information = () => {
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let handleSendEmail = async () => {
+        try {
         let res = await handleSendVerifyEmail({
             id: id,
         });
@@ -105,10 +108,12 @@ const Information = () => {
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let handleOnChangeImage = async (event) => {
         let data = event.target.files;
         let file = data[0];
+        if (!file) return;
         if (file?.size > 31312281) {
             toast.error("Dung lượng file bé hơn 30mb");
         } else {

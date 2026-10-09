@@ -137,7 +137,8 @@ let deleteVoucher = async (req, res) => {
 }
 let saveUserVoucher = async (req, res) => {
     try {
-        let data = await voucherService.saveUserVoucher(req.body);
+        if (!req.user) return res.status(401).json({ errCode: 401, errMessage: 'Vui lòng đăng nhập.' });
+        let data = await voucherService.saveUserVoucher({ ...req.body, userId: req.user.id });
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)
@@ -149,7 +150,8 @@ let saveUserVoucher = async (req, res) => {
 }
 let getAllVoucherByUserId = async (req, res) => {
     try {
-        let data = await voucherService.getAllVoucherByUserId(req.query);
+        if (!req.user) return res.status(401).json({ errCode: 401, errMessage: 'Vui lòng đăng nhập.' });
+        let data = await voucherService.getAllVoucherByUserId({ ...req.query, id: req.user.id });
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)

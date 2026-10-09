@@ -1,179 +1,55 @@
-import db from "../models/index";
+import db from '../models/index';
+const { createCommerceService } = require('./commerceService');
+const { positiveInteger, fail, resultOf } = require('../utils/commerce');
+const commerce = createCommerceService(db);
+const decodeImage = image => image == null ? '' : Buffer.from(image, 'base64').toString('binary');
 
+const addShopCart = data => resultOf(async () => {
+    if (!positiveInteger(data.userId) || !positiveInteger(data.productdetailsizeId) || !positiveInteger(data.quantity)) fail('Sản phẩm và số lượng phải là số nguyên dương.');
+    return commerce.transaction(async tx => {
+        const productId = Number(data.productdetailsizeId);
+        await commerce.lockVariants([{ productId }], tx);
+        const variant = await db.ProductDetailSize.findOne({ where: { id: productId }, transaction: tx, raw: true });
+        const detail = await db.ProductDetail.findOne({ where: { id: variant.productdetailId }, transaction: tx, raw: true });
+        const product = detail && await db.Product.findOne({ where: { id: detail.productId, statusId: 'S1' }, transaction: tx, raw: true });
+        if (!product) fail('Sản phẩm đã ngừng kinh doanh.', 2);
+        const rows = await db.ShopCart.findAll({ where: { userId: data.userId, productdetailsizeId: productId, statusId: 0 }, ...commerce.lockOptions(tx), raw: false, order: [['id', 'ASC']] });
+        const currentQuantity = rows.reduce((sum, row) => sum + Number(row.quantity), 0);
+        const quantity = data.type === 'UPDATE_QUANTITY' ? Number(data.quantity) : currentQuantity + Number(data.quantity);
+        if (!positiveInteger(quantity) || quantity > 10000) fail('Số lượng không hợp lệ.');
+        const stock = await commerce.availableStock(productId, tx);
+        if (quantity > stock) fail(`Chỉ còn ${stock} sản phẩm`, 2, { quantity: stock });
+        if (rows.length) {
+            rows[0].quantity = quantity;
+            await rows[0].save({ transaction: tx });
+            for (const duplicate of rows.slice(1)) await duplicate.destroy({ transaction: tx });
+        } else await db.ShopCart.create({ userId: data.userId, productdetailsizeId: productId, quantity, statusId: 0 }, { transaction: tx });
+        return { errCode: 0, errMessage: 'ok', quantity };
+    });
+});
 
-let addShopCart = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.userId || !data.productdetailsizeId || !data.quantity) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter !'
-                })
-            } else {
-                let cart = await db.ShopCart.findOne({ where: { userId: data.userId, productdetailsizeId: data.productdetailsizeId, statusId: 0 }, raw: false })
-                if (cart) {
-                    let res = await db.ProductDetailSize.findOne({ where: { id: data.productdetailsizeId } })
-                    if (res) {
-                        let receiptDetail = await db.ReceiptDetail.findAll({ where: { productDetailSizeId: res.id } })
-                        let orderDetail = await db.OrderDetail.findAll({ where: { productId: res.id } })
-                        let quantity = 0
-                        for (let j = 0; j < receiptDetail.length; j++) {
-                            quantity = quantity + receiptDetail[j].quantity
-                        }
-                        for (let k = 0; k < orderDetail.length; k++) {
-                            let order = await db.OrderProduct.findOne({ where: { id: orderDetail[k].orderId } })
-                            if (order.statusId != 'S7') {
+const getAllShopCartByUserId = userId => resultOf(async () => {
+    if (!positiveInteger(userId)) fail('Tài khoản không hợp lệ.');
+    const rows = await db.ShopCart.findAll({ where: { userId, statusId: 0 }, raw: true, order: [['id', 'ASC']] });
+    const result = [];
+    for (const cart of rows) {
+        const variant = await db.ProductDetailSize.findOne({ where: { id: cart.productdetailsizeId }, include: [{ model: db.Allcode, as: 'sizeData', attributes: ['value', 'code'] }], raw: true, nest: true });
+        const detail = variant && await db.ProductDetail.findOne({ where: { id: variant.productdetailId }, raw: true });
+        const product = detail && await db.Product.findOne({ where: { id: detail.productId }, raw: true });
+        if (!variant || !detail || !product) continue;
+        variant.stock = await commerce.availableStock(variant.id);
+        const images = await db.ProductImage.findAll({ where: { productdetailId: detail.id }, raw: true });
+        images.forEach(item => { item.image = decodeImage(item.image); });
+        result.push({ ...cart, productdetailsizeData: variant, productDetail: detail, productData: product, productDetailImage: images, available: product.statusId === 'S1' && variant.stock > 0 });
+    }
+    return { errCode: 0, data: result };
+});
 
-                                quantity = quantity - orderDetail[k].quantity
-                            }
-                        }
-                        res.stock = quantity
-                    }
+const deleteItemShopCart = data => resultOf(async () => {
+    if (!positiveInteger(data.id) || !positiveInteger(data.userId)) fail('Giỏ hàng không hợp lệ.');
+    const deleted = await db.ShopCart.destroy({ where: { id: data.id, userId: data.userId, statusId: 0 } });
+    if (!deleted) fail('Không tìm thấy sản phẩm trong giỏ hàng.', 2);
+    return { errCode: 0, errMessage: 'ok' };
+});
 
-
-
-                    if (data.type === "UPDATE_QUANTITY") {
-
-                        if (+data.quantity > res.stock) {
-                            resolve({
-                                errCode: 2,
-                                errMessage: `Chỉ còn ${res.stock} sản phẩm`,
-                                quantity: res.stock
-                            })
-                        } else {
-                            cart.quantity = +data.quantity
-                            await cart.save()
-                        }
-                    } else {
-
-                        if ((+cart.quantity + (+data.quantity)) > res.stock) {
-                            resolve({
-                                errCode: 2,
-                                errMessage: `Chỉ còn ${res.stock} sản phẩm`,
-                                quantity: res.stock
-                            })
-                        } else {
-                            cart.quantity = +cart.quantity + (+data.quantity)
-                            await cart.save()
-                        }
-                    }
-
-                }
-                else {
-                    let res = await db.ProductDetailSize.findOne({ where: { id: data.productdetailsizeId } })
-                    if (res) {
-                        let receiptDetail = await db.ReceiptDetail.findAll({ where: { productDetailSizeId: res.id } })
-                        let orderDetail = await db.OrderDetail.findAll({ where: { productId: res.id } })
-                        let quantity = 0
-                        for (let j = 0; j < receiptDetail.length; j++) {
-                            quantity = quantity + receiptDetail[j].quantity
-                        }
-                        for (let k = 0; k < orderDetail.length; k++) {
-                            let order = await db.OrderProduct.findOne({ where: { id: orderDetail[k].orderId } })
-                            if (order.statusId != 'S7') {
-
-                                quantity = quantity - orderDetail[k].quantity
-                            }
-                        }
-                        res.stock = quantity
-                    }
-
-                    if (data.quantity > res.stock) {
-                        resolve({
-                            errCode: 2,
-                            errMessage: `Chỉ còn ${res.stock} sản phẩm`,
-                            quantity: res.stock
-                        })
-                    } else {
-                        await db.ShopCart.create({
-                            userId: data.userId,
-                            productdetailsizeId: data.productdetailsizeId,
-                            quantity: data.quantity,
-                            statusId: 0
-                        })
-                    }
-
-                }
-                resolve({
-                    errCode: 0,
-                    errMessage: 'ok'
-                })
-            }
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
-let getAllShopCartByUserId = (id) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!id) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter !'
-                })
-            } else {
-                let res = await db.ShopCart.findAll({
-                    where: { userId: id, statusId: 0 }
-                })
-                for (let i = 0; i < res.length; i++) {
-                    res[i].productdetailsizeData = await db.ProductDetailSize.findOne({
-                        where: { id: res[i].productdetailsizeId },
-                        include: [
-                            { model: db.Allcode, as: 'sizeData', attributes: ['value', 'code'] },
-
-                        ],
-                        raw: true,
-                        nest: true
-                    })
-                    res[i].productDetail = await db.ProductDetail.findOne({ where: { id: res[i].productdetailsizeData.productdetailId } })
-                    res[i].productDetailImage = await db.ProductImage.findAll({ where: { productdetailId: res[i].productDetail.id } })
-                    if (res[i].productDetailImage && res[i].productDetailImage.length > 0) {
-                        for (let j = 0; j < res[i].productDetailImage.length; j++) {
-                            res[i].productDetailImage[j].image = new Buffer(res[i].productDetailImage[j].image, 'base64').toString('binary');
-                        }
-                    }
-                    res[i].productData = await db.Product.findOne({ where: { id: res[i].productDetail.productId } })
-                }
-                if (res) {
-                    resolve({
-                        errCode: 0,
-                        data: res
-                    })
-                }
-            }
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
-let deleteItemShopCart = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.id) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter !'
-                })
-            } else {
-                let res = await db.ShopCart.findOne({ where: { id: data.id, statusId: 0 } })
-                if (res) {
-                    await db.ShopCart.destroy({
-                        where: { id: data.id }
-                    })
-                    resolve({
-                        errCode: 0,
-                        errMessage: 'ok'
-                    })
-                }
-            }
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
-module.exports = {
-    addShopCart: addShopCart,
-    getAllShopCartByUserId: getAllShopCartByUserId,
-    deleteItemShopCart: deleteItemShopCart
-}
+module.exports = { addShopCart, getAllShopCartByUserId, deleteItemShopCart };

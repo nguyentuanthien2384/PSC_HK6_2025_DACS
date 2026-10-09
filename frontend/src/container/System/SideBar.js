@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
@@ -6,7 +7,7 @@ const SideBar = () => {
     const [user, setUser] = useState({})
 
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = getUser();
         setUser(userData)
     }, [])
     return (

@@ -1,5 +1,7 @@
+import { getToken, getUser } from "../../utils/token";
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { API_BASE_URL } from "../../axios";
 import ChatWindow from "./ChatWindow";
 import MessageDisscution from "./MessageDisscution";
 import "./MessagePage.scss";
@@ -10,39 +12,38 @@ function MessagePage(props) {
     const [dataRoom, setdataRoom] = useState([]);
     const [selectedRoom, setselectedRoom] = useState("");
     const [dataUser, setdataUser] = useState({});
-    const host = process.env.REACT_APP_BACKEND_URL;
+    const host = API_BASE_URL;
     const socketRef = useRef();
     const [id, setId] = useState();
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host);
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
+        socketRef.current.on("connect_error", () => toast.error("Không thể kết nối hỗ trợ trực tuyến"));
+        const userData = getUser();
         setdataUser(userData);
         let createRoom = async () => {
             let res = await createNewRoom({
                 userId1: userData.id,
             });
-            if (res && res.errCode) {
-                fetchListRoom(userData.id);
-            }
+            if (res?.errCode !== 0) throw new Error(res.errMessage || "Không thể tạo phòng hỗ trợ");
+            await fetchListRoom(userData.id);
         };
         if (userData) {
             socketRef.current.on("getId", (data) => {
                 setId(data);
             }); // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
-            createRoom();
-
-            fetchListRoom(userData.id);
+            createRoom().catch((error) => toast.error(error.message));
 
             socketRef.current.on("sendDataServer", (dataGot) => {
-                fetchListRoom(userData.id);
+                fetchListRoom(userData.id).catch((error) => toast.error(error.message));
             });
             socketRef.current.on("loadRoomServer", (dataGot) => {
-                fetchListRoom(userData.id);
+                fetchListRoom(userData.id).catch((error) => toast.error(error.message));
             });
             return () => {
                 socketRef.current.disconnect();
             };
         }
+        return () => socketRef.current?.disconnect();
     }, []);
     let handleClickRoom = (roomId) => {
         socketRef.current.emit("loadRoomClient");

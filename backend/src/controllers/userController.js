@@ -1,173 +1,32 @@
 import userService from '../services/userService';
 
-let handleCreateNewUser = async (req, res) => {
+const handle = (operation) => async (req, res) => {
     try {
-        let data = await userService.handleCreateNewUser(req.body);
-        return res.status(200).json(data);
+        const data = await operation(req);
+        const status = [401, 403, 503].includes(data.errCode) ? data.errCode : 200;
+        return res.status(status).json(data);
     } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
+        const unavailable = error.statusCode === 503;
+        console.error('User API error:', error.code || error.name || 'Error');
+        return res.status(unavailable ? 503 : 500).json({
+            errCode: unavailable ? 503 : -1,
+            errMessage: unavailable ? error.message : 'Không thể xử lý yêu cầu. Vui lòng thử lại sau',
+        });
     }
-}
-let handleUpdateUser = async (req, res) => {
-    try {
-        let data = await userService.updateUserData(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleDeleteUser = async (req, res) => {
-    try {
-        let data = await userService.deleteUser(req.body.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleLogin = async (req, res) => {
-    try {
-        let data = await userService.handleLogin(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleChangePassword = async (req, res) => {
-    try {
-        let data = await userService.handleChangePassword(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getAllUser = async (req, res) => {
-    try {
-        let data = await userService.getAllUser(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getDetailUserById = async (req, res) => {
-    try {
-        let data = await userService.getDetailUserById(req.query.id);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getDetailUserByEmail = async (req, res) => {
-    try {
-        let data = await userService.getDetailUserByEmail(req.query.email);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleSendVerifyEmailUser = async (req, res) => {
-    try {
-        let data = await userService.handleSendVerifyEmailUser(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleVerifyEmailUser = async (req, res) => {
-    try {
-        let data = await userService.handleVerifyEmailUser(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleSendEmailForgotPassword = async (req, res) => {
-    try {
-        let data = await userService.handleSendEmailForgotPassword(req.body.email);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let handleForgotPassword = async (req, res) => {
-    try {
-        let data = await userService.handleForgotPassword(req.body);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let checkPhonenumberEmail = async (req, res) => {
-    try {
-        let data = await userService.checkPhonenumberEmail(req.query);
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
+};
+
 module.exports = {
-    handleCreateNewUser: handleCreateNewUser,
-    handleUpdateUser: handleUpdateUser,
-    handleDeleteUser: handleDeleteUser,
-    handleLogin: handleLogin,
-    handleChangePassword: handleChangePassword,
-    getAllUser: getAllUser,
-    getDetailUserById: getDetailUserById,
-    handleSendVerifyEmailUser: handleSendVerifyEmailUser,
-    handleVerifyEmailUser: handleVerifyEmailUser,
-    handleSendEmailForgotPassword: handleSendEmailForgotPassword,
-    handleForgotPassword: handleForgotPassword,
-    checkPhonenumberEmail: checkPhonenumberEmail,
-    getDetailUserByEmail: getDetailUserByEmail
-}
+    handleCreateNewUser: handle((req) => userService.handleCreateNewUser(req.body, req.user)),
+    handleUpdateUser: handle((req) => userService.updateUserData(req.body, req.user)),
+    handleDeleteUser: handle((req) => userService.deleteUser(req.body.id, req.user)),
+    handleLogin: handle((req) => userService.handleLogin(req.body)),
+    handleChangePassword: handle((req) => userService.handleChangePassword(req.body, req.user)),
+    getAllUser: handle((req) => userService.getAllUser(req.query, req.user)),
+    getDetailUserById: handle((req) => userService.getDetailUserById(req.query.id, req.user)),
+    getDetailUserByEmail: handle((req) => userService.getDetailUserByEmail(req.query.email, req.user)),
+    handleSendVerifyEmailUser: handle((req) => userService.handleSendVerifyEmailUser(req.body, req.user)),
+    handleVerifyEmailUser: handle((req) => userService.handleVerifyEmailUser(req.body)),
+    handleSendEmailForgotPassword: handle((req) => userService.handleSendEmailForgotPassword(req.body.email)),
+    handleForgotPassword: handle((req) => userService.handleForgotPassword(req.body)),
+    checkPhonenumberEmail: handle((req) => userService.checkPhonenumberEmail(req.query)),
+};

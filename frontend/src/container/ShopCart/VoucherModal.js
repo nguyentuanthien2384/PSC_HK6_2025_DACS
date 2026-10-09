@@ -54,7 +54,7 @@ const VoucherModal = (props) => {
                         let minValue = arrData.data[i].voucherData.typeVoucherOfVoucherData.minValue
 
                         if (amount > usedAmount && compareDates(toDate, nowDate) === false && compareDates(fromDate, nowDate) === true && minValue <= props.price) {
-                            arrTemp[i] = arrData.data[i]
+                            arrTemp.push(arrData.data[i])
 
                         }
                     }
@@ -62,7 +62,7 @@ const VoucherModal = (props) => {
 
                 }
             }
-            fetchData()
+            fetchData().catch((error) => toast.error(error.message))
         }
 
     }, [props.isOpenModal])

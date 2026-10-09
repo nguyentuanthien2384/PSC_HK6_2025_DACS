@@ -18,6 +18,7 @@ import UserHomePage from "./container/User/UseHomePage";
 import TopMenu from "./container/Header/TopMenu";
 import HomePageAdmin from "./container/System/HomePageAdmin";
 import VerifyEmail from "./container/System/Email/VerifyEmail";
+import RequireAuth from "./component/RequireAuth";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -125,7 +126,7 @@ function App() {
                     element={
                         <>
                             <Header />
-                            <ShopCartPage />
+                            <RequireAuth><ShopCartPage /></RequireAuth>
                             <Footer />
                         </>
                     }
@@ -136,7 +137,7 @@ function App() {
                     element={
                         <>
                             <TopMenu />
-                            <OrderHomePage />
+                            <RequireAuth owner><OrderHomePage /></RequireAuth>
                             <Footer />
                         </>
                     }
@@ -146,7 +147,7 @@ function App() {
                     element={
                         <>
                             <Header />
-                            <PaymentSuccess />
+                            <RequireAuth><PaymentSuccess /></RequireAuth>
                             <Footer />
                         </>
                     }
@@ -156,7 +157,7 @@ function App() {
                     element={
                         <>
                             <TopMenu />
-                            <VnpayPaymentPage />
+                            <RequireAuth><VnpayPaymentPage /></RequireAuth>
                             <Footer />
                         </>
                     }
@@ -166,7 +167,7 @@ function App() {
                     element={
                         <>
                             <TopMenu />
-                            <VnpayPaymentSuccess />
+                            <RequireAuth><VnpayPaymentSuccess /></RequireAuth>
                             <Footer />
                         </>
                     }
@@ -174,28 +175,22 @@ function App() {
                 <Route
                     path="/user/*"
                     element={
-                        JSON.parse(localStorage.getItem("userData")) ? (
+                        <RequireAuth>
                             <>
                                 <Header />
                                 <UserHomePage />
                                 <Footer />
                             </>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
+                        </RequireAuth>
                     }
                 />
                 {/* Day 27: Admin shell */}
                 <Route
                     path="/system/home/*"
                     element={
-                        JSON.parse(localStorage.getItem("userData")) &&
-                        (JSON.parse(localStorage.getItem("userData")).roleId === "R1" ||
-                            JSON.parse(localStorage.getItem("userData")).roleId === "R4") ? (
+                        <RequireAuth roles={["R1", "R4"]}>
                             <HomePageAdmin />
-                        ) : (
-                            <Navigate to="/login" />
-                        )
+                        </RequireAuth>
                     }
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />

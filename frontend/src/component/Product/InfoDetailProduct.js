@@ -19,18 +19,22 @@ function InfoDetailProduct(props) {
 
         let { productDetail } = dataProduct ? dataProduct : []
 
-        if (productDetail) {
+        if (productDetail?.length) {
             setproductDetail(productDetail)
 
             setarrDetail(productDetail[0])
-            setactiveLinkId(productDetail[0].productDetailSize[0].id)
-            setquantity(productDetail[0].productDetailSize[0].stock)
+            const size = productDetail[0].productDetailSize?.[0];
+            setactiveLinkId(size?.id || '')
+            setquantity(size?.stock || 0)
 
-            props.sendDataFromInforDetail(productDetail[0].productDetailSize[0])
+            props.sendDataFromInforDetail(size || {})
+        } else {
+            setproductDetail([]); setarrDetail({}); setactiveLinkId(''); setquantity(0);
         }
     }, [props.dataProduct])
 
     let handleSelectDetail = (event) => {
+        setactiveLinkId(''); setquantity(0); setquantityProduct(1);
         setarrDetail(productDetail[event.target.value])
         if (productDetail[event.target.value] && productDetail[event.target.value].productDetailSize.length > 0) {
             setactiveLinkId(productDetail[event.target.value].productDetailSize[0].id)
@@ -47,6 +51,7 @@ function InfoDetailProduct(props) {
 
     }
     let handleClickBoxSize = (data) => {
+        setquantityProduct(1)
 
         setactiveLinkId(data.id)
         setquantity(data.stock)
@@ -54,6 +59,10 @@ function InfoDetailProduct(props) {
     }
     const dispatch = useDispatch()
     let handleAddShopCart = () => {
+        if (!activeLinkId || Number(quantity) < 1) { toast.error("Sản phẩm đã hết hàng"); return; }
+        if (!Number.isInteger(Number(quantityProduct)) || Number(quantityProduct) < 1 || Number(quantityProduct) > Number(quantity)) {
+            toast.error("Số lượng phải là số nguyên và không vượt quá tồn kho"); return;
+        }
         if (props.userId) {
             dispatch(addItemCartStart({
                 userId: props.userId,
@@ -146,7 +155,7 @@ function InfoDetailProduct(props) {
 
                                         return (
                                             <div onClick={() => handleClickBoxSize(item)} key={index} className={item.id === activeLinkId ? 'product-size active' : 'product-size'}>
-                                                {item.sizeData.value}
+                                                {item.sizeData?.value || ''}
                                             </div>
                                         )
 
@@ -168,7 +177,7 @@ function InfoDetailProduct(props) {
                         <div className="product_count">
                             <label htmlFor="qty">Số lượng</label>
                             {/* <input type="text" name="qty" id="sst" maxLength={12} defaultValue={1} title="Quantity:" className="input-text qty" /> */}
-                            <input type="number" value={quantityProduct} onChange={(event) => setquantityProduct(event.target.value)} min="1" />
+                            <input type="number" value={quantityProduct} onChange={(event) => setquantityProduct(event.target.value)} min="1" max={quantity} step="1" />
 
                         </div>
                         <div className="form-group">

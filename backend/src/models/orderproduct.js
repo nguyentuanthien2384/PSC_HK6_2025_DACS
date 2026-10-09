@@ -23,11 +23,16 @@ module.exports = (sequelize, DataTypes) => {
         voucherId: DataTypes.INTEGER,
         note: DataTypes.STRING,
         isPaymentOnlien: DataTypes.INTEGER,
+        subtotal: DataTypes.BIGINT,
+        shippingFee: DataTypes.BIGINT,
+        discountAmount: DataTypes.BIGINT,
+        totalPrice: DataTypes.BIGINT,
         shipperId: DataTypes.INTEGER,
         image: DataTypes.BLOB('long')
     }, {
         sequelize,
         modelName: 'OrderProduct',
+        tableName: 'Orderproducts',
     });
     return OrderProduct;
 };

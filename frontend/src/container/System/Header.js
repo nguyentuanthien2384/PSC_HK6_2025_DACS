@@ -1,15 +1,16 @@
+import { getUser } from "../../utils/token";
 import React from "react";
+import { clearAuth } from "../../utils/token";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 const Header = () => {
     const [user, setUser] = useState({});
     let handleLogout = () => {
-        localStorage.removeItem("userData");
-        localStorage.removeItem("token");
+        clearAuth();
         window.location.href = "/login";
     };
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        const userData = getUser();
         setUser(userData);
     }, []);
 

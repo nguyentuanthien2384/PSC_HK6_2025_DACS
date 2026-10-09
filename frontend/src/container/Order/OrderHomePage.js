@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
     getAllAddressUserByUserIdService,
@@ -12,6 +12,7 @@ import "./OrderHomePage.scss";
 import AddressUsersModal from "../ShopCart/AdressUserModal";
 import {
     ChooseTypeShipStart,
+    ChooseVoucherStart,
     getItemCartStart,
 } from "../../action/ShopCartAction";
 import { toast } from "react-toastify";
@@ -19,17 +20,17 @@ import storeVoucherLogo from "../../../src/resources/img/storeVoucher.png";
 import ShopCartItem from "../../component/ShopCart/ShopCartItem";
 import VoucherModal from "../ShopCart/VoucherModal";
 import CommonUtils from "../../utils/CommonUtils";
-import { EXCHANGE_RATES } from "../../utils/constant";
+import { cartSubtotal, createCheckoutPayload, discountedSubtotal } from "../../utils/checkout";
 function OrderHomePage(props) {
     const dispatch = useDispatch();
     const [dataAddressUser, setdataAddressUser] = useState([]);
-    const { userId } = useParams();
+    const userId = getUser()?.id;
     const navigate = useNavigate();
     const [addressUserId, setaddressUserId] = useState("");
 
     const [priceShip, setpriceShip] = useState(0);
     let price = 0;
-    let total = 0;
+    const [submitting, setSubmitting] = useState(false);
     const [stt, setstt] = useState(0);
     let dataCart = useSelector((state) => state.shopcart.listCartItem);
     let dataVoucher = useSelector((state) => state.shopcart.dataVoucher);
@@ -38,7 +39,7 @@ function OrderHomePage(props) {
     const [isOpenModalAddressUser, setisOpenModalAddressUser] = useState(false);
     const [isOpenModal, setisOpenModal] = useState(false);
     const [typeShip, settypeShip] = useState([]);
-    const [activeTypePayment, setactiveTypePayment] = useState(1);
+    const [activeTypePayment, setactiveTypePayment] = useState(0);
     const [activeTypeOnlPayment, setactiveTypeOnlPayment] = useState(1);
     const [note, setnote] = useState("");
     useEffect(() => {
@@ -46,7 +47,7 @@ function OrderHomePage(props) {
         let fetchDataAddress = async () => {
             await loadDataAddress(userId);
         };
-        fetchDataAddress();
+        fetchDataAddress().catch((error) => toast.error(error.message));
         let fetchTypeShip = async () => {
             let res = await getAllTypeShip({
                 limit: "",
@@ -54,20 +55,32 @@ function OrderHomePage(props) {
                 keyword: "",
             });
             if (res && res.errCode === 0) {
-                settypeShip(res.data);
+                settypeShip(res.data || []);
+                const selected = res.data?.find((ship) => ship.id === dataTypeShip?.id);
+                if (selected) {
+                    dispatch(ChooseTypeShipStart(selected));
+                    setpriceShip(Number(selected.price));
+                } else {
+                    dispatch(ChooseTypeShipStart({}));
+                    setpriceShip(0);
+                }
             }
         };
-        fetchTypeShip();
+        fetchTypeShip().catch((error) => toast.error(error.message));
         if (dataTypeShip && dataTypeShip.price) {
-            setpriceShip(dataTypeShip.price);
+            setpriceShip(Number(dataTypeShip.price));
         }
     }, []);
 
     let loadDataAddress = async (userId) => {
         let res = await getAllAddressUserByUserIdService(userId);
         if (res && res.errCode === 0) {
-            setdataAddressUser(res.data);
-            setaddressUserId(res.data[0].id);
+            setdataAddressUser(res.data || []);
+            setaddressUserId(res.data?.[0]?.id || "");
+            setstt(0);
+            if (!res.data?.length) setisChangeAdress(true);
+        } else {
+            throw new Error(res.errMessage || "Không thể tải địa chỉ nhận hàng");
         }
     };
     let closeModaAddressUser = () => {
@@ -79,6 +92,7 @@ function OrderHomePage(props) {
     let sendDataFromModalAddress = async (data) => {
         setisOpenModalAddressUser(false);
 
+        try {
         let res = await createNewAddressUserrService({
             shipName: data.shipName,
             shipAdress: data.shipAdress,
@@ -92,6 +106,7 @@ function OrderHomePage(props) {
         } else {
             toast.error(res.errMessage);
         }
+        } catch (error) { toast.error(error.message); }
     };
     let handleOnChange = (id, index) => {
         setaddressUserId(id);
@@ -106,129 +121,39 @@ function OrderHomePage(props) {
     let closeModalFromVoucherItem = () => {
         setisOpenModal(false);
     };
-    let totalPriceDiscount = (price, discount) => {
-        if (
-            discount.voucherData.typeVoucherOfVoucherData.typeVoucher ===
-            "percent"
-        ) {
-            if (
-                (price * discount.voucherData.typeVoucherOfVoucherData.value) /
-                    100 >
-                discount.voucherData.typeVoucherOfVoucherData.maxValue
-            ) {
-                return (
-                    price -
-                    discount.voucherData.typeVoucherOfVoucherData.maxValue
-                );
-            } else {
-                return (
-                    price -
-                    (price *
-                        discount.voucherData.typeVoucherOfVoucherData.value) /
-                        100
-                );
-            }
-        } else {
-            return (
-                price - discount.voucherData.typeVoucherOfVoucherData.maxValue
-            );
-        }
-    };
+    const totalPriceDiscount = discountedSubtotal;
     let handleChooseTypeShip = (item) => {
         dispatch(ChooseTypeShipStart(item));
-        setpriceShip(item.price);
+        setpriceShip(Number(item.price));
     };
 
-    let handleSaveOrder = async () => {
-        if (!dataTypeShip.id) {
-            toast.error("Chưa chọn đơn vị vận chuyển");
-        } else {
-            let result = [];
-            dataCart.map((item, index) => {
-                let object = {};
-                object.productId = item.productdetailsizeId;
-                object.quantity = item.quantity;
-                object.realPrice = item.productDetail.discountPrice;
-                result.push(object);
-            });
-
-            if (activeTypePayment == 0) {
-                let res = await createNewOrderService({
-                    orderdate: Date.now(),
-                    addressUserId: addressUserId,
-                    isPaymentOnlien: activeTypePayment === 1 ? 1 : 0,
-                    typeShipId: dataTypeShip.id,
-                    voucherId: dataVoucher.voucherId,
-                    note: note,
-                    userId: userId,
-                    arrDataShopCart: result,
-                });
-                if (res && res.errCode === 0) {
-                    toast.success("Đặt hàng thành công");
-                    dispatch(getItemCartStart(userId));
-                    setTimeout(() => {
-                        window.location.href = "/user/order/" + userId;
-                    }, 2000);
-                } else {
-                    toast.error(res.errMessage);
-                }
+    const handleSaveOrder = async () => {
+        if (submitting) return;
+        setSubmitting(true);
+        try {
+            const checkout = createCheckoutPayload({ userId, addressUserId, dataTypeShip, dataVoucher, note, dataCart });
+            if (activeTypePayment === 0) {
+                const result = await createNewOrderService(checkout);
+                if (result.errCode !== 0) throw new Error(result.errMessage || "Không thể đặt hàng");
+                dispatch(getItemCartStart(userId));
+                dispatch(ChooseVoucherStart({}));
+                toast.success("Đặt hàng thành công");
+                navigate(`/user/order/${userId}`);
+            } else if (activeTypeOnlPayment === 1) {
+                const result = await paymentOrderService(checkout);
+                if (result.errCode !== 0 || !result.link) throw new Error(result.errMessage || "Không thể khởi tạo thanh toán PayPal");
+                localStorage.setItem("orderData", JSON.stringify({ ...checkout, checkoutToken: result.checkoutToken }));
+                window.location.href = result.link;
             } else {
-                total =
-                    dataVoucher && dataVoucher.voucherData
-                        ? totalPriceDiscount(price, dataVoucher) + priceShip
-                        : price + +priceShip;
-                total = parseFloat((total / EXCHANGE_RATES.USD).toFixed(2));
-                if (activeTypeOnlPayment === 1) {
-                    let res = await paymentOrderService({
-                        total: total,
-                        result: result,
-                    });
-                    if (res && res.errCode == 0) {
-                        localStorage.setItem(
-                            "orderData",
-                            JSON.stringify({
-                                orderdate: Date.now(),
-                                addressUserId: addressUserId,
-                                isPaymentOnlien:
-                                    activeTypePayment === 1 ? 1 : 0,
-                                typeShipId: dataTypeShip.id,
-                                voucherId: dataVoucher.voucherId,
-                                note: note,
-                                userId: userId,
-                                arrDataShopCart: result,
-                                total: total,
-                            })
-                        );
-                        window.location.href = res.link;
-                    }
-                } else {
-                    navigate("/payment/vnpay", {
-                        state: {
-                            orderData: {
-                                orderdate: Date.now(),
-                                addressUserId: addressUserId,
-                                isPaymentOnlien:
-                                    activeTypePayment === 1 ? 1 : 0,
-                                typeShipId: dataTypeShip.id,
-                                voucherId: dataVoucher.voucherId,
-                                note: note,
-                                userId: userId,
-                                arrDataShopCart: result,
-                                total:
-                                    dataVoucher && dataVoucher.voucherData
-                                        ? totalPriceDiscount(
-                                              price,
-                                              dataVoucher
-                                          ) + priceShip
-                                        : price + +priceShip,
-                            },
-                        },
-                    });
-                }
+                navigate("/payment/vnpay", { state: { orderData: { ...checkout,
+                    total: discountedSubtotal(cartSubtotal(dataCart), dataVoucher) + Number(dataTypeShip?.price || 0) } } });
             }
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setSubmitting(false);
         }
     };
-
     return (
         <>
             <div className="wrap-order">
@@ -273,7 +198,7 @@ function OrderHomePage(props) {
                                             (
                                             {dataAddressUser &&
                                                 dataAddressUser.length > 0 &&
-                                                dataAddressUser[0]
+                                                dataAddressUser[stt]
                                                     .shipPhonenumber}
                                             )
                                         </span>
@@ -426,8 +351,7 @@ function OrderHomePage(props) {
                                                             }
                                                             image={
                                                                 item
-                                                                    .productDetailImage[0]
-                                                                    .image
+                                                                    .productDetailImage?.[0]?.image || "/resources/img/logo.png"
                                                             }
                                                         />
                                                     );
@@ -628,7 +552,6 @@ function OrderHomePage(props) {
                             <div className="box-flex">
                                 <div className="head">Tổng thanh toán:</div>
                                 <div className="money">
-                                    $
                                     {dataVoucher && dataVoucher.voucherData
                                         ? CommonUtils.formatter.format(
                                               totalPriceDiscount(
@@ -642,12 +565,12 @@ function OrderHomePage(props) {
                                 </div>
                             </div>
                             <div className="box-flex">
-                                <a
+                                <button type="button" disabled={submitting || !dataCart?.length || !addressUserId}
                                     onClick={() => handleSaveOrder()}
                                     className="main_btn"
                                 >
-                                    Đặt hàng
-                                </a>
+                                    {submitting ? "Đang xử lý…" : "Đặt hàng"}
+                                </button>
                             </div>
                         </div>
                     </div>

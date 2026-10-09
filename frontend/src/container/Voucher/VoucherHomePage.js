@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React from 'react';
 import { useEffect, useState } from 'react';
 import bannerPhoto from '../../../src/resources/img/banner-voucher.jfif'
@@ -31,7 +32,7 @@ function VoucherHomePage(props) {
 
     useEffect(() => {
         try {
-            const userData = JSON.parse(localStorage.getItem('userData'));
+            const userData = getUser();
             setUser(userData)
             fetchData();
         } catch (error) {

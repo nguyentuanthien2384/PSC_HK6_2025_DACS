@@ -1,3 +1,4 @@
+import { getToken, getUser } from "../../utils/token";
 import React from "react";
 import { useEffect, useState, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
@@ -6,21 +7,22 @@ import { getItemCartStart } from "../../action/ShopCartAction";
 import "./Header.scss";
 import TopMenu from "./TopMenu";
 import socketIOClient from "socket.io-client";
+import { API_BASE_URL } from "../../axios";
 
 const Header = (props) => {
     const [quantityMessage, setquantityMessage] = useState("");
     const [user, setUser] = useState({});
     const dispatch = useDispatch();
     let dataCart = useSelector((state) => state.shopcart.listCartItem);
-    const host = process.env.REACT_APP_BACKEND_URL;
+    const host = API_BASE_URL;
     const socketRef = useRef();
     const [id, setId] = useState();
 
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host);
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        const userData = getUser();
         setUser(userData);
         if (userData) {
+            socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
             dispatch(getItemCartStart(userData.id));
             socketRef.current.on("getId", (data) => {
                 setId(data);
@@ -29,16 +31,13 @@ const Header = (props) => {
                 socketRef.current.disconnect();
             };
         }
+        dispatch(getItemCartStart(null));
     }, []);
-    let scrollHeader = () => {
-        window.addEventListener("scroll", function () {
-            var header = document.querySelector(".main_menu");
-            if (header) {
-                header.classList.toggle("sticky", window.scrollY > 0);
-            }
-        });
-    };
-    scrollHeader();
+    useEffect(() => {
+        const onScroll = () => document.querySelector(".main_menu")?.classList.toggle("sticky", window.scrollY > 0);
+        window.addEventListener("scroll", onScroll);
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
     const profileLink =
         user && user.id ? `/user/detail/${user.id}` : "/login";
 

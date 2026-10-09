@@ -1,11 +1,10 @@
 import db from "../models/index";
-require('dotenv').config();
 const { Op } = require("sequelize");
 
-let createNewTypeShip = (data) => {
+let createNewTypeShip = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.type || !data.price) {
+            if (!data.type || data.price === undefined || data.price === '' || !Number.isFinite(+data.price) || +data.price < 0) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter !'
@@ -13,7 +12,7 @@ let createNewTypeShip = (data) => {
             } else {
                 await db.TypeShip.create({
                     type: data.type,
-                    price: data.price
+                    price: +data.price
                 })
                 resolve({
                     errCode: 0,
@@ -37,6 +36,7 @@ let getDetailTypeshipById = (id) => {
                 let res = await db.TypeShip.findOne({
                     where: { id: id },
                 })
+                if (!res) return resolve({ errCode: 2, errMessage: 'Phương thức vận chuyển không tồn tại' });
                 resolve({
                     errCode: 0,
                     data: res
@@ -47,15 +47,15 @@ let getDetailTypeshipById = (id) => {
         }
     })
 }
-let getAllTypeship = (data) => {
+let getAllTypeship = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             let objectFilter = {}
-            if (data.limit && data.offset) {
-                objectFilter.limit = +data.limit
-                objectFilter.offset = +data.offset
+            if (data.limit !== undefined) {
+                objectFilter.limit = Math.min(100, Math.max(1, parseInt(data.limit, 10) || 20));
+                objectFilter.offset = Math.max(0, parseInt(data.offset, 10) || 0);
             }
-            if (data.keyword !== '') objectFilter.where = { ...objectFilter.where, type: { [Op.substring]: data.keyword } }
+            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where = { type: { [Op.substring]: data.keyword.trim() } };
             let res = await db.TypeShip.findAndCountAll(objectFilter)
 
             resolve({
@@ -71,10 +71,10 @@ let getAllTypeship = (data) => {
         }
     })
 }
-let updateTypeship = (data) => {
+let updateTypeship = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.id || !data.type || !data.price) {
+            if (!data.id || !data.type || data.price === undefined || data.price === '' || !Number.isFinite(+data.price) || +data.price < 0) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter !'
@@ -86,13 +86,13 @@ let updateTypeship = (data) => {
                 })
                 if (typeship) {
                     typeship.type = data.type;
-                    typeship.price = data.price;
+                    typeship.price = +data.price;
                     await typeship.save()
                     resolve({
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Phương thức vận chuyển không tồn tại' });
             }
 
         } catch (error) {
@@ -100,7 +100,7 @@ let updateTypeship = (data) => {
         }
     })
 }
-let deleteTypeship = (data) => {
+let deleteTypeship = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id) {
@@ -120,7 +120,7 @@ let deleteTypeship = (data) => {
                         errCode: 0,
                         errMessage: 'ok'
                     })
-                }
+                } else resolve({ errCode: 2, errMessage: 'Phương thức vận chuyển không tồn tại' });
             }
 
         } catch (error) {

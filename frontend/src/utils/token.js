@@ -1,29 +1,37 @@
 const TOKEN_KEY = "token";
 const USER_KEY = "userData";
 
-const setAuth = (accessToken, user) => {
+export const setAuth = (accessToken, user) => {
   localStorage.setItem(TOKEN_KEY, JSON.stringify(accessToken));
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.removeItem("persist:shopcart");
+  localStorage.removeItem("orderData");
 };
 
-const getToken = () => {
-  const token = localStorage.getItem(TOKEN_KEY);
-  return token ? token.replaceAll('"', "") : null;
+export const getToken = () => {
+  const stored = localStorage.getItem(TOKEN_KEY);
+  if (!stored) return null;
+  try {
+    const token = JSON.parse(stored);
+    return typeof token === "string" && token ? token : null;
+  } catch {
+    return stored === "undefined" || stored === "null" ? null : stored;
+  }
 };
 
-const getUser = () => {
-  const user = localStorage.getItem(USER_KEY);
-  return user ? JSON.parse(user) : null;
+export const getUser = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem(USER_KEY));
+    return user && typeof user === "object" && user.id ? user : null;
+  } catch {
+    return null;
+  }
 };
 
-const clearAuth = () => {
+export const clearAuth = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem("persist:shopcart");
+  localStorage.removeItem("orderData");
 };
 
-module.exports = {
-  setAuth,
-  getToken,
-  getUser,
-  clearAuth,
-};

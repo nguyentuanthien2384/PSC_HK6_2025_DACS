@@ -1,21 +1,25 @@
+import { getToken, getUser } from "../../utils/token";
+import { API_BASE_URL } from "../../axios";
+import { toast } from "react-toastify";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import { loadMessage } from "../../services/userService";
 import moment from "moment";
 
-const host = process.env.REACT_APP_BACKEND_URL;
+const host = API_BASE_URL;
 function ChatWindow(props) {
     const [mess, setMess] = useState([]);
-    const [userData, setuserData] = useState({});
+    const [sending, setSending] = useState(false);
     const [message, setMessage] = useState("");
     const [id, setId] = useState();
     const [user, setUser] = useState({});
     const socketRef = useRef();
 
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host);
-        const userData = JSON.parse(localStorage.getItem("userData"));
+        socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
+        socketRef.current.on("connect_error", () => toast.error("Không thể kết nối hỗ trợ trực tuyến"));
+        const userData = getUser();
         setUser(userData);
 
         socketRef.current.on("getId", (data) => {
@@ -23,11 +27,11 @@ function ChatWindow(props) {
         }); // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
 
         if (props.roomId) {
-            fetchMessage();
+            fetchMessage().catch((error) => toast.error(error.message));
         }
 
         socketRef.current.on("sendDataServer", (dataGot) => {
-            fetchMessage();
+            fetchMessage().catch((error) => toast.error(error.message));
             let elem = document.getElementById("box-chat");
             if (elem) elem.scrollTop = elem.scrollHeight;
         }); // mỗi khi có tin nhắn thì mess sẽ được render thêm
@@ -38,30 +42,25 @@ function ChatWindow(props) {
     }, [props.roomId]);
     let fetchMessage = async () => {
         let res = await loadMessage(props.roomId, props.userId);
-        if (res) {
-            setMess(res.data);
-            setuserData(res.data.userData);
+        if (res?.errCode === 0) {
+            setMess(Array.isArray(res.data) ? res.data : []);
         }
     };
-    let sendMessage = () => {
-        if (message !== null) {
-            const msg = {
-                text: message,
-                userId: user.id,
-                roomId: props.roomId,
-                userData: userData,
-            };
-            socketRef.current.emit("sendDataClient", msg);
-
-            /*Khi emit('sendDataClient') bên phía server sẽ nhận được sự kiện có tên 'sendDataClient' và handle như câu lệnh trong file index.js
-           socket.on("sendDataClient", function(data) { // Handle khi có sự kiện tên là sendDataClient từ phía client
-             socketIo.emit("sendDataServer", { data });// phát sự kiện  có tên sendDataServer cùng với dữ liệu tin nhắn từ phía server
-           })
-     */
-            setMessage("");
-        }
-    };
-    return (
+    const sendMessage = () => {
+        const text = message.trim();
+        if (!text || sending) return;
+        if (!socketRef.current?.connected) { toast.error("Chưa kết nối hỗ trợ trực tuyến"); return; }
+        setSending(true);
+        socketRef.current.timeout(10000).emit("sendDataClient", { text, roomId: props.roomId }, (error, result) => {
+            setSending(false);
+            if (error || result?.errCode !== 0) {
+                toast.error(result?.errMessage || "Chưa gửi được tin nhắn. Vui lòng thử lại.");
+                return;
+            }
+            setMessage((current) => current.trim() === text ? "" : current);
+            fetchMessage().catch((failure) => toast.error(failure.message));
+        });
+    };    return (
         <div className="ks-messages ks-messenger__messages">
             <div className="ks-header">
                 <div className="ks-description">
@@ -209,10 +208,11 @@ function ChatWindow(props) {
                     value={message}
                     className="form-control"
                     placeholder="Type something..."
-                    defaultValue={""}
+                    maxLength={4000}
                 />
                 <div className="ks-controls">
                     <button
+                        disabled={sending || !message.trim()}
                         onClick={() => sendMessage()}
                         className="btn btn-primary"
                     >

@@ -26,11 +26,12 @@ function AddressUser(props) {
 
                 }
             }
-            fetchDataAddress()
+            fetchDataAddress().catch((error) => toast.error(error.message))
         }
 
     }, [])
     let sendDataFromModalAddress = async (data) => {
+        try {
         setisOpenModalAddressUser(false)
         setaddressUserId('')
         if (data.isActionUpdate === false) {
@@ -70,7 +71,7 @@ function AddressUser(props) {
                 toast.error(res.errMessage)
             }
         }
-
+        } catch (error) { toast.error(error.message); }
     }
     let closeModaAddressUser = () => {
         setisOpenModalAddressUser(false)
@@ -81,7 +82,7 @@ function AddressUser(props) {
         setisOpenModalAddressUser(true)
     }
     let handleDeleteAddress = async (id) => {
-
+        try {
         let res = await deleteAddressUserService({
             data: {
                 id: id,
@@ -97,6 +98,7 @@ function AddressUser(props) {
         } else {
             toast.error("Xóa địa chỉ user thất bại")
         }
+        } catch (error) { toast.error(error.message); }
     }
     let handleEditAddress = (id) => {
         setaddressUserId(id)

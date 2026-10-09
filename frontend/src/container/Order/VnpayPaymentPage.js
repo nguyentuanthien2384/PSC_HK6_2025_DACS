@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import { paymentOrderVnpayService } from "../../services/userService";
 import "./OrderHomePage.scss";
 
 function VnpayPaymentPage(props) {
+    const [submitting, setSubmitting] = useState(false);
     const [inputValues, setInputValues] = useState({
         orderType: "billpayment",
         orderDescription: "",
@@ -29,22 +31,29 @@ function VnpayPaymentPage(props) {
         }
     }, [location]);
     let handleOnclick = async () => {
+        if (submitting || !location.state?.orderData) return;
+        setSubmitting(true);
+        try {
         let res = await paymentOrderVnpayService({
+            ...location.state.orderData,
             orderType: inputValues.orderType,
             orderDescription: inputValues.orderDescription,
             bankCode: inputValues.bankCode,
             language: inputValues.language,
             amount: inputValues.amount,
         });
-        if (res && res.errCode == 200) {
+        if (res && (res.errCode === 0 || res.errCode === 200) && res.link) {
             localStorage.setItem(
                 "orderData",
-                JSON.stringify(location.state.orderData)
+                JSON.stringify({ ...location.state.orderData, checkoutToken: res.checkoutToken })
             );
 
             window.location.href = res.link;
-        }
+        } else { throw new Error(res.errMessage || "Không thể khởi tạo thanh toán VNPay"); }
+        } catch (error) { toast.error(error.message); }
+        finally { setSubmitting(false); }
     };
+    if (!location.state?.orderData) return <section className="container py-5"><h2>Không tìm thấy thông tin đặt hàng</h2><Link to="/shopcart">Quay lại giỏ hàng để tiếp tục</Link></section>;
     return (
         <>
             <div className="wrap-order">
@@ -266,11 +275,12 @@ function VnpayPaymentPage(props) {
 
                                         <div className="mt-3">
                                             <button
+                                                disabled={submitting}
                                                 onClick={() => handleOnclick()}
                                                 className="btn btn-primary profile-button"
                                                 type="button"
                                             >
-                                                Thanh Toán
+                                                {submitting ? "Đang xử lý…" : "Thanh Toán"}
                                             </button>
                                         </div>
                                     </div>

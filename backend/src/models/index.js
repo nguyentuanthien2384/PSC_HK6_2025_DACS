@@ -1,5 +1,5 @@
 "use strict";
-require("dotenv").config();
+require("../config/env");
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
@@ -9,32 +9,9 @@ const env = process.env.NODE_ENV || "development";
 const db = {};
 
 let sequelize;
-const customizeConfig = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: "mysql",
-    logging: false,
-    dialectOptions:
-        process.env.DB_SSL === "true"
-            ? {
-                  ssl: {
-                      require: true,
-                      rejectUnauthorized: false,
-                  },
-              }
-            : {},
-    query: {
-        raw: true,
-    },
-    timezone: "+07:00",
-};
-sequelize = new Sequelize(
-    process.env.DB_DATABASE_NAME,
-    process.env.DB_USERNAME,
-    process.env.DB_PASSWORD,
-    customizeConfig
-);
-
+const customizeConfig = require('../config/config')[env];
+if (!customizeConfig) throw new Error(`Unsupported NODE_ENV: ${env}`);
+sequelize = new Sequelize(customizeConfig.database, customizeConfig.username, customizeConfig.password, customizeConfig);
 // if (config.use_env_variable) {
 //   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 // } else {

@@ -1,92 +1,54 @@
-require('dotenv').config()
-const nodemailer = require("nodemailer");
+require('dotenv').config();
+const nodemailer = require('nodemailer');
 
-let sendSimpleEmail = async (dataSend) => {
-    let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-            user: process.env.EMAIL_APP,
-            pass: process.env.EMAIL_APP_PASSWORD,
-        },
+const configurationError = () => {
+    const error = new Error('Dịch vụ email chưa được cấu hình. Vui lòng liên hệ quản trị viên');
+    error.statusCode = 503;
+    error.code = 'EMAIL_NOT_CONFIGURED';
+    return error;
+};
+
+const ensureConfigured = () => {
+    const username = process.env.SMTP_USER || process.env.EMAIL_APP;
+    const password = process.env.SMTP_PASSWORD || process.env.EMAIL_APP_PASSWORD;
+    if (!username || !password) throw configurationError();
+    return { username, password };
+};
+
+const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+})[character]);
+
+const sendSimpleEmail = async (data) => {
+    const { username, password } = ensureConfigured();
+    if (!['verifyEmail', 'forgotpassword'].includes(data.type)) throw new Error('Unsupported email type');
+    const reset = data.type === 'forgotpassword';
+    const title = reset ? 'Đặt lại mật khẩu' : 'Xác thực email';
+    const fullName = [data.firstName, data.lastName].filter(Boolean).join(' ');
+    const link = new URL(data.redirectLink);
+    if (!['http:', 'https:'].includes(link.protocol)) throw new Error('Invalid email redirect URL');
+    const port = Number(process.env.SMTP_PORT || 587);
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com', port,
+        secure: process.env.SMTP_SECURE === 'true' || port === 465,
+        auth: { user: username, pass: password },
+        connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000,
     });
-    if (dataSend.type === 'verifyEmail') {
-        let info = await transporter.sendMail({
-            from: '"BiNgo2706 👻" <dotanthanhvlog@gmail.com>', // sender address
-            to: dataSend.email, // list of receivers
-            subject: "Xác thực email | PTITSHOP", // Subject line
-            html: getBodyHTMLEmailVerify(dataSend)
+    try {
+        return await transporter.sendMail({
+            from: process.env.EMAIL_FROM || `"DACS Shop" <${username}>`,
+            to: data.email, subject: `${title} | DACS Shop`,
+            text: `Xin chào ${fullName}!\n${title} tại: ${link.href}\nLiên kết hết hạn sau ${reset ? '1 giờ' : '24 giờ'}. Nếu bạn không yêu cầu, hãy bỏ qua email này.`,
+            html: `<h3>Xin chào ${escapeHtml(fullName)}!</h3><p>Vui lòng mở liên kết bên dưới để ${reset ? 'đặt lại mật khẩu' : 'xác thực email'}.</p><p><a href="${escapeHtml(link.href)}">${title}</a></p><p>Liên kết hết hạn sau ${reset ? '1 giờ' : '24 giờ'}. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>`,
         });
+    } catch (cause) {
+        const error = new Error('Chưa gửi được email. Vui lòng thử lại sau hoặc liên hệ quản trị viên');
+        error.statusCode = 503;
+        error.code = 'EMAIL_DELIVERY_FAILED';
+        throw error;
+    } finally {
+        transporter.close();
     }
-    if (dataSend.type === 'forgotpassword') {
-        let info = await transporter.sendMail({
-            from: '"BiNgo2706 👻" <dotanthanhvlog@gmail.com>', // sender address
-            to: dataSend.email, // list of receivers
-            subject: "Xác nhận quên mật khẩu | PTITSHOP", // Subject line
-            html: getBodyHTMLEmailForgotPassword(dataSend)
-        });
-    }
-}
-let getBodyHTMLEmailVerify = (dataSend) => {
-    let fullname = `${dataSend.firstName} ${dataSend.lastName}`
-    let result = `<h3>Xin chào ${fullname}!</h3>
-        <p>Bạn nhận được email này vì đã thực hiện lệnh xác thực email!</p>
-        <p>Bui lòng click vào đường link bên dưới để xác nhận và hoàn tất thủ tục xác minh email của bạn</p>
-        <div>
-            <a href="${dataSend.redirectLink}" target=""_blank>Click here</a>
-        </div>
-        <div>Xin cảm ơn !</div>
-    `
+};
 
-    return result;
-}
-let getBodyHTMLEmailForgotPassword = (dataSend) => {
-    let fullname = `${dataSend.firstName} ${dataSend.lastName}`
-    let result = `<h3>Xin chào ${fullname}!</h3>
-        <p>Bạn nhận được email này vì đã thực hiện lệnh quên mật khẩu!</p>
-        <p>Bui lòng click vào đường link bên dưới để xác nhận quên mật khẩu và lấy lại mật khẩu của bạn</p>
-        <div>
-            <a href="${dataSend.redirectLink}" target=""_blank>Click here</a>
-        </div>
-        <div>Xin cảm ơn !</div>
-    `
-
-    return result;
-}
-// let sendAttachment = async (dataSend) => {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             let transporter = nodemailer.createTransport({
-//                 host: "smtp.gmail.com",
-//                 port: 587,
-//                 secure: false, // true for 465, false for other ports
-//                 auth: {
-//                     user: process.env.EMAIL_APP,
-//                     pass: process.env.EMAIL_APP_PASSWORD,
-//                 },
-//             });
-
-//             let info = await transporter.sendMail({
-//                 from: '"BiNgo2706 👻" <dotanthanhvlog@gmail.com>', // sender address
-//                 to: dataSend.email, // list of receivers
-//                 subject: "Thông tin đặt lịch khám bệnh", // Subject line
-//                 html: getBodyHTMLEmailRemedy(dataSend),
-//                 attachments: [
-//                     {
-//                         filename: `remedy-${dataSend.patientId}-${new Date().getTime()}.${dataSend.filename}`,
-//                         content: dataSend.imgBase64.split("base64,")[1],
-//                         encoding: 'base64'
-//                     }
-//                 ]
-//             });
-//             resolve()
-//         } catch (error) {
-//             reject(error)
-//         }
-//     })
-// }
-module.exports = {
-    sendSimpleEmail: sendSimpleEmail,
-
-}
+module.exports = { sendSimpleEmail, ensureConfigured };

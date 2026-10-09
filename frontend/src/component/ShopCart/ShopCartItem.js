@@ -8,8 +8,14 @@ import CommonUtils from '../../utils/CommonUtils';
 function ShopCartItem(props) {
     const [quantity, setquantity] = useState('')
     const [isOpenModal, setisOpenModal] = useState(false)
+    const [busy, setBusy] = useState(false)
     const dispatch = useDispatch()
     let handleOnChange = async (event) => {
+        if (busy) return;
+        const next = event.target.value;
+        if (next !== '' && (!Number.isInteger(Number(next)) || Number(next) < 0)) {
+            toast.error("Số lượng phải là số nguyên không âm"); return;
+        }
         setquantity(event.target.value)
 
         if (event.target.value === "0") {
@@ -17,6 +23,8 @@ function ShopCartItem(props) {
             setisOpenModal(true)
         } else {
             if (event.target.value) {
+                setBusy(true);
+                try {
                 let res = await addShopCartService({
                     type: 'UPDATE_QUANTITY',
                     userId: props.userId,
@@ -30,8 +38,10 @@ function ShopCartItem(props) {
 
                 } else {
                     toast.error(res.errMessage)
-                    setquantity(res.quantity)
+                    setquantity(res.quantity ?? props.quantity)
                 }
+                } catch (error) { toast.error(error.message); setquantity(props.quantity); }
+                finally { setBusy(false); }
             }
 
         }
@@ -42,10 +52,12 @@ function ShopCartItem(props) {
     }, [props.quantity])
     let closeModal = () => {
         setisOpenModal(false)
-        setquantity(1)
+        setquantity(props.quantity)
     }
     let handleDeleteShopCart = async () => {
-
+        if (busy) return;
+        setBusy(true);
+        try {
         let res = await deleteItemShopCartService({
             data: {
                 id: props.id
@@ -57,6 +69,8 @@ function ShopCartItem(props) {
         } else {
             toast.error(res.errMessage)
         }
+        } catch (error) { toast.error(error.message); }
+        finally { setBusy(false); }
     }
     return (
         <tr>
@@ -78,7 +92,7 @@ function ShopCartItem(props) {
                 {props.isOrder === true ? <span>{quantity}</span>
                     :
                     <div className="product_count">
-                        <input type="number" name="qty" id="sst" value={quantity}
+                        <input type="number" name="qty" value={quantity} disabled={busy} onBlur={() => { if (quantity === '') setquantity(props.quantity); }} step="1"
                             title="Quantity:" className="input-text qty" min="0" onChange={(event) => handleOnChange(event)} />
                     </div>
                 }

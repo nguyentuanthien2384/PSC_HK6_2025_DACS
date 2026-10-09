@@ -1,3 +1,4 @@
+import { getUser } from "../../../utils/token";
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { createNewReceiptService,getAllSupplier,getAllProductAdmin } from '../../../services/userService';
@@ -27,7 +28,7 @@ const AddReceipt = (props) => {
     useEffect(() => {
         loadDataSupplier()
         loadProduct()
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = getUser();
         setUser(userData)
     }, [])
     let loadDataSupplier = async () => {

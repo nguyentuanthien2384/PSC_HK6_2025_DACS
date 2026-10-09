@@ -1,3 +1,4 @@
+import { getUser } from "../../utils/token";
 import React, { useEffect, useState } from 'react';
 import CommentBlog from '../../component/Blog/CommentBlog';
 import CommentFormBlog from '../../component/Blog/CommentFormBlog';
@@ -25,7 +26,7 @@ function DetailBlog(props) {
         loadDataBlog(id)
         loadComment(id)
       }
-      const userData = JSON.parse(localStorage.getItem('userData'));
+      const userData = getUser();
       if (userData) {
         setUser(userData)
       }
