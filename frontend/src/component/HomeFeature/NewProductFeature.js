@@ -1,32 +1,38 @@
-import React from 'react';
+import React, { useId } from 'react';
 import ItemProduct from '../Product/ItemProduct';
-import HeaderContent from '../Content/HeaderContent';
-function NewProductFeature(props) {
+import ProductCollectionHeader from './ProductCollectionHeader';
+import ProductCollectionState from './ProductCollectionState';
+import './ProductFeature.scss';
+
+function NewProductFeature({ title, description, data = [], loading = false, error = '' }) {
+    const titleId = useId();
 
     return (
-        <section className="new_product_area section_gap_top section_gap_bottom_custom">
-            <div className="container">
-                <HeaderContent mainContent={props.title}
-                    infoContent={props.description}> </HeaderContent>
-                <div className="row">
-
-                    <div className="col-lg-12 mt-5 mt-lg-0">
-                        <div className="row">
-                            {props.data && props.data.length > 0 &&
-                                props.data.map((item, index) => {
-                                    return (
-                                        <ItemProduct id={item.id} type="col-lg-3 col-md-3" name={item.name} img={item.productDetail[0].productImage[0].image}
-                                            price={item.productDetail[0].originalPrice} discountPrice={item.productDetail[0].discountPrice}>
-                                        </ItemProduct>
-                                    )
-                                })
-                            }
-
-
-                        </div>
+        <section className="product-collection product-collection--new" aria-labelledby={titleId} aria-busy={loading}>
+            <div className="product-collection__container">
+                <ProductCollectionHeader titleId={titleId} title={title} eyebrow="Vừa có mặt" description={description} />
+                {loading || error || !data.length ? (
+                    <ProductCollectionState loading={loading} error={error} />
+                ) : (
+                    <div className="product-collection__grid" role="list" aria-label={title}>
+                        {data.map((item) => {
+                            const detail = item.productDetail?.[0];
+                            return (
+                                <div key={item.id} role="listitem" className="product-collection__item">
+                                    <ItemProduct
+                                        id={item.id}
+                                        name={item.name}
+                                        brand={item.brandData?.value}
+                                        img={detail?.productImage?.[0]?.image}
+                                        price={detail?.originalPrice}
+                                        discountPrice={detail?.discountPrice}
+                                        badge="Mới"
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
-                </div>
-
+                )}
             </div>
         </section>
     );

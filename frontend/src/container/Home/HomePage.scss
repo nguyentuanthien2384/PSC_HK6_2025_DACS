@@ -1,0 +1,41 @@
+.store-home {
+    // Keep the banner carousel controls inside the viewport.
+    > .slick-slider {
+        .slick-prev { left: 16px; z-index: 1; }
+        .slick-next { right: 16px; z-index: 1; }
+    }
+
+    .feature-area {
+        padding: 32px 0 0;
+        .single-feature { margin-bottom: 0; border-radius: 10px; }
+    }
+
+    .feature-area > .container,
+    .blog-area > .container {
+        width: 100%;
+        max-width: 1240px;
+        padding-right: 24px;
+        padding-left: 24px;
+    }
+
+    .product-collection + .product-collection:not(.product-collection--new) { padding-top: 16px; }
+    .blog-area { padding: 56px 0; }
+    .blog-area .main_title { margin-bottom: 32px; }
+}
+
+@media (max-width: 991px) {
+    .store-home .feature-area .row { row-gap: 16px; }
+}
+
+@media (max-width: 639px) {
+    .store-home {
+        .feature-area { padding-top: 24px; }
+        .feature-area > .container, .blog-area > .container { padding-right: 16px; padding-left: 16px; }
+        .feature-area .row { margin: 0 -6px; row-gap: 12px; }
+        .feature-area .row > div { width: 50%; padding: 0 6px; }
+        .feature-area .single-feature { height: 100%; padding: 20px 10px; }
+        .feature-area .single-feature h3 { font-size: 13px; line-height: 1.5; }
+        .feature-area .single-feature p { font-size: 12px; line-height: 1.5; }
+        .blog-area { padding: 32px 0; }
+    }
+}

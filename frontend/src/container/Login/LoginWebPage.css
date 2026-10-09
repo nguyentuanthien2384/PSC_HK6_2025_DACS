@@ -311,7 +311,7 @@ footer p a:hover, footer p a:focus:hover {
     margin-left: 0;
   }
 
-  h2 {
+  section#formHolder h2 {
     font-size: 50px !important;
   }
 }

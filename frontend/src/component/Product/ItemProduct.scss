@@ -1,16 +1,210 @@
-.d-block{
+.ecommerce-product-card-slot {
+    min-width: 0;
+    height: 100%;
+}
 
-    h4{
-        display: block;
-        display: -webkit-box;
-        max-width: 100%;
-        height: 35px;
-        margin: 0 auto;
-        font-size: 14px;
-        line-height: 1.4;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
+.ecommerce-product-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+    color: #202521;
+    background: #fff;
+    border: 1px solid #e8ece7;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
+    &:hover {
+        color: #202521;
+        border-color: #b5cba7;
+        box-shadow: 0 8px 22px rgba(26, 42, 21, 0.07);
+        transform: translateY(-3px);
+    }
+
+    &:focus-visible {
+        outline: 3px solid #4e9318;
+        outline-offset: 3px;
+    }
+
+    &__image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
         overflow: hidden;
+        background: #f5f7f4;
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            object-fit: contain;
+            transition: transform 240ms ease;
+        }
+    }
+
+    &:hover &__image img {
+        transform: scale(1.04);
+    }
+
+    &__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+        height: 100%;
+        padding: 16px;
+        color: #70796a;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    &__badges {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        pointer-events: none;
+    }
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 25px;
+        padding: 3px 9px;
+        border-radius: 6px;
+        background: #fff;
+        color: #35641c;
+        font-size: 11px;
+        line-height: 1.4;
+        font-weight: 700;
+        box-shadow: 0 1px 5px rgba(25, 42, 21, 0.06);
+
+        &--discount {
+            background: #4e9318;
+            color: #fff;
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    &__brand {
+        height: 16px;
+        overflow: hidden;
+        color: #63715b;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 16px;
         text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__name {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        min-height: 44px;
+        max-height: 44px;
+        overflow: hidden;
+        margin: 0;
+        color: #262b27;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 22px;
+        overflow-wrap: anywhere;
+        text-transform: none;
+    }
+
+    &__pricing {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        min-height: 29px;
+        margin-top: auto;
+    }
+
+    &__price {
+        color: #202521;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    &__original-price {
+        color: #727b72;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    &__detail {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f2ed;
+        color: #47792a;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+    }
+}
+
+@media (max-width: 575px) {
+    .ecommerce-product-card {
+        border-radius: 10px;
+
+        &__image img {
+            padding: 12px;
+        }
+
+        &__body {
+            gap: 10px;
+            padding: 12px;
+        }
+
+        &__badges {
+            top: 8px;
+            left: 8px;
+            right: 8px;
+        }
+
+        &__name {
+            min-height: 40px;
+            max-height: 40px;
+            font-size: 13px;
+            line-height: 20px;
+        }
+
+        &__price {
+            font-size: 17px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ecommerce-product-card,
+    .ecommerce-product-card__image img {
+        transition: none;
+    }
+
+    .ecommerce-product-card:hover,
+    .ecommerce-product-card:hover .ecommerce-product-card__image img {
+        transform: none;
     }
 }

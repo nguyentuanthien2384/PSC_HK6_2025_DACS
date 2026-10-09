@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { getAllCodeService } from "../../services/userService";
+const allCategories = { code: "ALL", value: "Tất cả" };
+
 function Category(props) {
-    const [arrCategory, setarrCategory] = useState([]);
-    const [activeLinkId, setactiveLinkId] = useState("");
+    const [arrCategory, setarrCategory] = useState([allCategories]);
+    const [activeLinkId, setactiveLinkId] = useState("ALL");
 
     useEffect(() => {
-        let fetchCategory = async () => {
-            let arrData = await getAllCodeService("CATEGORY");
-            if (arrData && arrData.errCode === 0) {
-                arrData.data.unshift({
-                    createdAt: null,
-                    code: "ALL",
-                    type: "CATEGORY",
-                    value: "Tất cả",
-                });
-                setarrCategory(arrData.data);
+        let active = true;
+        const fetchCategory = async () => {
+            try {
+                const response = await getAllCodeService("CATEGORY");
+                if (active && response && response.errCode === 0 && Array.isArray(response.data)) {
+                    setarrCategory([allCategories, ...response.data.filter((item) => item.code !== "ALL")]);
+                }
+            } catch (error) {
+                if (active) setarrCategory([allCategories]);
             }
         };
         fetchCategory();
+        return () => { active = false; };
     }, []);
     let handleClickCategory = (code) => {
         props.handleRecevieDataCategory(code);
@@ -33,7 +35,7 @@ function Category(props) {
                 <ul className="list">
                     {arrCategory &&
                         arrCategory.length > 0 &&
-                        arrCategory.map((item, index) => {
+                        arrCategory.map((item) => {
                             return (
                                 <li
                                     className={
@@ -41,13 +43,15 @@ function Category(props) {
                                             ? "active"
                                             : ""
                                     }
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() =>
-                                        handleClickCategory(item.code)
-                                    }
-                                    key={index}
+                                    key={item.code}
                                 >
-                                    <a>{item.value}</a>
+                                    <button
+                                        type="button"
+                                        aria-pressed={item.code === activeLinkId}
+                                        onClick={() => handleClickCategory(item.code)}
+                                    >
+                                        {item.value}
+                                    </button>
                                 </li>
                             );
                         })}

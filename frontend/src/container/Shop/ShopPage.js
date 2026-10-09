@@ -4,13 +4,15 @@ import Category from "../../component/Shop/Category";
 import Brand from "../../component/Shop/Brand";
 
 import { Link } from "react-router-dom";
-function ShopPage(props) {
+import './ShopPage.scss';
+function ShopPage() {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
     const [categoryId, setcategoryId] = useState("");
     const [brandId, setbrandId] = useState("");
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const myRef = useRef(null);
     let handleRecevieDataCategory = (code) => {
         setcategoryId(code);
@@ -19,53 +21,54 @@ function ShopPage(props) {
         setbrandId(code);
     };
     return (
-        <div>
-            <section ref={myRef} className="banner_area">
-                <div className="banner_inner d-flex align-items-center">
-                    <div className="container">
-                        <div className="banner_content d-md-flex justify-content-between align-items-center">
-                            <div className="mb-3 mb-md-0">
-                                <h2>Danh mục cửa hàng</h2>
-                                <p>
-                                    Hãy lựa chọn sản phẩm phù hợp cho chính mình
-                                </p>
-                            </div>
-                            <div className="page_link">
-                                <Link to={"/"}>Trang chủ</Link>
-                                <Link to={"/shop"}>Cửa hàng</Link>
-                            </div>
-                        </div>
+        <div className="shop-page">
+            <section className="shop-banner">
+                <div className="shop-container shop-banner__inner">
+                    <div>
+                        <p className="shop-banner__eyebrow">BỘ SƯU TẬP</p>
+                        <h1>Cửa hàng</h1>
+                        <p>Khám phá sản phẩm phù hợp với phong cách của bạn.</p>
                     </div>
+                    <nav className="shop-breadcrumb" aria-label="Đường dẫn">
+                        <Link to="/">Trang chủ</Link>
+                        <span aria-hidden="true">/</span>
+                        <span aria-current="page">Cửa hàng</span>
+                    </nav>
                 </div>
             </section>
-            <section className="cat_product_area section_gap">
-                <div className="container">
-                    <div className="row flex-row-reverse">
+            <section ref={myRef} className="shop-products">
+                <div className="shop-container">
+                    <div className="shop-filter-bar">
+                        <button
+                            type="button"
+                            aria-expanded={filtersOpen}
+                            aria-controls="shop-product-filters"
+                            onClick={() => setFiltersOpen((open) => !open)}
+                        >
+                            <i className="ti-filter" aria-hidden="true" />
+                            <span>Lọc sản phẩm</span>
+                            <i className={filtersOpen ? 'ti-angle-up' : 'ti-angle-down'} aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div className="shop-layout">
+                        <aside
+                            id="shop-product-filters"
+                            className={`shop-sidebar${filtersOpen ? ' is-open' : ''}`}
+                            aria-label="Bộ lọc sản phẩm"
+                        >
+                            <div className="left_sidebar_area">
+                                <Category handleRecevieDataCategory={handleRecevieDataCategory} />
+                                <Brand handleRecevieDataBrand={handleRecevieDataBrand} />
+                            </div>
+                        </aside>
                         <MainShop
                             categoryId={categoryId}
                             brandId={brandId}
                             myRef={myRef}
                         />
-                        <div className="col-lg-3">
-                            <div className="left_sidebar_area">
-                                <Category
-                                    handleRecevieDataCategory={
-                                        handleRecevieDataCategory
-                                    }
-                                />
-                                <Brand
-                                    handleRecevieDataBrand={
-                                        handleRecevieDataBrand
-                                    }
-                                />
-                            </div>
-                        </div>
                     </div>
-                    {/* <Pagination amountPage={3}
-                        myFunction={{ changePage: handleChangePage, changePerPage: handleChangePage }}></Pagination> */}
                 </div>
             </section>
-            {/* <Footer /> */}
         </div>
     );
 }
