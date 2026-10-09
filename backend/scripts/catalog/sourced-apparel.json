@@ -1,0 +1,1281 @@
+[
+  {
+    "demoKey": "DEMO_P001",
+    "name": "Áo thun UNIQLO SUPIMA® Cotton",
+    "summary": "Áo thun SUPIMA® Cotton sử dụng 100% cotton với bề mặt vải mịn và đường nét gọn. Thiết kế unisex có tỷ lệ thân, cổ và tay áo được cân chỉnh để mặc riêng hoặc làm lớp trong. Cổ tròn cùng đường may chỉn chu tạo diện mạo đơn giản, dễ kết hợp với jeans, quần thẳng hoặc áo khoác. Mẫu áo dùng hệ kích thước nam theo công bố của hãng.",
+    "features": [
+      "Vải 100% cotton SUPIMA® có bề mặt mịn.",
+      "Cổ tròn, tỷ lệ thân và tay cân đối.",
+      "Thiết kế unisex theo hệ size nam."
+    ],
+    "material": "100% cotton SUPIMA®.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Kiểu dáng",
+        "value": "Áo thun cổ tròn, unisex"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "TSHIRT",
+    "model": "E455365-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E455365-000/00",
+      "title": "SUPIMA® Cotton T-Shirt | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng (00)",
+        "sourceColorCode": "00",
+        "sourceColorName": "WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_00_455365_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_09_455365_3x4.jpg"
+      },
+      {
+        "name": "Xám (07)",
+        "sourceColorCode": "07",
+        "sourceColorName": "GRAY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_07_455365_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng (00)",
+      "Đen (09)",
+      "Xám (07)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_00_455365_3x4.jpg",
+        "caption": "Áo thun UNIQLO SUPIMA® Cotton – Trắng (00)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_09_455365_3x4.jpg",
+        "caption": "Áo thun UNIQLO SUPIMA® Cotton – Đen (09)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_07_455365_3x4.jpg",
+        "caption": "Áo thun UNIQLO SUPIMA® Cotton – Xám (07)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P002",
+    "name": "Áo thun UNIQLO U AIRism Cotton Oversized",
+    "summary": "AIRism Cotton Oversized thuộc dòng Uniqlo U, kết hợp diện mạo cotton với cảm giác mịn, mát khi chạm của AIRism. Áo có thân rộng, vai rơi và tay dài tới khoảng nửa cánh tay, tạo phom thư thái. Cổ tròn hẹp giữ đường nét gọn khi mặc riêng hoặc phối nhiều lớp. Thiết kế unisex dùng hệ size nam; người mua nên đối chiếu bảng kích thước của mẫu áo.",
+    "features": [
+      "Phom oversized, vai rơi, tay lửng.",
+      "Vải AIRism có cảm giác mát khi chạm.",
+      "Cổ tròn hẹp; không có túi."
+    ],
+    "material": "53% cotton, 47% polyester; hãng công bố 30% sợi polyester tái chế.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Bộ sưu tập",
+        "value": "Uniqlo U"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "TSHIRT",
+    "model": "E465185-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E465185-000/00",
+      "title": "AIRism Cotton Oversized T-Shirt | Half-Sleeve | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng (00)",
+        "sourceColorCode": "00",
+        "sourceColorName": "WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_00_465185_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_09_465185_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng (00)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_00_465185_3x4.jpg",
+        "caption": "Áo thun UNIQLO U AIRism Cotton Oversized – Trắng (00)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_09_465185_3x4.jpg",
+        "caption": "Áo thun UNIQLO U AIRism Cotton Oversized – Đen (09)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P003",
+    "name": "Áo polo UNIQLO Dry Pique Tipping Collar",
+    "summary": "Dry Pique Tipping Collar là áo polo nam có phom regular, cổ và bo tay mang nét cổ điển. Vải piqué pha cotton và polyester được hãng mô tả nhẹ, mịn và hạn chế xù. Công nghệ DRY hỗ trợ nhanh khô, phù hợp với cách mặc hằng ngày. Cổ áo có thể cài hoặc mở nút để thay đổi diện mạo. Thiết kế cơ bản không có túi, dễ phối cùng quần chino hoặc jeans.",
+    "features": [
+      "Vải piqué nhẹ, công nghệ DRY nhanh khô.",
+      "Phom regular; không có túi.",
+      "Bo tay dệt gân, cổ có thể mở nút."
+    ],
+    "material": "Thân: 72% cotton, 28% polyester. Bo: 73% polyester, 27% cotton.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nam"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "TSHIRT",
+    "model": "E469052-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E469052-000/00",
+      "title": "Dry Pique Polo Shirt | Tipping Collar | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng (00)",
+        "sourceColorCode": "00",
+        "sourceColorName": "WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_00_469052_3x4.jpg"
+      },
+      {
+        "name": "Xanh navy (69)",
+        "sourceColorCode": "69",
+        "sourceColorName": "NAVY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_69_469052_3x4.jpg"
+      },
+      {
+        "name": "Màu tự nhiên (30)",
+        "sourceColorCode": "30",
+        "sourceColorName": "NATURAL",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_30_469052_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng (00)",
+      "Xanh navy (69)",
+      "Màu tự nhiên (30)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_00_469052_3x4.jpg",
+        "caption": "Áo polo UNIQLO Dry Pique Tipping Collar – Trắng (00)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_69_469052_3x4.jpg",
+        "caption": "Áo polo UNIQLO Dry Pique Tipping Collar – Xanh navy (69)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_30_469052_3x4.jpg",
+        "caption": "Áo polo UNIQLO Dry Pique Tipping Collar – Màu tự nhiên (30)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P004",
+    "name": "Áo thun nữ UNIQLO Mini T-Shirt",
+    "summary": "Mini T-Shirt có chiều dài ngắn và phom ôm sát, gợi nét áo thun thập niên 1990. Vải cotton pha spandex mang bề mặt tự nhiên, mịn; viền cổ cùng chất liệu giúp tổng thể liền mạch. Tay ngắn và thiết kế ít chi tiết thuận tiện để mặc riêng hoặc phối dưới sơ mi, cardigan hay áo khoác. Mẫu áo không có túi; nên đối chiếu bảng size vì hãng xếp phom rất ôm.",
+    "features": [
+      "Phom very fitted, chiều dài mini.",
+      "Cổ tròn viền cùng chất liệu.",
+      "Tay ngắn, không có túi."
+    ],
+    "material": "96% cotton, 4% spandex.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "TSHIRT",
+    "model": "E465760-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E465760-000/01",
+      "title": "Mini T-Shirt | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "variants": [
+      {
+        "name": "Đỏ (14)",
+        "sourceColorCode": "14",
+        "sourceColorName": "RED",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/465760/item/goods_14_465760_3x4.jpg"
+      },
+      {
+        "name": "Xanh dương (61)",
+        "sourceColorCode": "61",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465760/item/usgoods_61_465760_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Đỏ (14)",
+      "Xanh dương (61)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/465760/item/goods_14_465760_3x4.jpg",
+        "caption": "Áo thun nữ UNIQLO Mini T-Shirt – Đỏ (14)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465760/item/usgoods_61_465760_3x4.jpg",
+        "caption": "Áo thun nữ UNIQLO Mini T-Shirt – Xanh dương (61)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P005",
+    "name": "Áo polo nữ UNIQLO Pique Mini Polo Shirt",
+    "summary": "Pique Mini Polo Shirt là mẫu polo nữ có chiều dài tới eo và phom gọn. Thân áo dùng piqué pha cotton với polyester, được hãng mô tả mềm, mịn và giảm xù lông. Tay ngắn che phần trên cánh tay tạo tỷ lệ cân đối cùng thân mini. Thiết kế có thể phối với nhiều kiểu quần hoặc chân váy. Phần bo bằng cotton và cách chăm sóc nhẹ giúp hoàn thiện một mẫu áo cơ bản.",
+    "features": [
+      "Thân mini dài tới eo.",
+      "Tay ngắn che phần trên cánh tay.",
+      "Piqué pha cotton mềm, giảm xù lông."
+    ],
+    "material": "Thân: 75% cotton, 25% polyester tái chế. Bo: 100% cotton.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "TSHIRT",
+    "model": "E483556-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E483556-000/00",
+      "title": "Pique Mini Polo Shirt | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng ngà (01)",
+        "sourceColorCode": "01",
+        "sourceColorName": "OFF WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_01_483556_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_09_483556_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng ngà (01)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_01_483556_3x4.jpg",
+        "caption": "Áo polo nữ UNIQLO Pique Mini Polo Shirt – Trắng ngà (01)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_09_483556_3x4.jpg",
+        "caption": "Áo polo nữ UNIQLO Pique Mini Polo Shirt – Đen (09)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P006",
+    "name": "Áo sơ mi UNIQLO Oxford Slim Shirt",
+    "summary": "Oxford Slim Shirt sử dụng 100% cotton, được phát triển từ cấu trúc sơ mi Oxford cổ điển. Sợi vải được chọn để cân bằng độ bền, bề mặt và cảm giác mặc. Nút có cạnh bo tròn giúp thao tác cài dễ hơn. Chiều rộng và chiều dài thân được cân chỉnh để mặc sơ vin hoặc thả ngoài. Trang sản phẩm xếp phom regular, phù hợp cách phối cùng quần chino, jeans hoặc áo khoác.",
+    "features": [
+      "Chất liệu Oxford 100% cotton.",
+      "Nút bo cạnh, thuận tiện khi cài.",
+      "Thân áo phù hợp sơ vin hoặc thả ngoài."
+    ],
+    "material": "100% cotton.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Phom theo hãng",
+        "value": "Regular"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "SHIRT",
+    "model": "E456630-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E456630-000/00?colorDisplayCode=64",
+      "title": "Oxford Slim Shirt | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng ngà (01)",
+        "sourceColorCode": "01",
+        "sourceColorName": "OFF WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_01_456630_3x4.jpg"
+      },
+      {
+        "name": "Xanh dương (64)",
+        "sourceColorCode": "64",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_64_456630_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng ngà (01)",
+      "Xanh dương (64)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_01_456630_3x4.jpg",
+        "caption": "Áo sơ mi UNIQLO Oxford Slim Shirt – Trắng ngà (01)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_64_456630_3x4.jpg",
+        "caption": "Áo sơ mi UNIQLO Oxford Slim Shirt – Xanh dương (64)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P007",
+    "name": "Áo sơ mi nam UNIQLO Cotton Linen tay ngắn",
+    "summary": "Cotton Linen Shirt tay ngắn kết hợp độ mềm của cotton và cảm giác thoáng mát của linen. Phom relaxed tạo khoảng rộng ở vai, ngực và gấu áo cho cách mặc thư thái. Cổ hai kiểu có thể mở hoặc cài kín để thay đổi diện mạo. Mẫu áo phù hợp mặc riêng hoặc khoác ngoài áo thun trong thời tiết ấm. Hãng lưu ý màu trắng hơi xuyên thấu và khuyến nghị phơi trong bóng râm.",
+    "features": [
+      "Cổ hai kiểu: mở hoặc cài kín.",
+      "Phom relaxed, tay ngắn.",
+      "Kết hợp cotton mềm và linen mát."
+    ],
+    "material": "57% cotton, 43% linen.",
+    "care": [
+      "Giặt máy nước lạnh; vắt ở mức thấp.",
+      "Không sấy; chỉnh phom và phơi trong bóng râm."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nam"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "SHIRT",
+    "model": "E477181-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E477181-000/00",
+      "title": "Cotton Linen Shirt | Short Sleeve | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng (00)",
+        "sourceColorCode": "00",
+        "sourceColorName": "WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_00_477181_3x4.jpg"
+      },
+      {
+        "name": "Be (32)",
+        "sourceColorCode": "32",
+        "sourceColorName": "BEIGE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_32_477181_3x4.jpg"
+      },
+      {
+        "name": "Xanh lá (51)",
+        "sourceColorCode": "51",
+        "sourceColorName": "GREEN",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_51_477181_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng (00)",
+      "Be (32)",
+      "Xanh lá (51)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_00_477181_3x4.jpg",
+        "caption": "Áo sơ mi nam UNIQLO Cotton Linen tay ngắn – Trắng (00)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_32_477181_3x4.jpg",
+        "caption": "Áo sơ mi nam UNIQLO Cotton Linen tay ngắn – Be (32)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_51_477181_3x4.jpg",
+        "caption": "Áo sơ mi nam UNIQLO Cotton Linen tay ngắn – Xanh lá (51)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P008",
+    "name": "Áo sơ mi nữ UNIQLO Linen Blend Band Collar",
+    "summary": "Linen Blend Band Collar là sơ mi nữ cổ trụ với tay dài ba phần tư. Chất liệu phối rayon, linen và cotton kết hợp bề mặt mượt với cảm giác mát của linen. Hãng xếp phom relaxed và ghi nhận vải không xuyên thấu. Đường nét đơn giản phù hợp mặc như áo sơ mi hoặc dùng làm lớp khoác nhẹ. Thiết kế tay lửng và cổ trụ tạo điểm nhấn gọn cho cách mặc hằng ngày.",
+    "features": [
+      "Cổ trụ, tay dài 3/4.",
+      "Phom relaxed.",
+      "Rayon mượt phối linen mát và cotton."
+    ],
+    "material": "47% rayon, 35% linen, 18% cotton.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "SHIRT",
+    "model": "E464735-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E464735-000/00",
+      "title": "Linen Blend Band Collar 3/4-Sleeve Shirt | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "variants": [
+      {
+        "name": "Trắng ngà (01)",
+        "sourceColorCode": "01",
+        "sourceColorName": "OFF WHITE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_01_464735_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_09_464735_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Trắng ngà (01)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_01_464735_3x4.jpg",
+        "caption": "Áo sơ mi nữ UNIQLO Linen Blend Band Collar – Trắng ngà (01)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_09_464735_3x4.jpg",
+        "caption": "Áo sơ mi nữ UNIQLO Linen Blend Band Collar – Đen (09)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P009",
+    "name": "Quần jeans nam UNIQLO Slim-Fit Jeans",
+    "summary": "Slim-Fit Jeans kết hợp diện mạo denim cổ điển với độ co giãn từ spandex. Quần có cạp vừa và phần ống thẳng từ gối tới gấu, giữ dáng gọn khi mặc. Hiệu ứng phai cùng chi tiết nút, đinh tán và màu chỉ tạo vẻ đã qua sử dụng. Túi trước đặt cao hơn, túi sau được điều chỉnh góc. Mỗi chiếc có thể lệch màu nhẹ; hãng yêu cầu giặt riêng và tránh ngâm lâu.",
+    "features": [
+      "Cạp vừa; ống thẳng từ gối xuống.",
+      "Denim co giãn, hiệu ứng phai vintage.",
+      "Túi trước cao hơn, túi sau chỉnh góc."
+    ],
+    "material": "Thân: 98% cotton, 2% spandex. Lót túi: 65% polyester, 35% cotton.",
+    "care": [
+      "Giặt máy nước lạnh; giặt riêng, tránh ngâm lâu.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Hệ kích thước",
+        "value": "Vòng eo theo inch"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "DENIM",
+    "model": "E450243-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E450243-000/00",
+      "title": "Slim-Fit Jeans | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch"
+    ],
+    "variants": [
+      {
+        "name": "Xanh dương (63)",
+        "sourceColorCode": "63",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_63_450243_3x4.jpg"
+      },
+      {
+        "name": "Xám (07)",
+        "sourceColorCode": "07",
+        "sourceColorName": "GRAY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_07_450243_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh dương (63)",
+      "Xám (07)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_63_450243_3x4.jpg",
+        "caption": "Quần jeans nam UNIQLO Slim-Fit Jeans – Xanh dương (63)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_07_450243_3x4.jpg",
+        "caption": "Quần jeans nam UNIQLO Slim-Fit Jeans – Xám (07)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P010",
+    "name": "Quần jeans nữ UNIQLO Regular Straight Jeans",
+    "summary": "Regular Straight Jeans có dáng ống thẳng và phần eo được hoàn thiện gọn. Quần sử dụng 100% cotton, mang cấu trúc denim tự nhiên cho trang phục hằng ngày. Đường chỉ cùng màu giúp giảm tương phản trên bề mặt và tạo diện mạo chỉn chu. Gấu có thể để thẳng hoặc xắn tùy cách phối. Hệ kích thước theo inch giúp người mua đối chiếu vòng eo với bảng đo riêng của sản phẩm.",
+    "features": [
+      "Ống thẳng, phần eo gọn.",
+      "Đường chỉ cùng màu vải.",
+      "Có thể xắn gấu hoặc để thẳng."
+    ],
+    "material": "100% cotton.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "DENIM",
+    "model": "E472120-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E472120-000/00",
+      "title": "Regular Straight Jeans | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "22inch",
+      "23inch",
+      "24inch",
+      "25inch",
+      "26inch",
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "32inch"
+    ],
+    "variants": [
+      {
+        "name": "Xanh dương (65)",
+        "sourceColorCode": "65",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_65_472120_3x4.jpg"
+      },
+      {
+        "name": "Xanh navy (69)",
+        "sourceColorCode": "69",
+        "sourceColorName": "NAVY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_69_472120_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh dương (65)",
+      "Xanh navy (69)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_65_472120_3x4.jpg",
+        "caption": "Quần jeans nữ UNIQLO Regular Straight Jeans – Xanh dương (65)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_69_472120_3x4.jpg",
+        "caption": "Quần jeans nữ UNIQLO Regular Straight Jeans – Xanh navy (69)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P011",
+    "name": "Quần jeans nam UNIQLO Regular Fit Jeans",
+    "summary": "Regular Fit Jeans sử dụng denim 100% cotton với ống thẳng từ eo tới gấu. Phom regular giữ cấu trúc quen thuộc và có các túi phục vụ sử dụng hằng ngày. Hiệu ứng bạc màu và nếp râu được tạo bằng xử lý laser để mô phỏng nét denim đã qua mặc. Dáng thẳng dễ kết hợp với áo thun, sơ mi hoặc áo khoác. Người mua nên chọn theo vòng eo inch và bảng size của hãng.",
+    "features": [
+      "Denim 100% cotton.",
+      "Phom regular, ống thẳng từ eo tới gấu.",
+      "Xử lý laser tạo hiệu ứng phai và nếp râu."
+    ],
+    "material": "100% cotton.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Hệ kích thước",
+        "value": "Vòng eo theo inch"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "DENIM",
+    "model": "E470534-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E470534-000/00",
+      "title": "Regular Fit Jeans | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "variants": [
+      {
+        "name": "Xanh dương (65)",
+        "sourceColorCode": "65",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_65_470534_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_09_470534_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh dương (65)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_65_470534_3x4.jpg",
+        "caption": "Quần jeans nam UNIQLO Regular Fit Jeans – Xanh dương (65)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_09_470534_3x4.jpg",
+        "caption": "Quần jeans nam UNIQLO Regular Fit Jeans – Đen (09)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P012",
+    "name": "Quần jeans nữ UNIQLO Wide Straight Jeans",
+    "summary": "Wide Straight Jeans có cạp cao vừa phải và ống rộng thẳng, tạo đường nét thoải mái từ phần hông xuống gấu. Vải cotton pha có cảm giác mềm; hai màu xanh của mẫu này được hãng công bố sử dụng 26% cotton tái chế từ phần vải thừa trong sản xuất jeans. Quần có túi và phom relaxed. Hệ size vòng eo theo inch cho phép đối chiếu với bảng kích thước thực tế trước khi chọn.",
+    "features": [
+      "Cạp cao, ống rộng thẳng.",
+      "Phom relaxed, có túi.",
+      "Màu xanh dùng 26% cotton tái chế."
+    ],
+    "material": "99% cotton, 1% sợi khác; bao gồm 26% cotton tái chế.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "DENIM",
+    "model": "E480778-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E480778-000/00",
+      "title": "Wide Straight Jeans | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "22inch",
+      "23inch",
+      "24inch",
+      "25inch",
+      "26inch",
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "32inch",
+      "34inch"
+    ],
+    "variants": [
+      {
+        "name": "Xanh dương (64)",
+        "sourceColorCode": "64",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_64_480778_3x4.jpg"
+      },
+      {
+        "name": "Xanh navy (69)",
+        "sourceColorCode": "69",
+        "sourceColorName": "NAVY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_69_480778_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh dương (64)",
+      "Xanh navy (69)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_64_480778_3x4.jpg",
+        "caption": "Quần jeans nữ UNIQLO Wide Straight Jeans – Xanh dương (64)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_69_480778_3x4.jpg",
+        "caption": "Quần jeans nữ UNIQLO Wide Straight Jeans – Xanh navy (69)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P013",
+    "name": "Quần jeans UNIQLO Wide-Fit Jeans",
+    "summary": "Wide-Fit Jeans là mẫu denim unisex có phom rộng và ống thu nhẹ về gấu. Cạp cao hỗ trợ cách mặc sơ vin, trong khi các đường may chồng và túi trước đặt chéo gợi nét đồ lao động. Thân quần dùng 100% cotton, giữ bề mặt denim tự nhiên. Thiết kế rộng tạo cách mặc thư thái mà vẫn có hình dáng rõ. Size được hãng niêm yết theo vòng eo inch thay cho S, M, L.",
+    "features": [
+      "Phom rộng, ống thu nhẹ về gấu.",
+      "Cạp cao, túi trước chéo.",
+      "Chi tiết đường may theo phong cách workwear."
+    ],
+    "material": "Thân: 100% cotton. Lót túi: 65% polyester, 35% cotton.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Unisex"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "DENIM",
+    "model": "E450245-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E450245-000/00",
+      "title": "Wide-Fit Jeans | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "variants": [
+      {
+        "name": "Xanh dương (65)",
+        "sourceColorCode": "65",
+        "sourceColorName": "BLUE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_65_450245_3x4.jpg"
+      },
+      {
+        "name": "Xám đậm (08)",
+        "sourceColorCode": "08",
+        "sourceColorName": "DARK GRAY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_08_450245_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh dương (65)",
+      "Xám đậm (08)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_65_450245_3x4.jpg",
+        "caption": "Quần jeans UNIQLO Wide-Fit Jeans – Xanh dương (65)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_08_450245_3x4.jpg",
+        "caption": "Quần jeans UNIQLO Wide-Fit Jeans – Xám đậm (08)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P014",
+    "name": "Quần chino nam UNIQLO Slim Chino Pants",
+    "summary": "Slim Chino Pants có dáng gọn và đường ống thẳng, phù hợp phối trang phục hằng ngày hoặc môi trường công sở thoải mái. Vải cotton pha spandex hỗ trợ chuyển động; đường chỉ lộ ra được tiết giảm để giữ bề mặt sạch và gọn. Thiết kế có thể đi cùng sơ mi sơ vin hoặc áo mặc thả ngoài. Hãng dùng hệ vòng eo inch, vì vậy cần đối chiếu bảng kích thước riêng khi chọn size.",
+    "features": [
+      "Phom slim, đường ống thẳng.",
+      "Vải co giãn hỗ trợ chuyển động.",
+      "Tiết giảm đường chỉ lộ trên bề mặt."
+    ],
+    "material": "97% cotton, 3% spandex.",
+    "care": [
+      "Giặt máy bằng nước lạnh.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Hệ kích thước",
+        "value": "Vòng eo theo inch"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "PANTS",
+    "model": "E450251-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E450251-000/00",
+      "title": "Slim Chino Pants | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "variants": [
+      {
+        "name": "Be (32)",
+        "sourceColorCode": "32",
+        "sourceColorName": "BEIGE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_32_450251_3x4.jpg"
+      },
+      {
+        "name": "Xanh navy (69)",
+        "sourceColorCode": "69",
+        "sourceColorName": "NAVY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_69_450251_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Be (32)",
+      "Xanh navy (69)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_32_450251_3x4.jpg",
+        "caption": "Quần chino nam UNIQLO Slim Chino Pants – Be (32)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_69_450251_3x4.jpg",
+        "caption": "Quần chino nam UNIQLO Slim Chino Pants – Xanh navy (69)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P015",
+    "name": "Quần jogger UNIQLO Sweatpants",
+    "summary": "Sweatpants là quần nỉ unisex có dáng thuôn, bề mặt trong và ngoài được hãng mô tả mượt. Cạp cùng gấu bo tạo độ vừa thoải mái; dây rút nằm bên trong cạp giúp điều chỉnh. Túi bên và túi sau thuận tiện cho vật dụng nhỏ. Lớp vải vòng ở mặt trong được thiết kế để hạn chế xù lông. Thân cotton pha polyester phù hợp với cách mặc thư thái hằng ngày.",
+    "features": [
+      "Cạp và gấu bo; dây rút trong cạp.",
+      "Có túi bên và túi sau.",
+      "Lót vòng hỗ trợ hạn chế xù lông."
+    ],
+    "material": "Thân: 88% cotton, 12% polyester. Bo: 82% cotton, 18% polyester.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Phom",
+        "value": "Regular, ống thuôn"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "PANTS",
+    "model": "E458036-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E458036-000/01",
+      "title": "Sweatpants | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Xám (05)",
+        "sourceColorCode": "05",
+        "sourceColorName": "GRAY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_05_458036_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_09_458036_3x4.jpg"
+      },
+      {
+        "name": "Xanh navy (69)",
+        "sourceColorCode": "69",
+        "sourceColorName": "NAVY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_69_458036_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xám (05)",
+      "Đen (09)",
+      "Xanh navy (69)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_05_458036_3x4.jpg",
+        "caption": "Quần jogger UNIQLO Sweatpants – Xám (05)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_09_458036_3x4.jpg",
+        "caption": "Quần jogger UNIQLO Sweatpants – Đen (09)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_69_458036_3x4.jpg",
+        "caption": "Quần jogger UNIQLO Sweatpants – Xanh navy (69)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P016",
+    "name": "Quần short nam UNIQLO Chino Shorts 7 inch",
+    "summary": "Chino Shorts 7 inch dùng vải twill cotton có trọng lượng tương đối dày, tạo dáng gọn mà vẫn mang nét casual. Chi tiết gồm cạp có đường nối, đỉa thắt lưng dày, túi đựng tiền xu và dây rút. Phom regular cùng các túi giúp sử dụng thuận tiện trong trang phục hằng ngày. Hãng lưu ý sắc độ từng chiếc có thể khác nhau do xử lý sản phẩm; nên đối chiếu màu và bảng size trước khi chọn.",
+    "features": [
+      "Twill 100% cotton.",
+      "Đỉa thắt lưng dày, dây rút.",
+      "Túi tiền xu; phom regular."
+    ],
+    "material": "100% cotton.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Dòng sản phẩm",
+        "value": "Chino Shorts 7 inch"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "PANTS",
+    "model": "E458245-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E458245-000/01",
+      "title": "Chino Shorts | 7\" | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Be (32)",
+        "sourceColorCode": "32",
+        "sourceColorName": "BEIGE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_32_458245_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_09_458245_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Be (32)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_32_458245_3x4.jpg",
+        "caption": "Quần short nam UNIQLO Chino Shorts 7 inch – Be (32)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_09_458245_3x4.jpg",
+        "caption": "Quần short nam UNIQLO Chino Shorts 7 inch – Đen (09)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P017",
+    "name": "Quần âu nữ UNIQLO Smart Ankle Pants",
+    "summary": "Smart Ankle Pants kết hợp vải co giãn hai chiều với dáng ống thuôn để phục vụ cách mặc công sở hoặc hằng ngày. Phần gối có khoảng rộng, cạp phẳng với độ co giãn giúp giữ diện mạo gọn. Hãng xếp phom slim, cạp vừa và có túi. Chất liệu polyester pha rayon, spandex mang bề mặt chỉn chu. Người mua nên đối chiếu bảng size của riêng mẫu quần trước khi lựa chọn.",
+    "features": [
+      "Vải co giãn hai chiều.",
+      "Cạp phẳng co giãn, cạp vừa.",
+      "Ống thuôn, có túi, phom slim."
+    ],
+    "material": "64% polyester tái chế, 28% rayon, 8% spandex.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Có thể giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "PANTS",
+    "model": "E479298-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E479298-000/00?colorDisplayCode=38",
+      "title": "Smart Ankle Pants | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "variants": [
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_09_479298_3x4.jpg"
+      },
+      {
+        "name": "Xám (05)",
+        "sourceColorCode": "05",
+        "sourceColorName": "GRAY",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_05_479298_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Đen (09)",
+      "Xám (05)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_09_479298_3x4.jpg",
+        "caption": "Quần âu nữ UNIQLO Smart Ankle Pants – Đen (09)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_05_479298_3x4.jpg",
+        "caption": "Quần âu nữ UNIQLO Smart Ankle Pants – Xám (05)"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P018",
+    "name": "Quần cargo UNIQLO Cargo Pants",
+    "summary": "Cargo Pants là mẫu quần unisex dùng cotton pha spandex, có dáng rộng thuôn về gấu. Dây rút ở gấu giúp thay đổi hình dáng ống theo cách mặc. Túi cargo bên phải tích hợp thêm túi nhỏ ở trong để sắp xếp vật dụng. Thiết kế có phom loose và nhiều túi, tạo nét thực dụng cho trang phục casual. Bề mặt cotton tự nhiên cùng độ co giãn nhẹ hoàn thiện cách mặc thư thái.",
+    "features": [
+      "Phom loose, ống rộng thuôn.",
+      "Dây rút ở gấu điều chỉnh dáng ống.",
+      "Túi cargo phải có túi nhỏ bên trong."
+    ],
+    "material": "98% cotton, 2% spandex.",
+    "care": [
+      "Giặt máy nước lạnh, chế độ nhẹ.",
+      "Không giặt khô."
+    ],
+    "specs": [
+      {
+        "label": "Đối tượng",
+        "value": "Unisex"
+      }
+    ],
+    "brand": "UNIQLO",
+    "categoryKey": "PANTS",
+    "model": "E479383-000",
+    "madeby": "",
+    "source": {
+      "url": "https://www.uniqlo.com/us/en/products/E479383-000/00",
+      "title": "Cargo Pants | UNIQLO US",
+      "checkedAt": "2026-10-09"
+    },
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "variants": [
+      {
+        "name": "Xanh olive (56)",
+        "sourceColorCode": "56",
+        "sourceColorName": "OLIVE",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_56_479383_3x4.jpg"
+      },
+      {
+        "name": "Đen (09)",
+        "sourceColorCode": "09",
+        "sourceColorName": "BLACK",
+        "imageUrl": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_09_479383_3x4.jpg"
+      }
+    ],
+    "colors": [
+      "Xanh olive (56)",
+      "Đen (09)"
+    ],
+    "images": [
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_56_479383_3x4.jpg",
+        "caption": "Quần cargo UNIQLO Cargo Pants – Xanh olive (56)"
+      },
+      {
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_09_479383_3x4.jpg",
+        "caption": "Quần cargo UNIQLO Cargo Pants – Đen (09)"
+      }
+    ]
+  }
+]

@@ -1,218 +1,138 @@
-import React, { useEffect, useState } from 'react';
-import Lightbox from 'react-image-lightbox';
-import 'react-image-lightbox/style.css';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addItemCartStart } from '../../action/ShopCartAction';
 import './InfoDetailProduct.scss';
-import CommonUtils from '../../utils/CommonUtils';
-function InfoDetailProduct(props) {
-    let { dataProduct } = props
-    let [arrDetail, setarrDetail] = useState([])
-    const [productDetail, setproductDetail] = useState([])
-    const [isOpen, setisOpen] = useState(false)
-    const [imgPreview, setimgPreview] = useState('')
-    const [activeLinkId, setactiveLinkId] = useState('')
-    const [quantity, setquantity] = useState('')
-    const [quantityProduct, setquantityProduct] = useState(1)
+
+const emptyDetails = [];
+const priceFormatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+const validPrice = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value)) && Number(value) >= 0;
+
+function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
+    const details = dataProduct?.productDetail || emptyDetails;
+    const [detailId, setDetailId] = useState(null);
+    const [sizeId, setSizeId] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [imageIndex, setImageIndex] = useState(0);
+    const [imageFailed, setImageFailed] = useState(false);
+    const previewRef = useRef(null);
+    const dispatch = useDispatch();
+    const detail = details.find((item) => item.id === detailId) || details[0];
+    const sizes = detail?.productDetailSize || emptyDetails;
+    const size = sizes.find((item) => item.id === sizeId);
+    const images = detail?.productImage || emptyDetails;
+    const image = images[imageIndex] || images[0];
+    const stock = Math.max(0, Number(size?.stock) || 0);
+    const sellingPrice = validPrice(detail?.discountPrice) ? Number(detail.discountPrice) : validPrice(detail?.originalPrice) ? Number(detail.originalPrice) : null;
+    const originalPrice = validPrice(detail?.originalPrice) ? Number(detail.originalPrice) : null;
+    const hasDiscount = sellingPrice !== null && originalPrice !== null && sellingPrice < originalPrice;
+    const purchasable = !!size && stock > 0 && sellingPrice !== null;
+
     useEffect(() => {
+        const first = details.find((item) => item.productDetailSize?.some((option) => Number(option.stock) > 0)) || details[0];
+        setDetailId(first?.id || null);
+        const firstSize = first?.productDetailSize?.find((option) => Number(option.stock) > 0) || first?.productDetailSize?.[0];
+        setSizeId(firstSize?.id || null);
+        setQuantity(1);
+        setImageIndex(0);
+    }, [details]);
 
-        let { productDetail } = dataProduct ? dataProduct : []
+    useEffect(() => { setImageFailed(false); }, [image?.image]);
+    useEffect(() => { sendDataFromInforDetail?.(size || {}); }, [size, sendDataFromInforDetail]);
 
-        if (productDetail?.length) {
-            setproductDetail(productDetail)
+    const selectDetail = (value) => {
+        const selected = details.find((item) => String(item.id) === value);
+        const firstSize = selected?.productDetailSize?.find((option) => Number(option.stock) > 0) || selected?.productDetailSize?.[0];
+        setDetailId(selected?.id || null);
+        setSizeId(firstSize?.id || null);
+        setQuantity(1);
+        setImageIndex(0);
+    };
 
-            setarrDetail(productDetail[0])
-            const size = productDetail[0].productDetailSize?.[0];
-            setactiveLinkId(size?.id || '')
-            setquantity(size?.stock || 0)
-
-            props.sendDataFromInforDetail(size || {})
-        } else {
-            setproductDetail([]); setarrDetail({}); setactiveLinkId(''); setquantity(0);
+    const addToCart = () => {
+        const count = Number(quantity);
+        if (!purchasable) { toast.error('Lựa chọn này hiện chưa có hàng.'); return; }
+        if (!Number.isInteger(count) || count < 1 || count > stock) {
+            toast.error('Số lượng phải là số nguyên và không vượt quá tồn kho.');
+            return;
         }
-    }, [props.dataProduct])
+        if (!userId) { toast.error('Đăng nhập để thêm vào giỏ hàng.'); return; }
+        dispatch(addItemCartStart({ userId, productdetailsizeId: size.id, quantity: count }));
+    };
 
-    let handleSelectDetail = (event) => {
-        setactiveLinkId(''); setquantity(0); setquantityProduct(1);
-        setarrDetail(productDetail[event.target.value])
-        if (productDetail[event.target.value] && productDetail[event.target.value].productDetailSize.length > 0) {
-            setactiveLinkId(productDetail[event.target.value].productDetailSize[0].id)
-            setquantity(productDetail[event.target.value].productDetailSize[0].stock)
-            props.sendDataFromInforDetail(productDetail[event.target.value].productDetailSize[0])
-        }
+    const placeholder = <span className="product-buy__placeholder"><i className="ti-image" aria-hidden="true" />Ảnh sản phẩm đang được cập nhật</span>;
 
-    }
-    let openPreviewImage = (url) => {
-
-
-        setimgPreview(url);
-        setisOpen(true);
-
-    }
-    let handleClickBoxSize = (data) => {
-        setquantityProduct(1)
-
-        setactiveLinkId(data.id)
-        setquantity(data.stock)
-        props.sendDataFromInforDetail(data)
-    }
-    const dispatch = useDispatch()
-    let handleAddShopCart = () => {
-        if (!activeLinkId || Number(quantity) < 1) { toast.error("Sản phẩm đã hết hàng"); return; }
-        if (!Number.isInteger(Number(quantityProduct)) || Number(quantityProduct) < 1 || Number(quantityProduct) > Number(quantity)) {
-            toast.error("Số lượng phải là số nguyên và không vượt quá tồn kho"); return;
-        }
-        if (props.userId) {
-            dispatch(addItemCartStart({
-                userId: props.userId,
-                productdetailsizeId: activeLinkId,
-                quantity: quantityProduct,
-            }))
-        } else {
-            toast.error("Đăng nhập để thêm vào giỏ hàng")
-        }
-
-    }
     return (
-
-
-        <div className="row s_product_inner">
-            <div className="col-lg-6">
-                <div className="s_product_img">
-                    <div id="carouselExampleIndicators" className="carousel slide" data-ride="carousel">
+        <div className="product-buy">
+            <div className="product-buy__gallery">
+                <button type="button" className="product-buy__main-image" disabled={!image?.image || imageFailed} aria-label="Phóng to ảnh sản phẩm" onClick={() => previewRef.current?.showModal()}>
+                    {image?.image && !imageFailed ? (
+                        <img src={image.image} alt={image.caption || dataProduct.name} onError={() => setImageFailed(true)} />
+                    ) : placeholder}
+                    {image?.image && !imageFailed && <span className="product-buy__zoom"><i className="ti-zoom-in" aria-hidden="true" /></span>}
+                </button>
+                {images.length > 1 && (
+                    <div className="product-buy__thumbnails" aria-label="Ảnh sản phẩm">
+                        {images.map((item, index) => (
+                            <button type="button" key={item.id || index} className={index === imageIndex ? 'is-selected' : ''} aria-pressed={index === imageIndex} aria-label={`Xem ảnh ${index + 1}`} onClick={() => setImageIndex(index)}>
+                                <img src={item.image} alt={item.caption || `${dataProduct.name} – ảnh ${index + 1}`} loading="lazy" />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            <div className="product-buy__information">
+                <div className="product-buy__brand">{dataProduct.brandData?.value}</div>
+                <h1>{dataProduct.name}</h1>
+                <div className="product-buy__pricing">
+                    <strong>{sellingPrice !== null ? priceFormatter.format(sellingPrice) : 'Liên hệ'}</strong>
+                    {hasDiscount && <><del>{priceFormatter.format(originalPrice)}</del><span>-{Math.round((1 - sellingPrice / originalPrice) * 100)}%</span></>}
+                </div>
+                {detail?.description && <p className="product-buy__summary">{detail.description}</p>}
+                <dl className="product-buy__facts">
+                    {dataProduct.material && <div><dt>Chất liệu</dt><dd>{dataProduct.material}</dd></div>}
+                    {dataProduct.madeby && <div><dt>Xuất xứ</dt><dd>{dataProduct.madeby}</dd></div>}
+                    {dataProduct.categoryData?.value && <div><dt>Danh mục</dt><dd>{dataProduct.categoryData.value}</dd></div>}
+                </dl>
+                {!!details.length && (
+                    <div className="product-buy__option">
+                        <label htmlFor="product-variant">Phiên bản / màu sắc</label>
+                        <select id="product-variant" value={detail?.id || ''} onChange={(event) => selectDetail(event.target.value)}>
+                            {details.map((item) => <option key={item.id} value={item.id}>{item.nameDetail}</option>)}
+                        </select>
+                    </div>
+                )}
+                {!!sizes.length && (
+                    <fieldset className="product-buy__sizes">
+                        <legend>Kích thước</legend>
+                        <div>{sizes.map((item) => (
+                            <button type="button" key={item.id} aria-pressed={item.id === sizeId} disabled={Number(item.stock) < 1} className={item.id === sizeId ? 'is-selected' : ''} onClick={() => { setSizeId(item.id); setQuantity(1); }}>
+                                {item.sizeData?.value || 'Tiêu chuẩn'}
+                            </button>
+                        ))}</div>
+                    </fieldset>
+                )}
+                <p className={purchasable ? 'product-buy__availability' : 'product-buy__availability is-unavailable'} role="status">
+                    <span aria-hidden="true" />{purchasable ? `${stock} sản phẩm có sẵn cho lựa chọn này` : 'Lựa chọn này hiện chưa có hàng'}
+                </p>
+                <div className="product-buy__purchase">
+                    <div className="product-buy__quantity">
+                        <label htmlFor="product-quantity">Số lượng</label>
                         <div>
-                            <ol className="carousel-indicators">
-                                {arrDetail && arrDetail.productImage && arrDetail.productImage.length > 0 &&
-                                    arrDetail.productImage.map((item, index) => {
-                                        if (index === 0) {
-                                            return (
-                                                <li data-target="#carouselExampleIndicators" data-slide-to={index} className="active">
-                                                    <img height="60px" className="w-100" src={item.image} alt="" />
-                                                </li>
-                                            )
-                                        } else {
-                                            return (
-                                                <li data-target="#carouselExampleIndicators" data-slide-to={index} className="">
-                                                    <img height="60px" className="w-100" src={item.image} alt="" />
-                                                </li>
-                                            )
-                                        }
-
-                                    })
-                                }
-
-
-                            </ol>
-                        </div>
-                        <div className="carousel-inner">
-
-                            {arrDetail && arrDetail.productImage && arrDetail.productImage.length > 0 &&
-                                arrDetail.productImage.map((item, index) => {
-                                    if (index === 0) {
-                                        return (
-
-                                            <div onClick={() => openPreviewImage(item.image)} style={{ cursor: 'pointer' }} className="carousel-item active">
-                                                <img className="d-block w-100"
-                                                    src={item.image} alt="Ảnh bị lỗi" />
-                                            </div>
-                                        )
-                                    } else {
-                                        return (
-
-                                            <div onClick={() => openPreviewImage(item.image)} style={{ cursor: 'pointer' }} className="carousel-item ">
-                                                <img className="d-block w-100"
-                                                    src={item.image} alt="Ảnh bị lỗi" />
-                                            </div>
-                                        )
-                                    }
-
-
-
-                                })
-                            }
+                            <button type="button" aria-label="Giảm số lượng" disabled={!purchasable || Number(quantity) <= 1} onClick={() => setQuantity(Math.max(1, Number(quantity) - 1))}>−</button>
+                            <input id="product-quantity" type="number" min="1" max={stock || 1} step="1" value={quantity} disabled={!purchasable} onChange={(event) => setQuantity(event.target.value)} />
+                            <button type="button" aria-label="Tăng số lượng" disabled={!purchasable || Number(quantity) >= stock} onClick={() => setQuantity(Math.min(stock, Number(quantity) + 1))}>+</button>
                         </div>
                     </div>
+                    <button type="button" className="product-buy__add" disabled={!purchasable} onClick={addToCart}><i className="ti-shopping-cart" aria-hidden="true" />Thêm vào giỏ hàng</button>
                 </div>
+                <a className="product-buy__more" href="#product-details">Xem mô tả và thông số đầy đủ <span aria-hidden="true">↓</span></a>
             </div>
-            <div className="col-lg-5 offset-lg-1">
-                <div className="s_product_text">
-                    <h3>{dataProduct.name}</h3>
-                    <h2>{CommonUtils.formatter.format(arrDetail.discountPrice)}</h2>
-                    <ul className="list">
-                        <li>
-                            <a className="active" href="#">
-                                <span>Loại</span> : {dataProduct && dataProduct.categoryData ? dataProduct.categoryData.value : ''}</a>
-                        </li>
-                        <li>
-                            <a href="#"> <span>Trạng thái</span> : {quantity > 0 ? 'Còn hàng' : 'Hết hàng'}</a>
-                        </li>
-                        <li>
-                            <div className="box-size">
-                                <a href="#"> <span>Size</span></a>
-                                {arrDetail && arrDetail.productDetailSize && arrDetail.productDetailSize.length > 0 &&
-                                    arrDetail.productDetailSize.map((item, index) => {
-
-                                        return (
-                                            <div onClick={() => handleClickBoxSize(item)} key={index} className={item.id === activeLinkId ? 'product-size active' : 'product-size'}>
-                                                {item.sizeData?.value || ''}
-                                            </div>
-                                        )
-
-
-                                    })
-                                }
-
-
-                            </div>
-                        </li>
-                        <li>
-                            <a href="#">{quantity} sản phẩm có sẵn</a>
-                        </li>
-                    </ul>
-                    <p>
-                        {arrDetail.description}
-                    </p>
-                    <div style={{ display: 'flex' }}>
-                        <div className="product_count">
-                            <label htmlFor="qty">Số lượng</label>
-                            {/* <input type="text" name="qty" id="sst" maxLength={12} defaultValue={1} title="Quantity:" className="input-text qty" /> */}
-                            <input type="number" value={quantityProduct} onChange={(event) => setquantityProduct(event.target.value)} min="1" max={quantity} step="1" />
-
-                        </div>
-                        <div className="form-group">
-                            <label style={{ fontSize: '14px', color: '#797979', fontFamily: '"Roboto",sans-serif', marginLeft: '16px' }} htmlFor="type">Loại sản phẩm</label>
-                            <select onChange={(event) => handleSelectDetail(event)} className="sorting" name="type" style={{ outline: 'none', border: '1px solid #eee', marginLeft: '16px' }}>
-                                {dataProduct && productDetail && productDetail.length > 0 &&
-                                    productDetail.map((item, index) => {
-                                        return (
-                                            <option key={index} value={index}>{item.nameDetail}</option>
-                                        )
-                                    })
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-
-
-
-                    <div className="card_area">
-                        <a className="main_btn" onClick={() => handleAddShopCart()}>Thêm vào giỏ</a>
-                        <a className="icon_btn" href="#">
-                            <i className="lnr lnr lnr-heart" />
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {
-                isOpen === true &&
-                <Lightbox mainSrc={imgPreview}
-                    onCloseRequest={() => setisOpen(false)}
-                />
-            }
+            <dialog ref={previewRef} className="product-buy__preview" aria-label="Ảnh phóng to của sản phẩm">
+                <button type="button" autoFocus aria-label="Đóng ảnh phóng to" onClick={() => previewRef.current?.close()}>×</button>
+                {image?.image && <img src={image.image} alt={image.caption || dataProduct.name} />}
+            </dialog>
         </div>
-
     );
 }
 

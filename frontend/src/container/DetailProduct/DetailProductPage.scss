@@ -1,0 +1,58 @@
+.product-detail-page {
+    padding: 24px 0 0;
+    color: #33442c;
+    &__container { max-width: 1240px; width: 100%; padding: 0 24px; margin: 0 auto; }
+    &__breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 28px; font-size: 12px; color: #839077;
+        a { color: #637454; &:hover { color: #3f6828; } }
+        > span[aria-current] { max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    }
+    &__details { margin: 56px 0; border: 1px solid #e4eadf; border-radius: 12px; overflow: hidden; scroll-margin-top: 95px; }
+    &__tabs { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid #e4eadf; background: #f7faf4; overflow-x: auto;
+        button { position: relative; flex-shrink: 0; border: 0; padding: 20px 18px; background: transparent; color: #7b8871; font-size: 14px; font-weight: 600; cursor: pointer;
+            &[aria-selected=true] { color: #3f6d26; &::after { content: ''; position: absolute; bottom: 0; left: 18px; right: 18px; height: 3px; background: #578937; } }
+        }
+    }
+    &__panel { padding: 32px; min-height: 220px; &[hidden] { display: none; } }
+    &__muted { color: #839077; font-size: 14px; }
+    &__state { display: flex; flex-direction: column; align-items: center; gap: 14px; min-height: 500px; padding: 40px 20px; text-align: center; justify-content: center;
+        h1 { font-size: 26px; }
+        p { margin: 0; color: #78876b; }
+        button { border: 0; padding: 10px 24px; border-radius: 8px; background: #466f2e; color: white; cursor: pointer; }
+        a { color: #577c3d; }
+    }
+    &__skeleton { width: 100%; max-width: 900px; height: 350px; border-radius: 12px; background: #f1f5ed; }
+    button:focus-visible, a:focus-visible, [role=tabpanel]:focus-visible { outline: 3px solid #78a357; outline-offset: -3px; }
+    .product-description { max-width: 960px; font-size: 14px; color: #526248; line-height: 1.9; overflow-wrap: anywhere;
+        h2 { margin: 28px 0 14px; color: #2f4227; font-size: 23px; font-weight: 700; line-height: 1.4; &:first-child { margin-top: 0; } }
+        h3 { margin: 24px 0 12px; font-size: 18px; color: #34482a; font-weight: 600; }
+        p { margin-bottom: 16px; }
+        ul, ol { padding-left: 22px; margin: 0 0 20px; }
+        ul { list-style: disc; } ol { list-style: decimal; }
+        li { padding-left: 2px; margin-bottom: 5px; }
+        table { width: 100%; margin: 20px 0; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+        th, td { padding: 12px 16px; border: 1px solid #e8ede4; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+        th { background: #f5f8f1; font-weight: 600; color: #516547; }
+        th:first-child, td:first-child { width: 35%; }
+        a { color: #4b7c30; text-decoration: underline; }
+        blockquote { margin: 20px 0; padding: 16px 20px; border-left: 3px solid #a8bf95; background: #f8faf5; }
+        code, pre { white-space: pre-wrap; }
+    }
+    .product-specifications { max-width: 800px;
+        dl { margin: 0; > div { display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 20px; padding: 14px 16px; border-bottom: 1px solid #e8ede4; &:nth-child(odd) { background: #f8faf5; } } }
+        dt { font-weight: 600; font-size: 13px; color: #596d4d; }
+        dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+        &__note { margin-top: 20px; font-size: 12px; color: #8a987d; }
+    }
+}
+@media (max-width: 767px) {
+    .product-detail-page { padding-top: 18px;
+        &__container { padding: 0 16px; }
+        &__breadcrumb { margin-bottom: 20px; }
+        &__breadcrumb > span[aria-current] { max-width: 240px; }
+        &__details { margin: 32px 0; }
+        &__tabs { padding: 0 6px; button { padding: 16px 12px; font-size: 12px; } }
+        &__panel { padding: 20px 16px; }
+        .product-description { font-size: 13px; h2 { font-size: 21px; } h3 { font-size: 17px; } th,td { padding: 10px; } }
+        .product-specifications dl > div { grid-template-columns: 115px minmax(0,1fr); gap: 12px; padding: 12px; }
+    }
+}

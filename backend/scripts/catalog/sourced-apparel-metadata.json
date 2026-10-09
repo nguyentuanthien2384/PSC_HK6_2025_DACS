@@ -1,0 +1,1349 @@
+[
+  {
+    "demoKey": "DEMO_P001",
+    "url": "https://www.uniqlo.com/us/en/products/E455365-000/00",
+    "title": "SUPIMA® Cotton T-Shirt",
+    "model": "E455365-000",
+    "checkedAt": "2026-10-09",
+    "composition": "100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_kh",
+        "code": "KH"
+      },
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "07",
+        "name": "GRAY"
+      },
+      {
+        "code": "00",
+        "name": "WHITE"
+      },
+      {
+        "code": "04",
+        "name": "GRAY"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "12",
+        "name": "PINK"
+      },
+      {
+        "code": "17",
+        "name": "RED"
+      },
+      {
+        "code": "31",
+        "name": "BEIGE"
+      },
+      {
+        "code": "51",
+        "name": "GREEN"
+      },
+      {
+        "code": "58",
+        "name": "DARK GREEN"
+      },
+      {
+        "code": "63",
+        "name": "BLUE"
+      },
+      {
+        "code": "68",
+        "name": "BLUE"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "00",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_00_455365_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_09_455365_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "07",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/455365/item/usgoods_07_455365_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P001 Trắng (00)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P001 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P001 Xám (07)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P002",
+    "url": "https://www.uniqlo.com/us/en/products/E465185-000/00",
+    "title": "AIRism Cotton Oversized T-Shirt | Half-Sleeve",
+    "model": "E465185-000",
+    "checkedAt": "2026-10-09",
+    "composition": "53% Cotton, 47% Polyester ( 30% Uses Recycled Polyester Fiber )<br><br>Imported",
+    "washingInformation": "Machine wash cold, Dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      },
+      {
+        "lid": "text_country_id",
+        "code": "ID"
+      },
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "39",
+        "name": "DARK BROWN"
+      },
+      {
+        "code": "00",
+        "name": "WHITE"
+      },
+      {
+        "code": "02",
+        "name": "LIGHT GRAY"
+      },
+      {
+        "code": "07",
+        "name": "GRAY"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "11",
+        "name": "PINK"
+      },
+      {
+        "code": "12",
+        "name": "PINK"
+      },
+      {
+        "code": "17",
+        "name": "RED"
+      },
+      {
+        "code": "18",
+        "name": "WINE"
+      },
+      {
+        "code": "35",
+        "name": "BROWN"
+      },
+      {
+        "code": "42",
+        "name": "YELLOW"
+      },
+      {
+        "code": "50",
+        "name": "LIGHT GREEN"
+      },
+      {
+        "code": "58",
+        "name": "DARK GREEN"
+      },
+      {
+        "code": "65",
+        "name": "BLUE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      },
+      {
+        "code": "70",
+        "name": "LIGHT PURPLE"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "00",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_00_465185_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465185/item/usgoods_09_465185_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P002 Trắng (00)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P002 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P003",
+    "url": "https://www.uniqlo.com/us/en/products/E469052-000/00",
+    "title": "Dry Pique Polo Shirt | Tipping Collar",
+    "model": "E469052-000",
+    "checkedAt": "2026-10-09",
+    "composition": "Body: 72% Cotton, 28% Polyester ( 28% Uses Recycled Polyester Fiber )/ Rib: 73% Polyester, 27% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "69",
+        "name": "NAVY"
+      },
+      {
+        "code": "00",
+        "name": "WHITE"
+      },
+      {
+        "code": "30",
+        "name": "NATURAL"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "00",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_00_469052_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "69",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_69_469052_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "30",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/469052/item/goods_30_469052_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P003 Trắng (00)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P003 Xanh navy (69)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P003 Màu tự nhiên (30)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P004",
+    "url": "https://www.uniqlo.com/us/en/products/E465760-000/01",
+    "title": "Mini T-Shirt",
+    "model": "E465760-000",
+    "checkedAt": "2026-10-09",
+    "composition": "96% Cotton, 4% Spandex<br><br>Imported",
+    "washingInformation": "Machine wash cold, Dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      },
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "14",
+        "name": "RED"
+      },
+      {
+        "code": "61",
+        "name": "BLUE"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "14",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/465760/item/goods_14_465760_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "61",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/465760/item/usgoods_61_465760_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P004 Đỏ (14)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P004 Xanh dương (61)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P005",
+    "url": "https://www.uniqlo.com/us/en/products/E483556-000/00",
+    "title": "Pique Mini Polo Shirt",
+    "model": "E483556-000",
+    "checkedAt": "2026-10-09",
+    "composition": "Body: 75% Cotton, 25% Polyester ( 25% Uses Recycled Polyester Fiber )/ Rib: 100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "61",
+        "name": "BLUE"
+      },
+      {
+        "code": "01",
+        "name": "OFF WHITE"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "14",
+        "name": "RED"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "01",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_01_483556_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/483556/item/usgoods_09_483556_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P005 Trắng ngà (01)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P005 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P006",
+    "url": "https://www.uniqlo.com/us/en/products/E456630-000/00?colorDisplayCode=64",
+    "title": "Oxford Slim Shirt",
+    "model": "E456630-000",
+    "checkedAt": "2026-10-09",
+    "composition": "100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "64",
+        "name": "BLUE"
+      },
+      {
+        "code": "01",
+        "name": "OFF WHITE"
+      },
+      {
+        "code": "06",
+        "name": "GRAY"
+      }
+    ],
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "01",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_01_456630_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "64",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/456630/item/usgoods_64_456630_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P006 Trắng ngà (01)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P006 Xanh dương (64)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P007",
+    "url": "https://www.uniqlo.com/us/en/products/E477181-000/00",
+    "title": "Cotton Linen Shirt | Short Sleeve",
+    "model": "E477181-000",
+    "checkedAt": "2026-10-09",
+    "composition": "57% Cotton, 43% Linen<br><br>Imported",
+    "washingInformation": "Machine wash cold, Dry clean",
+    "careInstruction": "Recommendations for care:<br>When using a washing machine, select a cold temperature setting and cycle with lowest spin. No Tumbler/Dryer.<br>Remove your linen quickly from washer.<br>Adjust it to cut down wrinkles by hand.<br>Hang it to dry in the shade using a hanger. Avoid direct sunlight.",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "37",
+        "name": "BROWN"
+      },
+      {
+        "code": "00",
+        "name": "WHITE"
+      },
+      {
+        "code": "07",
+        "name": "GRAY"
+      },
+      {
+        "code": "14",
+        "name": "RED"
+      },
+      {
+        "code": "26",
+        "name": "ORANGE"
+      },
+      {
+        "code": "32",
+        "name": "BEIGE"
+      },
+      {
+        "code": "41",
+        "name": "YELLOW"
+      },
+      {
+        "code": "51",
+        "name": "GREEN"
+      },
+      {
+        "code": "64",
+        "name": "BLUE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "00",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_00_477181_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "32",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_32_477181_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "51",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/477181/item/usgoods_51_477181_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P007 Trắng (00)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P007 Be (32)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P007 Xanh lá (51)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P008",
+    "url": "https://www.uniqlo.com/us/en/products/E464735-000/00",
+    "title": "Linen Blend Band Collar 3/4-Sleeve Shirt",
+    "model": "E464735-000",
+    "checkedAt": "2026-10-09",
+    "composition": "47% Rayon, 35% Linen, 18% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_cn",
+        "code": "CN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "01",
+        "name": "OFF WHITE"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "71",
+        "name": "PURPLE"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "01",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_01_464735_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464735/item/goods_09_464735_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P008 Trắng ngà (01)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P008 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P009",
+    "url": "https://www.uniqlo.com/us/en/products/E450243-000/00",
+    "title": "Slim-Fit Jeans",
+    "model": "E450243-000",
+    "checkedAt": "2026-10-09",
+    "composition": "Body: 98% Cotton, 2% Spandex/ Pocket Lining: 65% Polyester, 35% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      },
+      {
+        "lid": "text_country_cn",
+        "code": "CN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "07",
+        "name": "GRAY"
+      },
+      {
+        "code": "63",
+        "name": "BLUE"
+      }
+    ],
+    "sourceSizes": [
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "63",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_63_450243_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "07",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/450243/item/goods_07_450243_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P009 Xanh dương (63)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P009 Xám (07)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P010",
+    "url": "https://www.uniqlo.com/us/en/products/E472120-000/00",
+    "title": "Regular Straight Jeans",
+    "model": "E472120-000",
+    "checkedAt": "2026-10-09",
+    "composition": "100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      }
+    ],
+    "colors": [
+      {
+        "code": "30",
+        "name": "NATURAL"
+      },
+      {
+        "code": "65",
+        "name": "BLUE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "22inch",
+      "23inch",
+      "24inch",
+      "25inch",
+      "26inch",
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "32inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "65",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_65_472120_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "69",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/472120/item/goods_69_472120_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P010 Xanh dương (65)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P010 Xanh navy (69)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P011",
+    "url": "https://www.uniqlo.com/us/en/products/E470534-000/00",
+    "title": "Regular Fit Jeans",
+    "model": "E470534-000",
+    "checkedAt": "2026-10-09",
+    "composition": "100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      }
+    ],
+    "colors": [
+      {
+        "code": "65",
+        "name": "BLUE"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      }
+    ],
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "65",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_65_470534_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470534/item/goods_09_470534_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P011 Xanh dương (65)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P011 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P012",
+    "url": "https://www.uniqlo.com/us/en/products/E480778-000/00",
+    "title": "Wide Straight Jeans",
+    "model": "E480778-000",
+    "checkedAt": "2026-10-09",
+    "composition": "99% Cotton, 1% Other Fiber ( 26% Uses Recycled Cotton Fiber )<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      }
+    ],
+    "colors": [
+      {
+        "code": "64",
+        "name": "BLUE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "22inch",
+      "23inch",
+      "24inch",
+      "25inch",
+      "26inch",
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "32inch",
+      "34inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "64",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_64_480778_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "69",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/480778/item/usgoods_69_480778_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P012 Xanh dương (64)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P012 Xanh navy (69)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P013",
+    "url": "https://www.uniqlo.com/us/en/products/E450245-000/00",
+    "title": "Wide-Fit Jeans",
+    "model": "E450245-000",
+    "checkedAt": "2026-10-09",
+    "composition": "Body: 100% Cotton/ Pocket Lining: 65% Polyester, 35% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_cn",
+        "code": "CN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "08",
+        "name": "DARK GRAY"
+      },
+      {
+        "code": "65",
+        "name": "BLUE"
+      },
+      {
+        "code": "68",
+        "name": "BLUE"
+      }
+    ],
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "65",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_65_450245_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "08",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450245/item/usgoods_08_450245_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P013 Xanh dương (65)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P013 Xám đậm (08)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P014",
+    "url": "https://www.uniqlo.com/us/en/products/E450251-000/00",
+    "title": "Slim Chino Pants",
+    "model": "E450251-000",
+    "checkedAt": "2026-10-09",
+    "composition": "97% Cotton, 3% Spandex<br><br>Imported",
+    "washingInformation": "Machine wash cold, Dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "32",
+        "name": "BEIGE"
+      },
+      {
+        "code": "08",
+        "name": "DARK GRAY"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "57",
+        "name": "OLIVE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "27inch",
+      "28inch",
+      "29inch",
+      "30inch",
+      "31inch",
+      "32inch",
+      "33inch",
+      "34inch",
+      "35inch",
+      "36inch",
+      "38inch",
+      "40inch"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "32",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_32_450251_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "69",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/450251/item/usgoods_69_450251_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P014 Be (32)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P014 Xanh navy (69)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P015",
+    "url": "https://www.uniqlo.com/us/en/products/E458036-000/01",
+    "title": "Sweatpants",
+    "model": "E458036-000",
+    "checkedAt": "2026-10-09",
+    "composition": "Body: 88% Cotton, 12% Polyester/ Rib: 82% Cotton, 18% Polyester<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_vn",
+        "code": "VN"
+      }
+    ],
+    "colors": [
+      {
+        "code": "57",
+        "name": "OLIVE"
+      },
+      {
+        "code": "02",
+        "name": "LIGHT GRAY"
+      },
+      {
+        "code": "05",
+        "name": "GRAY"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "59",
+        "name": "DARK GREEN"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "05",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_05_458036_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_09_458036_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "69",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458036/item/goods_69_458036_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P015 Xám (05)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P015 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P015 Xanh navy (69)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P016",
+    "url": "https://www.uniqlo.com/us/en/products/E458245-000/01",
+    "title": "Chino Shorts | 7\"",
+    "model": "E458245-000",
+    "checkedAt": "2026-10-09",
+    "composition": "100% Cotton<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Do not dry clean",
+    "careInstruction": "",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      }
+    ],
+    "colors": [
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "01",
+        "name": "OFF WHITE"
+      },
+      {
+        "code": "11",
+        "name": "PINK"
+      },
+      {
+        "code": "28",
+        "name": "DARK ORANGE"
+      },
+      {
+        "code": "32",
+        "name": "BEIGE"
+      },
+      {
+        "code": "35",
+        "name": "BROWN"
+      },
+      {
+        "code": "42",
+        "name": "YELLOW"
+      },
+      {
+        "code": "54",
+        "name": "GREEN"
+      },
+      {
+        "code": "55",
+        "name": "GREEN"
+      },
+      {
+        "code": "65",
+        "name": "BLUE"
+      },
+      {
+        "code": "66",
+        "name": "BLUE"
+      },
+      {
+        "code": "69",
+        "name": "NAVY"
+      }
+    ],
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "32",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_32_458245_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/458245/item/goods_09_458245_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P016 Be (32)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P016 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P017",
+    "url": "https://www.uniqlo.com/us/en/products/E479298-000/00?colorDisplayCode=38",
+    "title": "Smart Ankle Pants",
+    "model": "E479298-000",
+    "checkedAt": "2026-10-09",
+    "composition": "64% Polyester, 28% Rayon, 8% Spandex ( 64% Uses Recycled Polyester Fiber )<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_kh",
+        "code": "KH"
+      }
+    ],
+    "colors": [
+      {
+        "code": "30",
+        "name": "NATURAL"
+      },
+      {
+        "code": "05",
+        "name": "GRAY"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "32",
+        "name": "BEIGE"
+      },
+      {
+        "code": "41",
+        "name": "YELLOW"
+      }
+    ],
+    "sourceSizes": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_09_479298_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "05",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479298/item/usgoods_05_479298_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P017 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P017 Xám (05)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P018",
+    "url": "https://www.uniqlo.com/us/en/products/E479383-000/00",
+    "title": "Cargo Pants",
+    "model": "E479383-000",
+    "checkedAt": "2026-10-09",
+    "composition": "98% Cotton, 2% Spandex<br><br>Imported",
+    "washingInformation": "Machine wash cold, gentle cycle, Do not dry clean",
+    "careInstruction": "<br>",
+    "countriesOfOrigin": [
+      {
+        "lid": "text_country_bd",
+        "code": "BD"
+      }
+    ],
+    "colors": [
+      {
+        "code": "56",
+        "name": "OLIVE"
+      },
+      {
+        "code": "09",
+        "name": "BLACK"
+      },
+      {
+        "code": "31",
+        "name": "BEIGE"
+      }
+    ],
+    "sourceSizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "images": [
+      {
+        "sourceColorCode": "56",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_56_479383_3x4.jpg"
+      },
+      {
+        "sourceColorCode": "09",
+        "url": "https://image.uniqlo.com/UQ/ST3/us/imagesgoods/479383/item/usgoods_09_479383_3x4.jpg"
+      }
+    ],
+    "imageChecks": [
+      {
+        "key": "DEMO_P018 Xanh olive (56)",
+        "status": 200,
+        "type": "image/jpeg"
+      },
+      {
+        "key": "DEMO_P018 Đen (09)",
+        "status": 200,
+        "type": "image/jpeg"
+      }
+    ]
+  }
+]

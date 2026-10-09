@@ -6,6 +6,10 @@ const { createCommerceService } = require('./commerceService');
 const { resultOf, fail, positiveInteger, money } = require('../utils/commerce');
 const commerce = createCommerceService(db);
 const decodeImage = image => image == null ? '' : Buffer.from(image).toString('utf8');
+const storefrontLimit = value => {
+    const limit = Number(value);
+    return Number.isFinite(limit) && limit > 0 ? Math.min(100, Math.max(1, Math.floor(limit))) : 20;
+};
 function dynamicSort(property) {
     var sortOrder = 1;
     if (property[0] === "-") {
@@ -823,14 +827,15 @@ let getProductFeature = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Product.findAll({
+                where: { statusId: 'S1' },
                 include: [
                     { model: db.Allcode, as: 'brandData', attributes: ['value', 'code'] },
                     { model: db.Allcode, as: 'categoryData', attributes: ['value', 'code'] },
                     { model: db.Allcode, as: 'statusData', attributes: ['value', 'code'] },
                 ],
 
-                limit: +limit,
-                order: [['view', 'DESC']],
+                limit: storefrontLimit(limit),
+                order: [['view', 'DESC'], ['id', 'DESC']],
                 raw: true,
                 nest: true
             })
@@ -868,13 +873,14 @@ let getProductNew = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Product.findAll({
+                where: { statusId: 'S1' },
                 include: [
                     { model: db.Allcode, as: 'brandData', attributes: ['value', 'code'] },
                     { model: db.Allcode, as: 'categoryData', attributes: ['value', 'code'] },
                     { model: db.Allcode, as: 'statusData', attributes: ['value', 'code'] },
                 ],
-                limit: +limit,
-                order: [['createdAt', 'DESC']],
+                limit: storefrontLimit(limit),
+                order: [['createdAt', 'DESC'], ['id', 'DESC']],
                 raw: true,
                 nest: true
             })
@@ -988,6 +994,7 @@ let getProductRecommend = (data) => {
                     errMessage: 'Missing required parameter!'
                 })
             } else {
+                const limit = storefrontLimit(data.limit);
                 let recommender = new jsrecommender.Recommender();
 
                 let table = new jsrecommender.Table();
@@ -1009,12 +1016,11 @@ let getProductRecommend = (data) => {
                     for (let j = 0; j < predicted_table.rowNames.length; ++j) {
                         let product = predicted_table.rowNames[j];
                         if (user == data.userId && Math.round(predicted_table.getCell(product, user)) > 3) {
-                            let productdata = await db.Product.findOne({ where: { id: product } })
-                            if (productArr.length == +data.limit) {
+                            if (productArr.length >= limit) {
                                 break;
-                            } else {
-                                productArr.push(productdata)
                             }
+                            let productdata = await db.Product.findOne({ where: { id: product, statusId: 'S1' } })
+                            if (productdata) productArr.push(productdata)
 
 
                         }

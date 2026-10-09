@@ -1,53 +1,25 @@
 import React from 'react';
 
-function ProfileProduct(props) {
-    let data = props.data
+function ProfileProduct({ data = {}, product = {} }) {
+    const rows = [
+        ['Thương hiệu', product.brandData?.value],
+        ['Danh mục', product.categoryData?.value],
+        ['Chất liệu', product.material],
+        ['Xuất xứ', product.madeby],
+        ['Kích thước đang chọn', data.sizeData?.value],
+        ['Chiều rộng', data.width],
+        ['Chiều dài', data.height],
+        ['Khối lượng', data.weight],
+    ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '');
+
     return (
-        <div className="table-responsive">
-            <table className="table">
-                <tbody>
-                    <tr>
-                        <td>
-                            <h5>Chiều rộng</h5>
-                        </td>
-                        <td>
-                            <h5>{data.width}</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h5>Chiều dài</h5>
-                        </td>
-                        <td>
-                            <h5>{data.height}</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h5>Khối lượng</h5>
-                        </td>
-                        <td>
-                            <h5>{data.weight}</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h5>Kiểm tra chất lượng</h5>
-                        </td>
-                        <td>
-                            <h5>có</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h5>Bảo hành</h5>
-                        </td>
-                        <td>
-                            <h5>có</h5>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div className="product-specifications">
+            {rows.length ? (
+                <dl>{rows.map(([label, value]) => (
+                    <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                ))}</dl>
+            ) : <p className="product-detail-page__muted">Thông số sản phẩm đang được cập nhật.</p>}
+            <p className="product-specifications__note">Thông số theo mẫu và lựa chọn hiện tại. Chi tiết kỹ thuật từ nhãn hàng được ghi trong phần mô tả sản phẩm.</p>
         </div>
     );
 }

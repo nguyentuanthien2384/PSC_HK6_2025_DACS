@@ -16,7 +16,7 @@ function Brand(props) {
         let active = true;
         const fetchBrand = async () => {
             try {
-                const response = await getAllCodeService('BRAND');
+                const response = await getAllCodeService('BRAND', { activeCatalog: true });
                 if (active && response && response.errCode === 0 && Array.isArray(response.data)) {
                     setarrBrand([allBrands, ...response.data.filter((item) => item.code !== 'ALL')]);
                 }

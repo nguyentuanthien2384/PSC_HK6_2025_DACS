@@ -10,7 +10,7 @@ function Category(props) {
         let active = true;
         const fetchCategory = async () => {
             try {
-                const response = await getAllCodeService("CATEGORY");
+                const response = await getAllCodeService("CATEGORY", { activeCatalog: true });
                 if (active && response && response.errCode === 0 && Array.isArray(response.data)) {
                     setarrCategory([allCategories, ...response.data.filter((item) => item.code !== "ALL")]);
                 }

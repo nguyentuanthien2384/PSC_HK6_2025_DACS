@@ -1,0 +1,813 @@
+[
+  {
+    "demoKey": "DEMO_P025",
+    "name": "Túi tote Juno rút dây TXL116",
+    "brand": "Juno",
+    "categoryKey": "BAGS",
+    "model": "TXL116",
+    "summary": "Túi tote TXL116 của Juno có khoang chứa rộng và thân túi mềm, phù hợp khi cần mang theo nhiều vật dụng cá nhân. Phần miệng đóng bằng dây rút tạo điểm nhấn cho thiết kế và cho phép thay đổi cách mang. Chất liệu da tổng hợp kết hợp dáng túi lớn 38 × 31 × 11 cm giúp mẫu túi giữ vẻ đơn giản trong các lựa chọn phối đồ hằng ngày. Phiên bản được giới thiệu ở đây có màu kem.",
+    "features": [
+      "Khoang chứa rộng, thân túi mềm.",
+      "Miệng túi đóng bằng dây rút."
+    ],
+    "material": "Da tổng hợp",
+    "madeby": "Trung Quốc",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "TXL116"
+      },
+      {
+        "label": "Kích thước hãng công bố",
+        "value": "38 × 31 × 11 cm"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Túi tote cỡ lớn"
+      },
+      {
+        "label": "Thiết kế",
+        "value": "Juno (Việt Nam)"
+      }
+    ],
+    "source": {
+      "url": "https://juno.vn/products/tui-xach-lon-tote-rut-day-lcFv",
+      "title": "Túi Xách Lớn Tote Rút Dây",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txl116_1_20251125094541.jpeg",
+        "caption": "Juno TXL116 màu kem"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txl116_2_20251125094541.jpeg",
+        "caption": "Góc nhìn khác của Juno TXL116 màu kem"
+      }
+    ],
+    "colors": [
+      "Kem"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Kem",
+        "sourceUrl": "https://juno.vn/products/tui-xach-lon-tote-rut-day-lcFv?variantId=312395126422897946",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/kem_txl116_1_20251125094541.jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P026",
+    "name": "Túi đeo vai Juno phối charm nơ TXN1033",
+    "brand": "Juno",
+    "categoryKey": "BAGS",
+    "model": "TXN1033",
+    "summary": "Juno TXN1033 là mẫu túi đeo vai dáng baguette nhỏ, nổi bật với charm nơ và dây xích kim loại. Bề mặt da tổng hợp phối phần trơn mờ cùng vân sọc dập nổi, tạo điểm nhấn cho thiết kế thanh mảnh. Kích thước 25 × 13 × 7 cm phù hợp để mang những đồ cá nhân thiết yếu khi dạo phố hoặc dự tiệc. Các phiên bản bạc, kem và đen giữ cùng kiểu dáng, giúp người dùng lựa chọn theo trang phục.",
+    "features": [
+      "Dáng baguette nhỏ với bề mặt dập vân sọc.",
+      "Charm nơ phối cùng quai xích kim loại."
+    ],
+    "material": "Da tổng hợp",
+    "madeby": "Trung Quốc",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "TXN1033"
+      },
+      {
+        "label": "Kích thước hãng công bố",
+        "value": "25 × 13 × 7 cm"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Túi đeo vai dáng baguette"
+      },
+      {
+        "label": "Thiết kế",
+        "value": "Juno (Việt Nam)"
+      }
+    ],
+    "source": {
+      "url": "https://juno.vn/products/tui-xach-nho-deo-vai-phoi-charm-no-UAst",
+      "title": "Túi Xách Nữ Đeo Vai JUNO Dáng Nhỏ Chất Liệu Da Dập Nổi Phối Charm Nơ Cao Cấp TXN1033",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.juno.vn/cmsimage/public/bac_txn1033_1_20260924141148.jpeg",
+        "caption": "Juno TXN1033 màu bạc"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txn1033_10_20260924141148.jpeg",
+        "caption": "Juno TXN1033 màu kem"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/den_txn1033_19_20260924141148.jpeg",
+        "caption": "Juno TXN1033 màu đen"
+      }
+    ],
+    "colors": [
+      "Bạc",
+      "Kem",
+      "Đen"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Bạc",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-phoi-charm-no-UAst?variantId=339672339786500804",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/bac_txn1033_1_20260924141148.jpeg"
+      },
+      {
+        "name": "Kem",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-phoi-charm-no-UAst?variantId=339672466924243652",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/kem_txn1033_10_20260924141148.jpeg"
+      },
+      {
+        "name": "Đen",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-phoi-charm-no-UAst?variantId=339672339887164100",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/den_txn1033_19_20260924141148.jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P027",
+    "name": "Túi đeo vai lớn Juno phối khóa TXL125",
+    "brand": "Juno",
+    "categoryKey": "BAGS",
+    "model": "TXL125",
+    "summary": "TXL125 của Juno là mẫu túi đeo vai lớn có thân mềm và bề mặt da tổng hợp bóng. Quai đôi bản dày đi cùng khóa cài, trong khi khóa kim loại bạc ở phía trước và dây rút hai bên tạo điểm nhấn cho dáng túi. Khoang chính rộng cùng các ngăn phụ giúp sắp xếp vật dụng khi đi làm, đi học hoặc dạo phố. Kích thước hãng công bố là 37 × 30 × 11 cm; ảnh sản phẩm trong danh mục là phiên bản kem.",
+    "features": [
+      "Quai đeo vai đôi bản dày có khóa cài.",
+      "Khóa kim loại bạc phía trước và dây rút hai bên.",
+      "Khoang chính rộng, có ngăn phụ."
+    ],
+    "material": "Da tổng hợp",
+    "madeby": "Trung Quốc",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "TXL125"
+      },
+      {
+        "label": "Kích thước hãng công bố",
+        "value": "37 × 30 × 11 cm"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Túi đeo vai cỡ lớn"
+      },
+      {
+        "label": "Thiết kế",
+        "value": "Juno (Việt Nam)"
+      }
+    ],
+    "source": {
+      "url": "https://juno.vn/products/tui-xach-lon-deo-vai-phoi-khoa-96M1",
+      "title": "Túi Xách Lớn Đeo Vai Phối Khoá",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txl125_7_20260616105433.jpeg",
+        "caption": "Juno TXL125 màu kem"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txl125_8_20260616105433.jpeg",
+        "caption": "Góc nhìn khác của Juno TXL125 màu kem"
+      }
+    ],
+    "colors": [
+      "Kem"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Kem",
+        "sourceUrl": "https://juno.vn/products/tui-xach-lon-deo-vai-phoi-khoa-96M1?variantId=341828036385049213",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/kem_txl125_7_20260616105433.jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P028",
+    "name": "Túi mini Juno Ma Cherie đính hạt TXN945",
+    "brand": "Juno",
+    "categoryKey": "BAGS",
+    "model": "TXN945",
+    "summary": "Túi mini Ma Cherie TXN945 của Juno có kích thước 12 × 12 × 7 cm và phần miệng rút tạo hình đặc trưng. Chi tiết đính hạt trên thân túi giúp mẫu phụ kiện nhỏ trở thành điểm nhấn khi kết hợp trang phục dạo phố hoặc dự tiệc. Hãng sử dụng da tổng hợp và mô tả bề mặt là da PU. Phiên bản đen phối đá trắng trong danh mục có hình ảnh tham khảo đúng từ trang sản phẩm của Juno.",
+    "features": [
+      "Dáng mini với phần miệng rút.",
+      "Thân túi trang trí hạt."
+    ],
+    "material": "Da tổng hợp (PU theo mô tả hãng)",
+    "madeby": "Trung Quốc",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "TXN945"
+      },
+      {
+        "label": "Kích thước hãng công bố",
+        "value": "12 × 12 × 7 cm"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Túi mini Ma Cherie"
+      },
+      {
+        "label": "Thiết kế",
+        "value": "Juno (Việt Nam)"
+      }
+    ],
+    "source": {
+      "url": "https://juno.vn/products/tui-xach-nho-mini-dinh-hat-ma-cherie-4zLD",
+      "title": "Túi Xách Nhỏ Mini Đính Hạt Ma Cherie",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.juno.vn/cmsimage/public/den-da-trang_txn945_7_20251020134608.jpeg",
+        "caption": "Juno TXN945 đen phối đá trắng"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/den-da-trang_txn945_8_20251020134608.jpeg",
+        "caption": "Góc nhìn khác của Juno TXN945 đen phối đá trắng"
+      }
+    ],
+    "colors": [
+      "Đen Đá Trắng"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Đen Đá Trắng",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-mini-dinh-hat-ma-cherie-4zLD?variantId=309537308334360852",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/den-da-trang_txn945_7_20251020134608.jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P029",
+    "name": "Túi hobo Juno đeo vai dập nổi TXN1072",
+    "brand": "Juno",
+    "categoryKey": "BAGS",
+    "model": "TXN1072",
+    "summary": "Juno TXN1072 có dáng hobo bo cong nhỏ gọn, kết hợp bề mặt chần họa tiết hình thoi và quai đeo phối xích kim loại. Thiết kế sử dụng da tổng hợp, phù hợp mang các đồ dùng cá nhân cần thiết khi đi làm, dạo phố hoặc gặp bạn bè. Kích thước 19 × 17 × 6 cm giữ tổng thể gọn, trong khi ba màu kem, xanh và đen tạo các lựa chọn phối đồ khác nhau trên cùng một mẫu túi.",
+    "features": [
+      "Dáng hobo bo cong.",
+      "Bề mặt chần họa tiết hình thoi.",
+      "Quai đeo phối xích kim loại."
+    ],
+    "material": "Da tổng hợp",
+    "madeby": "Trung Quốc",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "TXN1072"
+      },
+      {
+        "label": "Kích thước hãng công bố",
+        "value": "19 × 17 × 6 cm"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Túi đeo vai hobo nhỏ"
+      },
+      {
+        "label": "Thiết kế",
+        "value": "Juno (Việt Nam)"
+      }
+    ],
+    "source": {
+      "url": "https://juno.vn/products/tui-xach-nho-deo-vai-dap-noi-Xbq0",
+      "title": "Túi Xách Nhỏ Đeo Vai Dập Nổi",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.juno.vn/cmsimage/public/kem_txn1072_1_20260928112432.jpeg",
+        "caption": "Juno TXN1072 màu kem"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/xanh_txn1072_7_20260911152733.jpeg",
+        "caption": "Juno TXN1072 màu xanh"
+      },
+      {
+        "url": "https://static.juno.vn/cmsimage/public/den_txn1072_13_20260911152734.jpeg",
+        "caption": "Juno TXN1072 màu đen"
+      }
+    ],
+    "colors": [
+      "Kem",
+      "Xanh",
+      "Đen"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Kem",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-dap-noi-Xbq0?variantId=354333410451262921",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/kem_txn1072_1_20260928112432.jpeg"
+      },
+      {
+        "name": "Xanh",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-dap-noi-Xbq0?variantId=354333408689655241",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/xanh_txn1072_7_20260911152733.jpeg"
+      },
+      {
+        "name": "Đen",
+        "sourceUrl": "https://juno.vn/products/tui-xach-nho-deo-vai-dap-noi-Xbq0?variantId=354333409360743881",
+        "imageUrl": "https://static.juno.vn/cmsimage/public/den_txn1072_13_20260911152734.jpeg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P030",
+    "name": "Túi canvas Vascara họa tiết bóng chày TOT 0168",
+    "brand": "Vascara",
+    "categoryKey": "BAGS",
+    "model": "TOT 0168",
+    "summary": "Túi canvas TOT 0168 của Vascara phối vải canvas với da nhân tạo, hướng đến nhu cầu mang đồ khi đi làm hoặc đi chơi. Túi có khóa kéo, một ngăn lớn, một ngăn nhỏ và một túi nhỏ đi kèm để tách các vật dụng cần sắp xếp riêng. Quai đeo dùng da nhân tạo, kết hợp họa tiết bóng chày trên mẫu túi màu be. Kích thước dài × rộng × cao là 37 × 14,7 × 25,2 cm.",
+    "features": [
+      "Một ngăn lớn, một ngăn nhỏ và một túi nhỏ đi kèm.",
+      "Miệng túi đóng bằng khóa kéo."
+    ],
+    "material": "Canvas và da nhân tạo",
+    "madeby": "",
+    "care": [
+      "Lau nhẹ bằng khăn cotton trắng thấm nước sạch và vắt khô.",
+      "Không giặt bằng bột giặt hoặc chất tẩy mạnh."
+    ],
+    "specs": [
+      {
+        "label": "Mã sản phẩm",
+        "value": "1011TOT0168"
+      },
+      {
+        "label": "Kích thước (dài × rộng × cao)",
+        "value": "37 × 14,7 × 25,2 cm"
+      },
+      {
+        "label": "Chất liệu dây đeo",
+        "value": "Da nhân tạo"
+      },
+      {
+        "label": "Kiểu khóa",
+        "value": "Khóa kéo"
+      }
+    ],
+    "source": {
+      "url": "https://www.vascara.com/tui-xach-lon/tui-canvas-hoa-tiet-bong-chay-tot-0168-mau-be",
+      "title": "Túi canvas họa tiết bóng chày - TOT 0168 - Màu be | VASCARA",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.vascara.com/uploads/product/2024/August/22/T--i-canvas-h---a-ti---t-b--ng-ch--y---TOT-0168---M--u-be1724306761.jpg",
+        "caption": "Vascara TOT 0168 màu be"
+      }
+    ],
+    "colors": [
+      "Be"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Be",
+        "sourceUrl": "https://www.vascara.com/tui-xach-lon/tui-canvas-hoa-tiet-bong-chay-tot-0168-mau-be",
+        "imageUrl": "https://www.vascara.com/uploads/product/2024/August/22/T--i-canvas-h---a-ti---t-b--ng-ch--y---TOT-0168---M--u-be1724306761.jpg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P031",
+    "name": "Đồng hồ Casio dây da MTP-V005L-1B",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "MTP-V005L-1B",
+    "summary": "Casio MTP-V005L-1B kết hợp mặt tròn đen, các vạch giờ rõ và dây da đen theo phong cách đơn giản. Đồng hồ hiển thị giờ, phút và giây bằng ba kim, sử dụng pin SR626SW với tuổi thọ khoảng ba năm theo hãng. Vỏ có kích thước 47 × 40 × 8,1 mm và khối lượng 46 g; mặt kính là kính khoáng. Dây phù hợp chu vi cổ tay 175–215 mm, giúp người dùng đối chiếu kích thước trước khi chọn.",
+    "features": [
+      "Mặt tròn ba kim, thiết kế đơn giản.",
+      "Dây da đen, mặt số đen."
+    ],
+    "material": "Dây da; mặt kính khoáng",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "47 × 40 × 8,1 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "46 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính khoáng"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin SR626SW; tuổi thọ khoảng 3 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±20 giây/tháng"
+      },
+      {
+        "label": "Chu vi dây phù hợp",
+        "value": "175–215 mm"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.MTP-V005L-1B/",
+      "title": "MTP-V005L-1B | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/M/MT/MTP/MTP-V005L-1B/assets/MTP-V005L-1B.png",
+        "caption": "Casio MTP-V005L-1B, đen"
+      }
+    ],
+    "colors": [
+      "Đen"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Đen",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.MTP-V005L-1B/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/M/MT/MTP/MTP-V005L-1B/assets/MTP-V005L-1B.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P032",
+    "name": "Đồng hồ Casio dây thép MTP-V001D-7B",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "MTP-V001D-7B",
+    "summary": "Casio MTP-V001D-7B có mặt số sáng với chữ số giờ rõ ràng và dây thép không gỉ màu bạc. Thiết kế ba kim tập trung vào việc xem giờ, phút và giây, đi cùng khóa gập ba. Đồng hồ có kích thước vỏ 45 × 38 × 8 mm, nặng 91 g và sử dụng kính khoáng. Pin SR626SW được hãng công bố tuổi thọ khoảng ba năm, còn dây phù hợp chu vi cổ tay 150–205 mm.",
+    "features": [
+      "Dây thép không gỉ, khóa gập ba.",
+      "Hiển thị giờ, phút, giây bằng ba kim."
+    ],
+    "material": "Dây thép không gỉ; mặt kính khoáng",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "45 × 38 × 8 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "91 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính khoáng"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin SR626SW; tuổi thọ khoảng 3 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±20 giây/tháng"
+      },
+      {
+        "label": "Chu vi dây phù hợp",
+        "value": "150–205 mm"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.MTP-V001D-7B/",
+      "title": "MTP-V001D-7B | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/M/MT/MTP/MTP-V001D-7B/assets/MTP-V001D-7BU.png",
+        "caption": "Casio MTP-V001D-7B, bạc"
+      }
+    ],
+    "colors": [
+      "Bạc"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Bạc",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.MTP-V001D-7B/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/M/MT/MTP/MTP-V001D-7B/assets/MTP-V001D-7BU.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P033",
+    "name": "Đồng hồ Casio nữ dây thép LTP-V002D-7B",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "LTP-V002D-7B",
+    "summary": "Casio LTP-V002D-7B là mẫu đồng hồ mặt tròn nhỏ có dây thép không gỉ và ô hiển thị ngày. Mặt số sáng, chữ số giờ và ba kim tạo bố cục dễ xem trên vỏ rộng 25 mm. Đồng hồ nặng 53 g, dùng kính khoáng và khóa gập ba. Pin SR626SW có tuổi thọ khoảng ba năm theo hãng. Dây phù hợp chu vi cổ tay 125–185 mm, một thông số hữu ích khi chọn mẫu đeo cho cổ tay nhỏ.",
+    "features": [
+      "Có ô hiển thị ngày.",
+      "Dây thép không gỉ với khóa gập ba."
+    ],
+    "material": "Dây thép không gỉ; mặt kính khoáng",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "31 × 25 × 9,2 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "53 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính khoáng"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin SR626SW; tuổi thọ khoảng 3 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±20 giây/tháng"
+      },
+      {
+        "label": "Chu vi dây phù hợp",
+        "value": "125–185 mm"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.LTP-V002D-7B/",
+      "title": "LTP-V002D-7B | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-V002D-7B/assets/LTP-V002D-7B_Seq1.jpg",
+        "caption": "Casio LTP-V002D-7B, bạc"
+      }
+    ],
+    "colors": [
+      "Bạc"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Bạc",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.LTP-V002D-7B/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-V002D-7B/assets/LTP-V002D-7B_Seq1.jpg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P034",
+    "name": "Đồng hồ Casio nữ chữ nhật LTP-V007L-7B1",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "LTP-V007L-7B1",
+    "summary": "Casio LTP-V007L-7B1 có mặt chữ nhật sáng màu với số La Mã, kết hợp dây da đen theo phong cách cổ điển. Vỏ và viền được mạ chrome, kích thước 31 × 22 × 7,5 mm và khối lượng 22 g tạo tổng thể mỏng, nhẹ. Đồng hồ hiển thị giờ, phút và giây bằng ba kim dưới lớp kính khoáng. Hãng công bố pin SR626SW có tuổi thọ khoảng ba năm cùng độ chính xác ±20 giây mỗi tháng.",
+    "features": [
+      "Mặt chữ nhật có số La Mã.",
+      "Vỏ mạ chrome và dây da đen."
+    ],
+    "material": "Vỏ/viền mạ chrome; dây da; kính khoáng",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "31 × 22 × 7,5 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "22 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính khoáng"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin SR626SW; tuổi thọ khoảng 3 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±20 giây/tháng"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.LTP-V007L-7B1/",
+      "title": "LTP-V007L-7B1 | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-V007L-7B1/assets/LTP-V007L-7B1U.png",
+        "caption": "Casio LTP-V007L-7B1, dây đen, mặt bạc"
+      }
+    ],
+    "colors": [
+      "Dây đen, mặt bạc"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Dây đen, mặt bạc",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.LTP-V007L-7B1/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-V007L-7B1/assets/LTP-V007L-7B1U.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P035",
+    "name": "Đồng hồ Casio nữ dây mesh LTP-E157M-7A",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "LTP-E157M-7A",
+    "summary": "Casio LTP-E157M-7A kết hợp mặt tròn sáng màu với dây lưới thép không gỉ kiểu Milanese. Khóa có thể điều chỉnh giúp thay đổi độ vừa của dây, trong khi bố cục ba kim giữ mặt số đơn giản. Vỏ và viền thép không gỉ có kích thước 37,5 × 32 × 8 mm; đồng hồ nặng 47 g và dùng kính khoáng. Pin SR626SW được hãng công bố tuổi thọ khoảng ba năm, phù hợp nhu cầu xem giờ hằng ngày.",
+    "features": [
+      "Dây mesh Milanese bằng thép không gỉ.",
+      "Khóa dây có thể điều chỉnh.",
+      "Vỏ và viền thép không gỉ."
+    ],
+    "material": "Vỏ, viền và dây lưới thép không gỉ; kính khoáng",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "37,5 × 32 × 8 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "47 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính khoáng"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin SR626SW; tuổi thọ khoảng 3 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±20 giây/tháng"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.LTP-E157M-7A/",
+      "title": "LTP-E157M-7A | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-E157M-7A/assets/LTP-E157M-7A_Seq1.jpg",
+        "caption": "Casio LTP-E157M-7A, bạc"
+      }
+    ],
+    "colors": [
+      "Bạc"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Bạc",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.LTP-E157M-7A/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/L/LT/LTP/LTP-E157M-7A/assets/LTP-E157M-7A_Seq1.jpg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P036",
+    "name": "Đồng hồ Casio điện tử F-91W-1",
+    "brand": "Casio",
+    "categoryKey": "WATCH",
+    "model": "F-91W-1",
+    "summary": "Casio F-91W-1 là đồng hồ điện tử có vỏ và dây nhựa đen, khối lượng 21 g. Màn hình hiển thị giờ, phút, giây, thứ và ngày; người dùng có thể chọn định dạng 12 hoặc 24 giờ. Các tiện ích gồm bấm giờ 1/100 giây, báo thức hằng ngày, tín hiệu mỗi giờ và đèn LED. Vỏ có kích thước 38,2 × 35,2 × 8,5 mm, dùng kính nhựa và pin CR2016 với tuổi thọ khoảng bảy năm theo hãng.",
+    "features": [
+      "Bấm giờ 1/100 giây, báo thức và tín hiệu giờ.",
+      "Đèn LED, định dạng giờ 12/24.",
+      "Hiển thị thứ và ngày."
+    ],
+    "material": "Vỏ, viền, dây và mặt kính bằng nhựa",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Kích thước vỏ (dài × rộng × dày)",
+        "value": "38,2 × 35,2 × 8,5 mm"
+      },
+      {
+        "label": "Khối lượng",
+        "value": "21 g"
+      },
+      {
+        "label": "Mặt kính",
+        "value": "Kính nhựa"
+      },
+      {
+        "label": "Nguồn năng lượng",
+        "value": "Pin CR2016; tuổi thọ khoảng 7 năm"
+      },
+      {
+        "label": "Kháng nước",
+        "value": "Water Resistant (theo hãng, không công bố mức mét)"
+      },
+      {
+        "label": "Độ chính xác",
+        "value": "±30 giây/tháng"
+      },
+      {
+        "label": "Chu vi dây phù hợp",
+        "value": "145–200 mm"
+      },
+      {
+        "label": "Lịch",
+        "value": "Lịch tự động, tháng 2 cố định 28 ngày"
+      }
+    ],
+    "source": {
+      "url": "https://www.casio.com/intl/watches/casio/product.F-91W-1/",
+      "title": "F-91W-1 | CASIO",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/F/F9/F91/F-91W-1/assets/F-91W-1_Seq1.png",
+        "caption": "Casio F-91W-1, đen"
+      }
+    ],
+    "colors": [
+      "Đen"
+    ],
+    "sizes": [
+      "Freesize"
+    ],
+    "variants": [
+      {
+        "name": "Đen",
+        "sourceUrl": "https://www.casio.com/intl/watches/casio/product.F-91W-1/",
+        "imageUrl": "https://www.casio.com/content/dam/casio/product-info/locales/intl/en/timepiece/product/watch/F/F9/F91/F-91W-1/assets/F-91W-1_Seq1.png"
+      }
+    ]
+  }
+]

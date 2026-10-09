@@ -48,8 +48,8 @@ const checkPhonenumberEmail = (data) => {
 
 }
 //===============ALL CODE========================//
-const getAllCodeService = (type) => {
-    return axios.get(`/api/get-all-code`, { params: { type: type } })
+const getAllCodeService = (type, { activeCatalog = false } = {}) => {
+    return axios.get(`/api/get-all-code`, { params: { type, ...(activeCatalog === true ? { activeCatalog: true } : {}) } })
 
 }
 const getAllCategoryBlogService = (type) => {

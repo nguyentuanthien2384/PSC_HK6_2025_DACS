@@ -12,6 +12,11 @@
     "db:seed": "sequelize-cli db:seed:all",
     "db:seed:demo": "node scripts/seed-demo-data.cjs",
     "db:verify:demo": "node scripts/verify-demo-data.cjs",
+    "catalog:assets": "node scripts/prepare-catalog-assets.cjs",
+    "catalog:check": "node scripts/import-sourced-catalog.cjs --dry-run",
+    "catalog:import": "node scripts/import-sourced-catalog.cjs",
+    "catalog:restore": "node scripts/import-sourced-catalog.cjs --restore",
+    "catalog:verify": "node scripts/verify-sourced-catalog.cjs",
     "db:check": "node scripts/check-db.cjs",
     "test:integration": "node --test test/integration.test.cjs"
   },

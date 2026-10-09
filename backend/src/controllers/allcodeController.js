@@ -14,7 +14,7 @@ let handleCreateNewAllCode = async (req, res) => {
 }
 let getAllCodeService = async (req, res) => {
     try {
-        let data = await allcodeService.getAllCodeService(req.query.type);
+        let data = await allcodeService.getAllCodeService(req.query.type, { activeCatalog: req.query.activeCatalog });
         return res.status(200).json(data);
     } catch (error) {
         console.log(error)

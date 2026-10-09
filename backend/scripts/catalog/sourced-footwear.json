@@ -1,0 +1,837 @@
+[
+  {
+    "demoKey": "DEMO_P019",
+    "name": "Giày adidas Stan Smith M20324",
+    "brand": "adidas",
+    "categoryKey": "SHOES",
+    "model": "M20324",
+    "summary": "Stan Smith M20324 giữ đường nét gọn gàng của mẫu giày tennis ra mắt năm 1971. Thân và lớp lót bằng da kết hợp đế cupsole cao su, tạo nên diện mạo sneaker cổ điển. Lót OrthoLite bổ sung sự êm ái dưới bàn chân. Ba sọc đục lỗ cùng logo Stan Smith trên lưỡi gà và gót là những chi tiết nhận diện của mẫu giày. Phối màu Cloud White / Core White / Green được đối chiếu trên trang adidas Việt Nam.",
+    "features": [
+      "Dáng regular fit, buộc dây",
+      "Lót giày OrthoLite",
+      "Ba sọc đục lỗ, logo Stan Smith"
+    ],
+    "material": "Thân và lớp lót bằng da; đế cupsole cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "M20324"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Cloud White / Core White / Green"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Sneaker tennis cổ điển"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Đặt kích cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.adidas.com.vn/vi/giay-stan-smith/M20324.html",
+      "title": "adidas Việt Nam — Giày Stan Smith M20324",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/69721f2e7c934d909168a80e00818569_9366/Giay_Stan_Smith_trang_M20324_01_standard.jpg",
+        "caption": "adidas Stan Smith M20324 — Cloud White / Core White / Green"
+      },
+      {
+        "url": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/8279e1e982284860b38da3470047ab6d_9366/Giay_Stan_Smith_trang_M20324_03_standard.jpg",
+        "caption": "adidas Stan Smith M20324 — góc nhìn bổ sung"
+      }
+    ],
+    "colors": [
+      "Cloud White / Core White / Green"
+    ],
+    "sizes": [
+      "UK 3.5",
+      "UK 4",
+      "UK 4.5",
+      "UK 5",
+      "UK 5.5",
+      "UK 6",
+      "UK 6.5",
+      "UK 7.5",
+      "UK 10",
+      "UK 10.5"
+    ],
+    "sourcePrice": 2600000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Cloud White / Core White / Green",
+        "model": "M20324",
+        "sourceUrl": "https://www.adidas.com.vn/vi/giay-stan-smith/M20324.html",
+        "imageUrl": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/69721f2e7c934d909168a80e00818569_9366/Giay_Stan_Smith_trang_M20324_01_standard.jpg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P020",
+    "name": "Giày Converse Chuck Taylor All Star Canvas High Top M7650",
+    "brand": "Converse",
+    "categoryKey": "SHOES",
+    "model": "M7650",
+    "summary": "Chuck Taylor All Star Canvas là mẫu Converse cổ cao dành cho cả nam và nữ. Thân canvas giữ diện mạo quen thuộc của dòng Chucks, kết hợp đệm OrthoLite ở lòng bàn chân. Đế cao su có hoa văn hình thoi; huy hiệu Chuck Taylor ở cổ giày và bảng tên All Star ở gót tạo điểm nhận diện. Phiên bản Optical White mang sắc trắng cổ điển. Converse lưu ý mẫu này có phom rộng và khuyến nghị chọn nhỏ hơn nửa cỡ thường dùng.",
+    "features": [
+      "Thân canvas cổ cao",
+      "Đệm OrthoLite",
+      "Đế cao su hoa văn hình thoi"
+    ],
+    "material": "Thân canvas; đế ngoài cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "M7650"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Optical White"
+      },
+      {
+        "label": "Đối tượng",
+        "value": "Unisex"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Nhỏ hơn nửa cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.converse.com/shop/p/chuck-taylor-all-star-canvas-unisex-high-top-shoe/M7650.html?dwvar_M7650_color=optical+white&dwvar_M7650_width=standard&styleNo=M7650",
+      "title": "Converse — Chuck Taylor All Star Canvas Optical White M7650",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://www.prodirectsport.com/cdn/shop/files/90478_main.jpg?v=1790810018",
+        "caption": "Converse Chuck Taylor All Star Hi — Optical White M7650C",
+        "sourceUrl": "https://www.prodirectsport.com/products/mens-shoes-converse-chuck-taylor-all-star-hi-optical-white-m7650c-90478"
+      },
+      {
+        "url": "https://www.prodirectsport.com/cdn/shop/files/90478_gallery_1.jpg?v=1790810018",
+        "caption": "Converse Chuck Taylor All Star Hi — Optical White M7650C",
+        "sourceUrl": "https://www.prodirectsport.com/products/mens-shoes-converse-chuck-taylor-all-star-hi-optical-white-m7650c-90478"
+      },
+      {
+        "url": "https://www.prodirectsport.com/cdn/shop/files/90478_gallery_2.jpg?v=1790810019",
+        "caption": "Converse Chuck Taylor All Star Hi — Optical White M7650C",
+        "sourceUrl": "https://www.prodirectsport.com/products/mens-shoes-converse-chuck-taylor-all-star-hi-optical-white-m7650c-90478"
+      }
+    ],
+    "colors": [
+      "Optical White"
+    ],
+    "sizes": [
+      "US nam 6.5",
+      "US nam 7",
+      "US nam 7.5",
+      "US nam 8",
+      "US nam 8.5",
+      "US nam 9",
+      "US nam 9.5",
+      "US nam 10",
+      "US nam 10.5",
+      "US nam 11",
+      "US nam 11.5",
+      "US nam 12",
+      "US nam 13"
+    ],
+    "sourcePrice": 65,
+    "sourceCurrency": "USD",
+    "variants": [
+      {
+        "name": "Optical White",
+        "model": "M7650",
+        "sourceUrl": "https://www.converse.com/shop/p/chuck-taylor-all-star-canvas-unisex-high-top-shoe/M7650.html?dwvar_M7650_color=optical+white&dwvar_M7650_width=standard&styleNo=M7650",
+        "imageUrl": "https://www.prodirectsport.com/cdn/shop/files/90478_main.jpg?v=1790810018"
+      }
+    ],
+    "imageSource": {
+      "url": "https://www.prodirectsport.com/products/mens-shoes-converse-chuck-taylor-all-star-hi-optical-white-m7650c-90478",
+      "title": "Pro:Direct Sport — Converse Chuck Taylor All Star Hi Optical White M7650C",
+      "checkedAt": "2026-10-09"
+    },
+    "sizeSource": {
+      "url": "https://www.tactics.com/converse/chuck-taylor-all-star-canvas-high-top-shoes/optical-white",
+      "title": "Tactics — Converse Chuck Taylor All Star Canvas High Top Optical White",
+      "checkedAt": "2026-10-09"
+    }
+  },
+  {
+    "demoKey": "DEMO_P021",
+    "name": "Giày adidas Samba OG B75806",
+    "brand": "adidas",
+    "categoryKey": "SHOES",
+    "model": "B75806",
+    "summary": "Samba OG B75806 đưa kiểu dáng xuất phát từ sân bóng vào trang phục hằng ngày. Mẫu giày có dáng thấp, thân da cật phối các mảng da lộn và chi tiết nhũ vàng. Lớp lót da tổng hợp kết hợp đế gum cao su tạo diện mạo đặc trưng của Samba. Giày dùng dây buộc và phom regular fit. Phiên bản Cloud White / Core Black / Clear Granite được xác minh trên adidas Việt Nam; hãng khuyến nghị chọn kích cỡ thường dùng.",
+    "features": [
+      "Dáng thấp, regular fit",
+      "Thân da phối chi tiết da lộn",
+      "Đế gum, dây buộc"
+    ],
+    "material": "Thân da cật phối da lộn; lót da tổng hợp; đế gum cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "B75806"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Cloud White / Core Black / Clear Granite"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Samba Originals"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Đặt kích cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.adidas.com.vn/vi/giay-samba-og/B75806.html",
+      "title": "adidas Việt Nam — Giày Samba OG B75806",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Giay_Samba_OG_trang_B75806_01_00_standard.jpg",
+        "caption": "adidas Samba OG B75806 — Cloud White / Core Black / Clear Granite"
+      },
+      {
+        "url": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/97cd0902ae2e402b895aa8bf0117f98f_9366/Giay_Samba_OG_trang_B75806_03_standard.jpg",
+        "caption": "adidas Samba OG B75806 — góc nhìn bổ sung"
+      }
+    ],
+    "colors": [
+      "Cloud White / Core Black / Clear Granite"
+    ],
+    "sizes": [
+      "UK 4",
+      "UK 4.5",
+      "UK 5",
+      "UK 5.5",
+      "UK 6",
+      "UK 6.5",
+      "UK 7",
+      "UK 7.5",
+      "UK 8",
+      "UK 8.5",
+      "UK 9",
+      "UK 9.5",
+      "UK 10",
+      "UK 10.5",
+      "UK 11",
+      "UK 11.5",
+      "UK 12",
+      "UK 12.5",
+      "UK 13"
+    ],
+    "sourcePrice": 2900000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Cloud White / Core Black / Clear Granite",
+        "model": "B75806",
+        "sourceUrl": "https://www.adidas.com.vn/vi/giay-samba-og/B75806.html",
+        "imageUrl": "https://assets.adidas.com/images/w_500%2Cf_auto%2Cq_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Giay_Samba_OG_trang_B75806_01_00_standard.jpg"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P022",
+    "name": "Giày nam Nike Court Vision Low HM9862-001",
+    "brand": "Nike",
+    "categoryKey": "SHOES",
+    "model": "HM9862-001",
+    "summary": "Court Vision Low lấy cảm hứng từ giày bóng rổ thập niên 1980 với thân da tổng hợp và các lớp phủ được may nổi. Phần cổ thấp có đệm tạo đường nét gọn gàng và cảm giác dễ chịu khi mang. Các lỗ đục ở mũi và hai bên tăng độ thoáng; đế cao su hỗ trợ độ bám và độ bền khi di chuyển. Mẫu HM9862-001 có phối màu Black / White, được đối chiếu từ trang sản phẩm Nike Việt Nam.",
+    "features": [
+      "Cổ thấp có đệm",
+      "Lỗ đục ở mũi và hai bên",
+      "Đế cao su hỗ trợ độ bám"
+    ],
+    "material": "Thân da tổng hợp; đế ngoài cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "HM9862-001"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Black / White"
+      },
+      {
+        "label": "Đối tượng",
+        "value": "Nam"
+      },
+      {
+        "label": "Nhóm sử dụng",
+        "value": "Lifestyle"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/court-vision-low-shoes-M7dKd8/HM9862-001",
+      "title": "Nike Việt Nam — Court Vision Low HM9862-001",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5e0ce7fa-30db-4bc6-a7d6-3013f564fbd0/NIKE+COURT+VISION+LO.png",
+        "caption": "Giày nam Nike Court Vision Low HM9862-001 — Black / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/89fe3229-e2f9-4dd1-98b4-f15c55e0582a/NIKE+COURT+VISION+LO.png",
+        "caption": "Giày nam Nike Court Vision Low HM9862-001 — Black / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d6478c7a-71dd-41ed-a0fc-b76932dcb03d/NIKE+COURT+VISION+LO.png",
+        "caption": "Giày nam Nike Court Vision Low HM9862-001 — Black / White"
+      }
+    ],
+    "colors": [
+      "Black / White"
+    ],
+    "sizes": [
+      "EU 38.5",
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5",
+      "EU 45",
+      "EU 45.5",
+      "EU 46",
+      "EU 47",
+      "EU 47.5"
+    ],
+    "sourcePrice": 2349000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Black / White",
+        "model": "HM9862-001",
+        "sourceUrl": "https://www.nike.com/vn/t/court-vision-low-shoes-M7dKd8/HM9862-001",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5e0ce7fa-30db-4bc6-a7d6-3013f564fbd0/NIKE+COURT+VISION+LO.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P023",
+    "name": "Giày nữ Nike Gamma Force DX9176-100",
+    "brand": "Nike",
+    "categoryKey": "SHOES",
+    "model": "DX9176-100",
+    "summary": "Gamma Force kết hợp các lớp da, da lộn và vải lưới để tạo chiều sâu cho thiết kế sneaker nữ lấy cảm hứng từ bóng rổ cổ điển. Phần đế được nâng nhẹ làm nổi bật dáng giày. Đế ngoài cao su Nike Grind dạng đốm chứa ít nhất 5% thành phần tái chế, theo công bố của Nike. Phiên bản DX9176-100 dùng phối màu White / Summit White / Iron Grey / Black. Hãng lưu ý phom lớn và khuyến nghị chọn nhỏ hơn nửa cỡ.",
+    "features": [
+      "Thân phối da, da lộn và lưới",
+      "Đế nâng nhẹ",
+      "Đế ngoài Nike Grind"
+    ],
+    "material": "Thân phối da, da lộn và vải lưới; đế giữa và đế ngoài cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "DX9176-100"
+      },
+      {
+        "label": "Phối màu",
+        "value": "White / Summit White / Iron Grey / Black"
+      },
+      {
+        "label": "Đối tượng",
+        "value": "Nữ"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Nhỏ hơn nửa cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/gamma-force-womens-shoes-CbTnH1",
+      "title": "Nike Việt Nam — Gamma Force DX9176-100",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/396e3caa-edd4-4e9a-b84d-b06d91ad0f58/WMNS+NIKE+GAMMA+FORCE.png",
+        "caption": "Giày nữ Nike Gamma Force DX9176-100 — White / Summit White / Iron Grey / Black"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3e443a59-9bdc-4d7b-b851-e1ac0520dffc/WMNS+NIKE+GAMMA+FORCE.png",
+        "caption": "Giày nữ Nike Gamma Force DX9176-100 — White / Summit White / Iron Grey / Black"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c02e4bdc-40b8-46eb-acf5-fd2557e4a435/WMNS+NIKE+GAMMA+FORCE.png",
+        "caption": "Giày nữ Nike Gamma Force DX9176-100 — White / Summit White / Iron Grey / Black"
+      }
+    ],
+    "colors": [
+      "White / Summit White / Iron Grey / Black"
+    ],
+    "sizes": [
+      "EU 35.5",
+      "EU 36",
+      "EU 36.5",
+      "EU 37.5",
+      "EU 38",
+      "EU 45",
+      "EU 38.5",
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5"
+    ],
+    "sourcePrice": 2649000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "White / Summit White / Iron Grey / Black",
+        "model": "DX9176-100",
+        "sourceUrl": "https://www.nike.com/vn/t/gamma-force-womens-shoes-CbTnH1",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/396e3caa-edd4-4e9a-b84d-b06d91ad0f58/WMNS+NIKE+GAMMA+FORCE.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P024",
+    "name": "Giày Nike P-6000 CD6404-032",
+    "brand": "Nike",
+    "categoryKey": "SHOES",
+    "model": "CD6404-032",
+    "summary": "P-6000 kế thừa cảm hứng từ Nike Air Pegasus năm 2006 với đường nét gợi nhớ giày chạy đầu thập niên 2000. Thân lưới thoáng được gia cố bằng các mảng da thật và da tổng hợp. Đế giữa foam cung cấp lớp đệm nhẹ; đế ngoài hoàn toàn bằng cao su giúp tăng độ bám và độ bền. Chi tiết Bowerman Series trên lưỡi gà và logo Swoosh da tổng hợp hoàn thiện thiết kế. Mẫu CD6404-032 có phối màu Dark Smoke Grey / Carbon / Black.",
+    "features": [
+      "Cảm hứng Air Pegasus 2006",
+      "Lưới phối lớp phủ da",
+      "Đế giữa foam, đế ngoài cao su"
+    ],
+    "material": "Thân lưới phối da thật và da tổng hợp; đế giữa foam; đế ngoài cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "CD6404-032"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Dark Smoke Grey / Carbon / Black"
+      },
+      {
+        "label": "Kiểu dáng",
+        "value": "Sneaker lấy cảm hứng giày chạy thập niên 2000"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/p-6000-shoes-QcQbpx/CD6404-032",
+      "title": "Nike Việt Nam — P-6000 CD6404-032",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/09195b91-51ca-45a1-b3bc-0881a567de7e/NIKE+P-6000.png",
+        "caption": "Giày Nike P-6000 CD6404-032 — Dark Smoke Grey / Carbon / Black"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a42383c5-5c39-41ed-9edb-8067ad448fe8/NIKE+P-6000.png",
+        "caption": "Giày Nike P-6000 CD6404-032 — Dark Smoke Grey / Carbon / Black"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/947c1dd7-dd5f-46aa-94d4-7ee989de9cb2/NIKE+P-6000.png",
+        "caption": "Giày Nike P-6000 CD6404-032 — Dark Smoke Grey / Carbon / Black"
+      }
+    ],
+    "colors": [
+      "Dark Smoke Grey / Carbon / Black"
+    ],
+    "sizes": [
+      "EU 38.5",
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5",
+      "EU 45",
+      "EU 45.5",
+      "EU 46",
+      "EU 47",
+      "EU 47.5"
+    ],
+    "sourcePrice": 2343200,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Dark Smoke Grey / Carbon / Black",
+        "model": "CD6404-032",
+        "sourceUrl": "https://www.nike.com/vn/t/p-6000-shoes-QcQbpx/CD6404-032",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/09195b91-51ca-45a1-b3bc-0881a567de7e/NIKE+P-6000.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P037",
+    "name": "Giày chạy bộ nam Nike Revolution 8 HJ9198-108",
+    "brand": "Nike",
+    "categoryKey": "SPORT",
+    "model": "HJ9198-108",
+    "summary": "Revolution 8 là giày chạy đường bộ nam với thân lưới và đế giữa foam. Thiết kế đế có hình học rocker tập trung vào sự êm ái, kết hợp rãnh uốn ở bàn chân trước để hỗ trợ chuyển động linh hoạt. Điểm cầm ở gót và lưỡi gà giúp thao tác mang và tháo giày thuận tiện. Nike công bố khối lượng khoảng 292 g ở cỡ nam US 9 và chênh lệch độ cao gót–mũi 10 mm. Mẫu được xác minh mang mã HJ9198-108.",
+    "features": [
+      "Thân lưới thoáng",
+      "Đệm foam với hình học rocker",
+      "Rãnh uốn ở bàn chân trước"
+    ],
+    "material": "Thân vải lưới; đế giữa foam.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "HJ9198-108"
+      },
+      {
+        "label": "Phối màu",
+        "value": "White / Hydrogen Blue / Blue Crystal / Off-Noir"
+      },
+      {
+        "label": "Khối lượng tham khảo",
+        "value": "Khoảng 292 g (nam US 9)"
+      },
+      {
+        "label": "Chênh lệch gót–mũi",
+        "value": "10 mm"
+      },
+      {
+        "label": "Mục đích",
+        "value": "Chạy đường bộ"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/revolution-8-mens-road-running-shoes-WMhKGn/HJ9198-108",
+      "title": "Nike Việt Nam — Revolution 8 HJ9198-108",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/473ed332-3390-4194-ab42-f7cae453d603/NIKE+REVOLUTION+8.png",
+        "caption": "Giày chạy bộ nam Nike Revolution 8 HJ9198-108 — White / Hydrogen Blue / Blue Crystal / Off-Noir"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9d8ccf17-60d0-48c3-8fac-32afeec64de7/NIKE+REVOLUTION+8.png",
+        "caption": "Giày chạy bộ nam Nike Revolution 8 HJ9198-108 — White / Hydrogen Blue / Blue Crystal / Off-Noir"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a7ed99d9-f44b-4787-a9ee-b3bde68f3727/NIKE+REVOLUTION+8.png",
+        "caption": "Giày chạy bộ nam Nike Revolution 8 HJ9198-108 — White / Hydrogen Blue / Blue Crystal / Off-Noir"
+      }
+    ],
+    "colors": [
+      "White / Hydrogen Blue / Blue Crystal / Off-Noir"
+    ],
+    "sizes": [
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5",
+      "EU 45",
+      "EU 45.5",
+      "EU 46",
+      "EU 47",
+      "EU 47.5"
+    ],
+    "sourcePrice": 1909000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "White / Hydrogen Blue / Blue Crystal / Off-Noir",
+        "model": "HJ9198-108",
+        "sourceUrl": "https://www.nike.com/vn/t/revolution-8-mens-road-running-shoes-WMhKGn/HJ9198-108",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/473ed332-3390-4194-ab42-f7cae453d603/NIKE+REVOLUTION+8.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P038",
+    "name": "Giày tập luyện nam Nike MC Trainer 3 FQ1831-001",
+    "brand": "Nike",
+    "categoryKey": "SPORT",
+    "model": "FQ1831-001",
+    "summary": "MC Trainer 3 được thiết kế cho các buổi tập với nền đế phẳng giúp giữ tư thế ổn định khi chuyển động sang bên. Thân lưới tăng độ thoáng, đế giữa foam bổ sung đệm ở phần gót và bàn chân trước. Rãnh uốn ở mũi hỗ trợ độ linh hoạt vừa phải, còn hoa văn cao su cung cấp độ bám đa hướng. Vùng mũi và gót được tăng cường ở vị trí dễ mòn. Mẫu FQ1831-001 dùng màu Black / White; Nike khuyến nghị tăng nửa cỡ thường dùng.",
+    "features": [
+      "Nền đế phẳng, ổn định",
+      "Rãnh uốn bàn chân trước",
+      "Vùng mũi và gót được tăng cường"
+    ],
+    "material": "Thân vải lưới; đế giữa foam; cao su ở đế ngoài.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "FQ1831-001"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Black / White"
+      },
+      {
+        "label": "Mục đích",
+        "value": "Tập luyện"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Lớn hơn nửa cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/mc-trainer-3-mens-workout-shoes-hj8wBW/FQ1831-001",
+      "title": "Nike Việt Nam — MC Trainer 3 FQ1831-001",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ceb61493-e03f-4b8f-9756-89e9a6d864a1/M+NIKE+MC+TRAINER+3.png",
+        "caption": "Giày tập luyện nam Nike MC Trainer 3 FQ1831-001 — Black / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/78d33dd6-7c17-4d8e-8fb4-065bc930364f/M+NIKE+MC+TRAINER+3.png",
+        "caption": "Giày tập luyện nam Nike MC Trainer 3 FQ1831-001 — Black / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c22febf4-a52b-4f6a-b726-dabce00575b6/M+NIKE+MC+TRAINER+3.png",
+        "caption": "Giày tập luyện nam Nike MC Trainer 3 FQ1831-001 — Black / White"
+      }
+    ],
+    "colors": [
+      "Black / White"
+    ],
+    "sizes": [
+      "EU 38.5",
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5",
+      "EU 45",
+      "EU 45.5",
+      "EU 46",
+      "EU 47",
+      "EU 47.5"
+    ],
+    "sourcePrice": 2069000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Black / White",
+        "model": "FQ1831-001",
+        "sourceUrl": "https://www.nike.com/vn/t/mc-trainer-3-mens-workout-shoes-hj8wBW/FQ1831-001",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ceb61493-e03f-4b8f-9756-89e9a6d864a1/M+NIKE+MC+TRAINER+3.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P039",
+    "name": "Giày đi bộ nam Nike Promina FV5285-302",
+    "brand": "Nike",
+    "categoryKey": "SPORT",
+    "model": "FV5285-302",
+    "summary": "Promina là giày đi bộ nam có lớp foam cao kết hợp đế rocker có rãnh, tập trung vào cảm giác đệm êm khi di chuyển. Nike xếp mẫu này ở mức đệm cao, độ ổn định và linh hoạt vừa phải. Phần bàn chân trước, vòm chân và hộp ngón được mở rộng; cổ giày dùng foam mềm. Hoa văn đế ngoài hướng tới độ bám và độ bền. Phiên bản FV5285-302 có phối màu Mineral Slate / Black / Vast Grey, được xác minh trên Nike Việt Nam.",
+    "features": [
+      "Đệm foam cao",
+      "Đế rocker có rãnh",
+      "Hộp ngón và bàn chân trước rộng hơn"
+    ],
+    "material": "Lớp đệm foam; cổ giày foam mềm.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "FV5285-302"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Mineral Slate / Black / Vast Grey"
+      },
+      {
+        "label": "Mục đích",
+        "value": "Đi bộ"
+      },
+      {
+        "label": "Mức đệm theo hãng",
+        "value": "Cao"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/promina-mens-walking-shoes-Kg14nw/FV5285-302",
+      "title": "Nike Việt Nam — Promina FV5285-302",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ca90540f-e5b4-44c6-866b-b6964cce6275/M+NIKE+PROMINA.png",
+        "caption": "Giày đi bộ nam Nike Promina FV5285-302 — Mineral Slate / Black / Vast Grey"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6ac03724-c4b1-48c0-ba98-4c834dccf2f6/M+NIKE+PROMINA.png",
+        "caption": "Giày đi bộ nam Nike Promina FV5285-302 — Mineral Slate / Black / Vast Grey"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/72401465-2745-4a80-be9b-e2dbde228147/M+NIKE+PROMINA.png",
+        "caption": "Giày đi bộ nam Nike Promina FV5285-302 — Mineral Slate / Black / Vast Grey"
+      }
+    ],
+    "colors": [
+      "Mineral Slate / Black / Vast Grey"
+    ],
+    "sizes": [
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5",
+      "EU 45",
+      "EU 45.5",
+      "EU 46",
+      "EU 47",
+      "EU 47.5"
+    ],
+    "sourcePrice": 1909000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Mineral Slate / Black / Vast Grey",
+        "model": "FV5285-302",
+        "sourceUrl": "https://www.nike.com/vn/t/promina-mens-walking-shoes-Kg14nw/FV5285-302",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ca90540f-e5b4-44c6-866b-b6964cce6275/M+NIKE+PROMINA.png"
+      }
+    ]
+  },
+  {
+    "demoKey": "DEMO_P040",
+    "name": "Giày chạy bộ nữ Nike Downshifter 13 FD6476-001",
+    "brand": "Nike",
+    "categoryKey": "SPORT",
+    "model": "FD6476-001",
+    "summary": "Downshifter 13 là giày chạy đường bộ nữ kết hợp thân lưới thoáng, đế giữa foam mềm và đế ngoài cao su. Dải ôm bên trong được cập nhật để hỗ trợ giữ phần giữa bàn chân. Các chi tiết phản quang bổ sung vào thiết kế. Nike công bố khối lượng khoảng 242 g ở cỡ nữ UK 5.5 và độ chênh gót–mũi 10 mm. Phiên bản FD6476-001 dùng phối màu Black / Dark Smoke Grey / White; hãng khuyến nghị chọn lớn hơn nửa cỡ thường dùng.",
+    "features": [
+      "Thân lưới thoáng",
+      "Dải ôm hỗ trợ giữa bàn chân",
+      "Đệm foam, đế ngoài cao su"
+    ],
+    "material": "Thân vải lưới; đế giữa foam; đế ngoài cao su.",
+    "madeby": "",
+    "care": [],
+    "specs": [
+      {
+        "label": "Mã mẫu",
+        "value": "FD6476-001"
+      },
+      {
+        "label": "Phối màu",
+        "value": "Black / Dark Smoke Grey / White"
+      },
+      {
+        "label": "Khối lượng tham khảo",
+        "value": "Khoảng 242 g (nữ UK 5.5)"
+      },
+      {
+        "label": "Chênh lệch gót–mũi",
+        "value": "10 mm"
+      },
+      {
+        "label": "Chọn cỡ theo hãng",
+        "value": "Lớn hơn nửa cỡ thường dùng"
+      }
+    ],
+    "source": {
+      "url": "https://www.nike.com/vn/t/downshifter-13-womens-road-running-shoes-2Bm363/FD6476-001",
+      "title": "Nike Việt Nam — Downshifter 13 FD6476-001",
+      "checkedAt": "2026-10-09"
+    },
+    "images": [
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/190a0fe3-46dc-4d5e-a6f4-4588bfb9756f/W+NIKE+DOWNSHIFTER+13.png",
+        "caption": "Giày chạy bộ nữ Nike Downshifter 13 FD6476-001 — Black / Dark Smoke Grey / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0fad2955-2e52-4f15-ae6d-500c9703e0da/W+NIKE+DOWNSHIFTER+13.png",
+        "caption": "Giày chạy bộ nữ Nike Downshifter 13 FD6476-001 — Black / Dark Smoke Grey / White"
+      },
+      {
+        "url": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/199abda8-8534-4f1d-ba29-311cda518ad6/W+NIKE+DOWNSHIFTER+13.png",
+        "caption": "Giày chạy bộ nữ Nike Downshifter 13 FD6476-001 — Black / Dark Smoke Grey / White"
+      }
+    ],
+    "colors": [
+      "Black / Dark Smoke Grey / White"
+    ],
+    "sizes": [
+      "EU 35.5",
+      "EU 36",
+      "EU 36.5",
+      "EU 37.5",
+      "EU 38",
+      "EU 38.5",
+      "EU 39",
+      "EU 40",
+      "EU 40.5",
+      "EU 41",
+      "EU 42",
+      "EU 42.5",
+      "EU 43",
+      "EU 44",
+      "EU 44.5"
+    ],
+    "sourcePrice": 2069000,
+    "sourceCurrency": "VND",
+    "variants": [
+      {
+        "name": "Black / Dark Smoke Grey / White",
+        "model": "FD6476-001",
+        "sourceUrl": "https://www.nike.com/vn/t/downshifter-13-womens-road-running-shoes-2Bm363/FD6476-001",
+        "imageUrl": "https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/190a0fe3-46dc-4d5e-a6f4-4588bfb9756f/W+NIKE+DOWNSHIFTER+13.png"
+      }
+    ]
+  }
+]

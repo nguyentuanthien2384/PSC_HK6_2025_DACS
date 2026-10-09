@@ -36,7 +36,7 @@ let handleCreateNewAllCode = (data) => {
     }
   });
 };
-let getAllCodeService = (typeInput) => {
+let getAllCodeService = (typeInput, { activeCatalog = false } = {}) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!typeInput) {
@@ -45,9 +45,18 @@ let getAllCodeService = (typeInput) => {
           errMessage: "Missing required parameters !",
         });
       } else {
-        let allcode = await db.Allcode.findAll({
-          where: { type: typeInput },
-        });
+        const where = { type: typeInput };
+        const catalogField = typeInput === 'CATEGORY' ? 'categoryId' : typeInput === 'BRAND' ? 'brandId' : null;
+        if (catalogField && (activeCatalog === true || activeCatalog === 'true' || activeCatalog === '1')) {
+          const products = await db.Product.findAll({
+            attributes: [catalogField],
+            where: { statusId: 'S1' },
+            group: [catalogField],
+            raw: true,
+          });
+          where.code = { [Op.in]: [...new Set(products.map((product) => product[catalogField]).filter(Boolean))] };
+        }
+        let allcode = await db.Allcode.findAll({ where });
         resolve({
           errCode: 0,
           data: allcode,
