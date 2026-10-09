@@ -7,7 +7,9 @@
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix backend test && npm --prefix frontend test -- --watchAll=false --runInBand",
     "db:check": "npm --prefix backend run db:check",
-    "db:migrate": "npm --prefix backend run db:migrate"
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "db:seed:demo": "npm --prefix backend run db:seed:demo",
+    "db:verify:demo": "npm --prefix backend run db:verify:demo"
   },
   "engines": { "node": ">=20" }
 }

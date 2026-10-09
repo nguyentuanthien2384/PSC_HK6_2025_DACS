@@ -50,6 +50,35 @@ npm --prefix backend run db:seed
 
 Seeder thêm mã vai trò, giới tính, trạng thái đơn hàng, loại giảm giá và kích thước; tài khoản quản trị dùng mật khẩu bạn đã cấu hình. Chạy lại không tạo trùng bản ghi đã tồn tại. Danh mục, thương hiệu, sản phẩm, nhà cung cấp và phí vận chuyển được quản trị tạo từ giao diện. Nhập hàng bằng phiếu nhập để có tồn kho bán.
 
+## Dữ liệu mẫu để test chức năng
+
+Sau khi cấu hình kết nối database và chạy migration, nạp bộ dữ liệu demo:
+
+```powershell
+npm run db:seed:demo
+npm run db:verify:demo
+```
+
+Lệnh demo độc lập với `db:seed`, không yêu cầu `SEED_ADMIN_EMAIL` hoặc `SEED_ADMIN_PASSWORD`. Seeder chỉ thêm dữ liệu, dùng transaction cho toàn bộ bộ mẫu và không xóa hay ghi đè bản ghi sẵn có. Marker `DEMO_DACS_V1_SEEDED` giúp chạy lại không tạo trùng, không đặt lại mật khẩu và giữ các thay đổi bạn đã test. Không chạy trong `NODE_ENV=production`.
+
+Bộ mẫu gồm 32 tài khoản cho bốn vai trò, 52 địa chỉ, 40 sản phẩm với 87 biến thể màu và 291 lựa chọn kích thước, 8 danh mục, 6 thương hiệu, 6 nhà cung cấp và 4 phương thức vận chuyển. Có 12 phiếu nhập, 96 đơn hàng với 240 dòng hàng, 12 voucher, 54 dòng giỏ hàng, 208 đánh giá/bình luận/phản hồi, 12 cuộc chat với 60 tin nhắn, 4 banner và 12 bài viết. Ảnh minh họa lấy từ file đã có trong dự án, được lưu dạng data URI nên không cần tải ảnh từ dịch vụ ngoài.
+
+Đăng nhập các tài khoản sau với mật khẩu chung `Demo@123456`:
+
+- Quản trị: `admin@demo.dacs.test`.
+- Nhân viên: `staff1@demo.dacs.test`, `staff2@demo.dacs.test`.
+- Giao hàng: `shipper1@demo.dacs.test` đến `shipper3@demo.dacs.test`.
+- Khách hàng: `customer01@demo.dacs.test` đến `customer24@demo.dacs.test`.
+- Kiểm tra tài khoản bị khóa/chưa xác thực: xem các email trong `backend/scripts/demo/scenarios.cjs`.
+
+Có thể đặt `SEED_DEMO_PASSWORD` trong `backend/.env` trước lần nạp đầu tiên. Đây là tài khoản thử nghiệm; các địa chỉ email mẫu không dùng để nhận thư.
+
+Đơn mẫu gồm 12 chờ xác nhận, 8 chờ lấy hàng, 8 đang giao, 60 đã giao và 8 đã hủy. Lịch sử đã giao trải trong 180 ngày trước thời điểm seed, có đơn trong ngày để test thống kê. Có sản phẩm còn hàng, còn 1–3 đơn vị, hết hàng và ngừng kinh doanh; tồn kho được tính từ nhập hàng trừ đơn chưa hủy. Voucher có mã đang hiệu lực, hết hạn, chưa mở, hết lượt, đã lưu và đã dùng.
+
+Các khách đầu tiên có sẵn giỏ hàng, địa chỉ và voucher để thử checkout COD. Shipper có đơn đang giao; đơn chờ lấy hàng chưa gán shipper để thử nhận giao. 20 đơn đã giao có trạng thái thanh toán online và phiên `COMPLETED` **mô phỏng**, không phải giao dịch thật với PayPal/VNPay và không gửi email hay yêu cầu tới cổng thanh toán.
+
+`db:verify:demo` kiểm tra liên kết dữ liệu, tồn kho, giá chốt đơn và truy cập API bằng các vai trò trên database đã seed. Không dùng `test:integration` với database đang làm việc; bộ integration cần database kiểm thử riêng.
+
 ## Chạy dự án
 
 ```powershell
@@ -65,7 +94,7 @@ npm --prefix frontend start
 
 Frontend: http://localhost:3000. Health API: http://localhost:6969/api/health.
 
-Nếu database hoặc JWT chưa được cấu hình đúng, backend báo lỗi khởi động cụ thể. Trên môi trường kiểm tra ngày 09/10/2026, tài khoản MySQL trong backend/.env bị từ chối (`ER_ACCESS_DENIED_ERROR`) và JWT_SECRET chỉ có 9 ký tự; phải sửa hai giá trị này trước khi chạy với database đó.
+Nếu database hoặc JWT chưa được cấu hình đúng, backend báo lỗi khởi động cụ thể. Với XAMPP, kiểm tra cổng MySQL trong `mysql/bin/my.ini`: môi trường local ngày 09/10/2026 dùng cổng 3333 và database `ecom`. Khi thay đổi cấu hình, khởi động lại backend và đăng nhập lại để nhận token mới.
 
 ## Các luồng đã hoàn thiện
 

@@ -155,7 +155,7 @@ function ShopCartPage(props) {
                                             item.quantity *
                                             item.productDetail.discountPrice;
 
-                                        let name = `${item.productData.name} - ${item.productdetailsizeData.productDetail.nameDetail} - ${item.productdetailsizeData.sizeData.value}`;
+                                        let name = `${item.productData.name} - ${item.productDetail.nameDetail} - ${item.productdetailsizeData.sizeData.value}`;
                                         return (
                                             <ShopCartItem
                                                 isOrder={false}

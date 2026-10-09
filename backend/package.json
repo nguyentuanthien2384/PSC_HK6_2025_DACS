@@ -10,6 +10,8 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:status": "sequelize-cli db:migrate:status",
     "db:seed": "sequelize-cli db:seed:all",
+    "db:seed:demo": "node scripts/seed-demo-data.cjs",
+    "db:verify:demo": "node scripts/verify-demo-data.cjs",
     "db:check": "node scripts/check-db.cjs",
     "test:integration": "node --test test/integration.test.cjs"
   },
