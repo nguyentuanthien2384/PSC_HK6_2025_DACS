@@ -159,6 +159,7 @@ const SideBar = () => {
                         <div className="collapse" id="collapseOrder" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                             <nav className="sb-sidenav-menu-nested nav">
                                 <Link to={'/system/home/list-order'} className="nav-link" >Danh sách đơn hàng</Link>
+                                <Link to="/system/home/payment-reconciliation" className="nav-link">Đối soát thanh toán / hoàn tiền</Link>
 
                             </nav>
                         </div>

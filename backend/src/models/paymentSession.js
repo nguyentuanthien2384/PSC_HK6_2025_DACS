@@ -10,5 +10,13 @@ module.exports = (sequelize, DataTypes) => sequelize.define('PaymentSession', {
     providerAmount: { type: DataTypes.STRING(30), allowNull: false },
     currency: { type: DataTypes.STRING(3), allowNull: false },
     checkoutData: { type: DataTypes.TEXT('long'), allowNull: false },
-    expiresAt: { type: DataTypes.DATE, allowNull: false }
+    expiresAt: { type: DataTypes.DATE, allowNull: false },
+    gatewayTransactionDate: DataTypes.STRING(14),
+    gatewaySaleId: DataTypes.STRING(100),
+    gatewayOutcome: DataTypes.TEXT('long'),
+    paidAt: DataTypes.DATE,
+    reviewReason: DataTypes.STRING(1000),
+    lastError: DataTypes.STRING(1000),
+    lastCheckedAt: DataTypes.DATE,
+    reconcileAttempts: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
 });

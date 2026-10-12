@@ -6,6 +6,9 @@ import { assignShippingOrder, completeShippingOrder, getActiveShippers } from '.
 import OrderDetails from '../../../component/Order/OrderDetails';
 import { CancelOrderForm, ShipperRating } from '../../../component/Order/OrderForms';
 import { shipperName } from '../../../utils/orders';
+import ReturnWorkflow from '../../../component/Order/ReturnWorkflow';
+import DeliveryExceptions from '../../../component/Order/DeliveryExceptions';
+import CarrierShipment from '../../../component/Order/CarrierShipment';
 import '../../../component/Order/OrderWorkflow.scss';
 
 export default function DetailOrder() {
@@ -69,13 +72,16 @@ export default function DetailOrder() {
         {!loading && !error && order && <article className="order-card">
             <OrderDetails order={order} />
             <ShipperRating order={order} />
+            <CarrierShipment key={`carrier-${order.id}`} order={order} admin onUpdated={loadOrder} />
+            <DeliveryExceptions key={`exceptions-${order.id}`} order={order} admin onUpdated={loadOrder} />
+            <ReturnWorkflow key={`return-${order.id}`} order={order} admin onUpdated={loadOrder} />
             {actionError && <p role="alert" className="text-danger">{actionError}</p>}
             <div className="order-actions">
                 {order.statusId === 'S3' && <button className="btn btn-success" type="button" disabled={busy} onClick={() => perform(() => updateStatusOrderService({ id: order.id, statusId: 'S4' }), 'Đã xác nhận đơn hàng.')}>{busy ? 'Đang cập nhật…' : 'Xác nhận đơn hàng'}</button>}
-                {['S3', 'S4'].includes(order.statusId) && Number(order.isPaymentOnlien) === 0 && <button className="btn btn-outline-danger" type="button" disabled={busy} onClick={() => setCancelling(true)}>Hủy đơn</button>}
+                {['S3', 'S4'].includes(order.statusId) && Number(order.isPaymentOnlien) === 0 && !order.shipment && (!order.deliveryProvider || order.deliveryProvider === 'internal') && <button className="btn btn-outline-danger" type="button" disabled={busy} onClick={() => setCancelling(true)}>Hủy đơn</button>}
                 {order.statusId === 'S5' && order.shipperId && <button className="btn btn-success" type="button" disabled={busy} onClick={() => setCompleting(true)}>Xác nhận giao hàng</button>}
             </div>
-            {order.statusId === 'S4' && !order.shipperId && <form className="order-action-form" onSubmit={event => { event.preventDefault(); if (shipperId) perform(() => assignShippingOrder(order.id, Number(shipperId)), 'Đã phân công người giao hàng.'); }}>
+            {order.statusId === 'S4' && !order.shipperId && !order.shipment && (!order.deliveryProvider || order.deliveryProvider === 'internal') && <form className="order-action-form" onSubmit={event => { event.preventDefault(); if (shipperId) perform(() => assignShippingOrder(order.id, Number(shipperId)), 'Đã phân công người giao hàng.'); }}>
                 <h3 className="h5">Phân công giao hàng</h3><p>Chọn người giao hàng để bắt đầu giao đơn này.</p>
                 {shippersLoading ? <p role="status">Đang tải người giao hàng…</p> : shipperError ? <div role="alert"><p>{shipperError}</p><button type="button" className="btn btn-outline-secondary" onClick={loadShippers}>Tải lại người giao hàng</button></div> : <>
                     <label>Người giao hàng<select className="form-select mt-2 mb-3" value={shipperId} onChange={event => setShipperId(event.target.value)} disabled={busy} required><option value="">Chọn người giao hàng</option>{shippers.map(shipper => <option key={shipper.id} value={shipper.id}>{shipperName(shipper)}{shipper.phonenumber ? ` · ${shipper.phonenumber}` : ''}</option>)}</select></label>

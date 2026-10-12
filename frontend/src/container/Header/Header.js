@@ -8,6 +8,7 @@ import "./Header.scss";
 import TopMenu from "./TopMenu";
 import socketIOClient from "socket.io-client";
 import { API_BASE_URL } from "../../axios";
+import NotificationsBell from "../../component/Notifications/NotificationsBell";
 
 const Header = (props) => {
     const [quantityMessage, setquantityMessage] = useState("");
@@ -138,6 +139,7 @@ const Header = (props) => {
                                 </div>
                                 <div className="col-lg-3 pr-0">
                                     <ul className="nav navbar-nav navbar-right right_nav pull-right">
+                                        {user?.id && <li className="nav-item"><NotificationsBell /></li>}
                                         <li className="nav-item">
                                             <Link
                                                 to={"/user/messenger"}

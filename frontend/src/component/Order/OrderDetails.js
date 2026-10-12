@@ -1,16 +1,19 @@
 import React from 'react';
-import { formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES, shipperName } from '../../utils/orders';
+import { formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES, paymentLabel, shipperName } from '../../utils/orders';
 import './OrderWorkflow.scss';
 
 export function OrderTimeline({ order }) {
-    const events = [
+    const legacyEvents = [
         { label: 'Đặt hàng', time: order.createdAt },
         { label: 'Người giao hàng nhận đơn', time: order.assignedAt },
         { label: 'Giao hàng thành công', time: order.deliveredAt },
         { label: 'Hủy đơn hàng', time: order.cancelledAt },
     ].filter(event => event.time);
+    const events = Array.isArray(order.events) && order.events.length ? [...order.events]
+        .sort((a, b) => new Date(a.createdAt || a.time) - new Date(b.createdAt || b.time))
+        .map(event => ({ id: event.id, label: event.title || event.label || ORDER_STATUSES[event.statusId] || event.eventType || event.type, detail: event.message || event.reason || event.note, time: event.createdAt || event.time })) : legacyEvents;
     return events.length ? <ol className="order-timeline" aria-label="Lịch sử đơn hàng">
-        {events.map(event => <li key={event.label}><strong>{event.label}</strong><time>{formatOrderDate(event.time)}</time></li>)}
+        {events.map((event, index) => <li key={event.id || index}><strong>{event.label}</strong>{event.detail && <p>{event.detail}</p>}<time>{formatOrderDate(event.time)}</time></li>)}
     </ol> : null;
 }
 
@@ -50,7 +53,9 @@ export default function OrderDetails({ order, compact = false }) {
             <div><dt>Phí vận chuyển{order.typeShipData?.type && ` · ${order.typeShipData.type}`}</dt><dd>{formatOrderMoney(totals.shippingFee)}</dd></div>
             <div className="order-total"><dt>Tổng thanh toán</dt><dd>{formatOrderMoney(totals.totalPrice)}</dd></div>
         </dl>
-        <p>Thanh toán: {Number(order.isPaymentOnlien) === 1 ? 'Đã thanh toán trực tuyến' : 'Tiền mặt khi nhận hàng'}</p>
+        <p>Thanh toán: {paymentLabel(order)}</p>
+        {order.lastDeliveryFailureReason && <p role="status">Giao không thành công: {order.lastDeliveryFailureReason}</p>}
+        {Number(order.deliveryAttempts) > 0 && <p>Số lần giao thất bại: {order.deliveryAttempts}</p>}
         {order.cancellationReason && <p className="order-cancellation">Lý do hủy: {order.cancellationReason}</p>}
         {order.image && <section className="order-section"><h3>Ảnh giao hàng</h3><a href={order.image} target="_blank" rel="noreferrer"><img className="delivery-proof" src={order.image} alt={`Ảnh giao hàng đơn ${order.id}`} /></a></section>}
         <OrderTimeline order={order} />

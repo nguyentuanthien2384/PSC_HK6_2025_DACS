@@ -76,11 +76,12 @@ function verifyVnpay(data, secret) {
 
 function canReadOrder(order, address, actor) {
     return !!actor && (['R1', 'R4'].includes(actor.roleId) || String(address && address.userId) === String(actor.id) ||
-        (actor.roleId === 'R3' && (String(order.shipperId) === String(actor.id) || (order.statusId === 'S4' && !Number(order.shipperId)))));
+        (actor.roleId === 'R3' && (String(order.shipperId) === String(actor.id) || (order.statusId === 'S4' && !Number(order.shipperId) && (!order.deliveryProvider || order.deliveryProvider === 'internal')))));
 }
 
 function canTransitionOrder(order, address, actor, nextStatus) {
     if (!actor) return false;
+    if (order.deliveryProvider && order.deliveryProvider !== 'internal' && ['S6', 'S7'].includes(nextStatus)) return false;
     const transitions = { S3: ['S4', 'S7'], S4: ['S5', 'S7'], S5: ['S6'], S6: [], S7: [] };
     if (!(transitions[order.statusId] || []).includes(nextStatus)) return false;
     if (nextStatus === 'S5') return false; // A valid courier must be assigned through confirmOrder.

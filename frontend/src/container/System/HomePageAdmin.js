@@ -21,6 +21,7 @@ import EditProductDetail from "./Product/ProductDetail/EditProductDetail";
 
 import ManageOrder from "./Order/ManageOrder";
 import DetailOrder from "./Order/DetailOrder";
+import PaymentReconciliation from "./Order/PaymentReconciliation";
 
 import AddTypeVoucher from "./Voucher/AddTypeVoucher";
 import ManageTypeVoucher from "./Voucher/ManageTypeVoucher";
@@ -88,6 +89,7 @@ function HomePageAdmin() {
 
                 <Route path="list-order" element={<ManageOrder />} />
                 <Route path="order-detail/:id" element={<DetailOrder />} />
+                <Route path="payment-reconciliation" element={<PaymentReconciliation />} />
 
                 <Route path="list-typevoucher" element={<ManageTypeVoucher />} />
                 <Route path="add-typevoucher" element={<AddTypeVoucher />} />

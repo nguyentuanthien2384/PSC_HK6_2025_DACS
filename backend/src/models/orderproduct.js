@@ -28,10 +28,17 @@ module.exports = (sequelize, DataTypes) => {
         discountAmount: DataTypes.BIGINT,
         totalPrice: DataTypes.BIGINT,
         shipperId: DataTypes.INTEGER,
+        deliveryProvider: { type: DataTypes.STRING(20), defaultValue: 'internal' },
         assignedAt: DataTypes.DATE,
         deliveredAt: DataTypes.DATE,
         cancelledAt: DataTypes.DATE,
         cancellationReason: DataTypes.STRING(1000),
+        deliveryAttempts: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+        failedDeliveryAt: DataTypes.DATE,
+        lastDeliveryFailureReason: DataTypes.STRING(1000),
+        returnStartedAt: DataTypes.DATE,
+        warehouseReceivedAt: DataTypes.DATE,
+        returnResellable: DataTypes.BOOLEAN,
         image: DataTypes.BLOB('long')
     }, {
         sequelize,

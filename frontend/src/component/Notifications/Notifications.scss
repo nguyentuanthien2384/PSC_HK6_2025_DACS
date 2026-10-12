@@ -1,0 +1,8 @@
+.notifications-bell { position: relative; display: inline-flex; align-items: center; }
+.notifications-bell .icons { position: relative; }
+.notifications-count { position: absolute; top: -9px; right: -12px; min-width: 20px; height: 20px; border-radius: 20px; background: #bd301d; color: white; font-size: 11px; line-height: 20px; text-align: center; padding: 0 4px; }
+.notifications-retry { border: 0; background: #a02a16; color: #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; }
+.notification-item.unread { border-left: 4px solid #447f16; background: #fafcf6; }
+.notifications-page time { font-size: 13px; color: #687063; }
+.sb-topnav .notifications-bell { margin: 0 24px 0 10px; }
+.sb-topnav .notifications-bell .icons { color: white; padding: 8px; }

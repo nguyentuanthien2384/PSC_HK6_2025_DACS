@@ -3,7 +3,8 @@ import { toast } from 'react-toastify';
 import { assignShippingOrder, completeShippingOrder, getAvailableShippingOrders, getShipperOrders } from '../../services/shippingService';
 import OrderDetails from '../../component/Order/OrderDetails';
 import { ShipperRating } from '../../component/Order/OrderForms';
-import { formatOrderDate, formatOrderMoney, orderTotals } from '../../utils/orders';
+import DeliveryExceptions from '../../component/Order/DeliveryExceptions';
+import { formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES, paymentLabel } from '../../utils/orders';
 import { getUser } from '../../utils/token';
 import '../../component/Order/OrderWorkflow.scss';
 
@@ -98,10 +99,10 @@ export default function ShipperPage() {
         <div role="tabpanel" id="shipping-orders" aria-labelledby={`shipping-tab-${tab}`}>
             {!loading && !error && !orders.length && <p className="order-status-message">{search ? 'Không có đơn giao hàng phù hợp.' : tab === 'available' ? 'Chưa có đơn hàng chờ nhận. Đơn sẽ xuất hiện sau khi cửa hàng xác nhận.' : tab === 'working' ? 'Bạn chưa có đơn đang giao. Chọn “Đơn chờ nhận” để nhận đơn.' : 'Bạn chưa hoàn thành đơn giao hàng nào.'}</p>}
             {!loading && !error && orders.map(order => <article className="order-card" key={order.id} aria-label={`Đơn giao hàng ${order.id}`}>
-                <div className="order-heading"><h2>Đơn hàng #{order.id}</h2><span>{tabs[tab]}</span></div>
+                <div className="order-heading"><h2>Đơn hàng #{order.id}</h2><span>{ORDER_STATUSES[order.statusId] || tabs[tab]}</span></div>
                 <p><strong>{order.addressUser?.shipName || 'Người nhận'}</strong>{order.addressUser?.shipPhonenumber && <> · <a href={`tel:${order.addressUser.shipPhonenumber}`}>{order.addressUser.shipPhonenumber}</a></>}</p>
                 <p>{order.addressUser?.shipAdress || 'Chưa có địa chỉ'}</p>
-                <p>Tiền cần thu: <strong>{formatOrderMoney(Number(order.isPaymentOnlien) === 1 ? 0 : orderTotals(order).totalPrice)}</strong>{Number(order.isPaymentOnlien) === 1 && ' · Đã thanh toán trực tuyến'}</p>
+                <p>Tiền cần thu: <strong>{formatOrderMoney(Number(order.isPaymentOnlien) === 1 || ['S6', 'S9', 'S10'].includes(order.statusId) ? 0 : orderTotals(order).totalPrice)}</strong> · {paymentLabel(order)}</p>
                 {order.deliveredAt && <p>Giao thành công: {formatOrderDate(order.deliveredAt)}</p>}
                 <div className="order-actions"><button type="button" className="btn btn-outline-secondary" aria-expanded={expanded === order.id} onClick={() => setExpanded(expanded === order.id ? null : order.id)}>{expanded === order.id ? 'Thu gọn' : 'Xem chi tiết'}</button>
                     {tab === 'available' && order.statusId === 'S4' && !order.shipperId && <button type="button" className="btn btn-success" disabled={Boolean(busyId)} onClick={() => setClaiming(order.id)}>Nhận giao đơn</button>}
@@ -110,6 +111,7 @@ export default function ShipperPage() {
                 {expanded === order.id && <OrderDetails order={order} compact />}
                 {claiming === order.id && <div className="order-action-form"><p>Nhận giao đơn #{order.id} đến {order.addressUser?.shipAdress}?</p><div className="order-actions"><button type="button" className="btn btn-success" disabled={Boolean(busyId)} onClick={() => perform(order, () => assignShippingOrder(order.id), 'Đã nhận giao đơn hàng.', 'working')}>{busyId === order.id ? 'Đang nhận…' : 'Xác nhận nhận đơn'}</button><button type="button" className="btn btn-outline-secondary" disabled={Boolean(busyId)} onClick={() => setClaiming(null)}>Quay lại</button></div></div>}
                 {completing === order.id && <DeliveryForm order={order} busy={busyId === order.id} onClose={() => setCompleting(null)} onSubmit={image => perform(order, () => completeShippingOrder(order.id, image), 'Đã giao hàng thành công.', 'done')} />}
+                {tab === 'working' && String(order.shipperId) === String(userId) && <DeliveryExceptions key={`exceptions-${order.id}`} order={order} onUpdated={loadOrders} />}
                 {tab === 'done' && <ShipperRating order={order} />}
             </article>)}
         </div>

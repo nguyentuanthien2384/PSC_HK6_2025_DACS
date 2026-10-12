@@ -21,12 +21,14 @@ import VerifyEmail from "./container/System/Email/VerifyEmail";
 import ForgotPasswordPage from "./container/Login/ForgotPasswordPage";
 import ShipperPage from "./container/Shipper/ShipperPage";
 import RequireAuth from "./component/RequireAuth";
+import NotificationsPage from "./container/User/NotificationsPage";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/notifications" element={<RequireAuth><Header /><NotificationsPage /><Footer /></RequireAuth>} />
                 <Route path="/forgot-password" element={<><Header /><ForgotPasswordPage /><Footer /></>} />
                 <Route path="/verify-forgotpassword" element={<><Header /><ForgotPasswordPage reset /><Footer /></>} />
                 <Route path="/shipper" element={<RequireAuth roles={["R3"]}><Header /><ShipperPage /><Footer /></RequireAuth>} />

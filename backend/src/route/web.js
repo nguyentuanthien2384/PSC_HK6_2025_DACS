@@ -15,9 +15,39 @@ import receiptController from '../controllers/receiptController';
 import messageController from '../controllers/messageController';
 import statisticController from '../controllers/statisticController';
 import middlewareControllers from '../middlewares/jwtVerify';
+const notificationController = require('../controllers/notificationController');
+const shippingProviderController = require('../controllers/shippingProviderController');
+const afterSalesController = require('../controllers/afterSalesController');
+const paymentController = require('../controllers/paymentController');
 let router = express.Router();
 
 let initwebRoutes = (app) => {
+    router.get('/api/notifications', middlewareControllers.verifyTokenUser, notificationController.list);
+    router.post('/api/notifications/read', middlewareControllers.verifyTokenUser, notificationController.read);
+    router.post('/api/notifications/read-all', middlewareControllers.verifyTokenUser, notificationController.readAll);
+    router.get('/api/shipping/providers', middlewareControllers.verifyTokenAdmin, shippingProviderController.providers);
+    router.post('/api/shipping/book', middlewareControllers.verifyTokenAdmin, shippingProviderController.book);
+    router.post('/api/shipping/sync', middlewareControllers.verifyTokenAdmin, shippingProviderController.sync);
+    router.post('/api/shipping/cancel', middlewareControllers.verifyTokenAdmin, shippingProviderController.cancel);
+    router.post('/api/shipping/webhooks/ghn', shippingProviderController.ghnWebhook);
+    router.post('/api/shipping/webhooks/ghtk', shippingProviderController.ghtkWebhook);
+    router.post('/api/returns/request', middlewareControllers.verifyTokenUser, afterSalesController.request);
+    router.post('/api/returns/review', middlewareControllers.verifyTokenAdmin, afterSalesController.review);
+    router.post('/api/returns/ship', middlewareControllers.verifyTokenUser, afterSalesController.ship);
+    router.post('/api/returns/receive', middlewareControllers.verifyTokenAdmin, afterSalesController.receive);
+    router.post('/api/returns/refund/manual', middlewareControllers.verifyTokenAdmin, afterSalesController.manualRefund);
+    router.post('/api/returns/:id/refund-online', middlewareControllers.verifyTokenAdmin, afterSalesController.onlineRefund);
+    router.post('/api/shipping/fail', middlewareControllers.verifyTokenUser, orderController.reportDeliveryFailure);
+    router.post('/api/shipping/retry', middlewareControllers.verifyTokenUser, orderController.retryDelivery);
+    router.post('/api/shipping/return', middlewareControllers.verifyTokenUser, orderController.startReturnToWarehouse);
+    router.post('/api/shipping/return/receive', middlewareControllers.verifyTokenAdmin, orderController.receiveUndeliveredReturn);
+    router.get('/api/payments/vnpay/ipn', paymentController.vnpayIpn);
+    router.post('/api/payments/paypal/webhook', paymentController.paypalWebhook);
+    router.get('/api/payments/reconciliation', middlewareControllers.verifyTokenAdmin, paymentController.getReconciliation);
+    router.post('/api/payments/reconcile', middlewareControllers.verifyTokenAdmin, paymentController.reconcileSession);
+    router.post('/api/payments/refund-session', middlewareControllers.verifyTokenAdmin, paymentController.refundSession);
+    router.get('/api/payments/refunds', middlewareControllers.verifyTokenAdmin, paymentController.getRefunds);
+    router.post('/api/payments/refunds/:id/retry', middlewareControllers.verifyTokenAdmin, paymentController.retryRefund);
     router.get("/", (req, res) => {
         return res.send("hello")
     })

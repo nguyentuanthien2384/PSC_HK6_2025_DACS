@@ -15,9 +15,13 @@ async function start() {
   const io = require('socket.io')(server, { cors: { origin: allowedOrigins(), credentials: true } });
   configureSocket(io);
   app.set('io', io);
+  require('./services/notificationService').setNotificationEmitter(io);
+  const { startBackgroundJobs } = require('./services/backgroundJobs');
+  const stopJobs = startBackgroundJobs(db);
   const port = Number(process.env.PORT) || 6969;
   server.listen(port, () => console.log(`Backend listening on port ${port}`));
   const shutdown = () => {
+    stopJobs();
     io.close();
     server.close(async () => { await db.sequelize.close(); process.exit(0); });
     setTimeout(() => process.exit(0), 5000).unref();

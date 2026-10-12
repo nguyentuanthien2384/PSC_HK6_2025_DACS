@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getAllOrdersByUser, updateStatusOrderService } from '../../services/userService';
 import { getUser } from '../../utils/token';
-import { canCustomerCancel, canCustomerConfirmReceipt, canCustomerRateShipper, flattenCustomerOrders, formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES } from '../../utils/orders';
+import { canCustomerCancel, canCustomerConfirmReceipt, canCustomerRateShipper, flattenCustomerOrders, formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES, paymentLabel } from '../../utils/orders';
 import OrderDetails, { ShipperInfo } from '../../component/Order/OrderDetails';
 import { CancelOrderForm, ShipperRating } from '../../component/Order/OrderForms';
+import ReturnWorkflow from '../../component/Order/ReturnWorkflow';
+import CarrierShipment from '../../component/Order/CarrierShipment';
 import '../../component/Order/OrderWorkflow.scss';
 
 export default function OrderUser() {
@@ -58,8 +60,9 @@ export default function OrderUser() {
             <div className="order-heading"><h2>Đơn hàng #{order.id}</h2><span>{order.statusOrderData?.value || ORDER_STATUSES[order.statusId]}</span></div>
             <p>Ngày đặt: {formatOrderDate(order.createdAt)}</p>
             <p>{(order.orderDetail || []).map(line => `${line.product?.name || 'Sản phẩm đã mua'} × ${line.quantity}`).join(', ')}</p>
-            <p><strong>Tổng thanh toán: {formatOrderMoney(orderTotals(order).totalPrice)}</strong> · {Number(order.isPaymentOnlien) === 1 ? 'Đã thanh toán trực tuyến' : 'Tiền mặt khi nhận hàng'}</p>
+            <p><strong>Tổng thanh toán: {formatOrderMoney(orderTotals(order).totalPrice)}</strong> · {paymentLabel(order)}</p>
             <ShipperInfo order={order} />
+            <CarrierShipment key={`carrier-${order.id}`} order={order} />
             {order.cancellationReason && <p>Lý do hủy: {order.cancellationReason}</p>}
             <div className="order-actions">
                 <button type="button" className="btn btn-outline-secondary" aria-expanded={expanded === order.id} onClick={() => setExpanded(expanded === order.id ? null : order.id)}>{expanded === order.id ? 'Thu gọn' : 'Xem chi tiết'}</button>
@@ -70,6 +73,7 @@ export default function OrderUser() {
             {cancelling === order.id && <CancelOrderForm busy={busyId === order.id} onClose={() => setCancelling(null)} onSubmit={reason => updateOrder(order, 'S7', reason)} />}
             {confirming === order.id && <div className="order-action-form"><p>Bạn đã nhận đủ hàng của đơn #{order.id}?</p><div className="order-actions"><button type="button" className="btn btn-success" disabled={Boolean(busyId)} onClick={() => updateOrder(order, 'S6')}>{busyId === order.id ? 'Đang xác nhận…' : 'Xác nhận đã nhận hàng'}</button><button type="button" className="btn btn-outline-secondary" disabled={Boolean(busyId)} onClick={() => setConfirming(null)}>Chưa nhận hàng</button></div></div>}
             <ShipperRating order={order} allowSubmit={canCustomerRateShipper(order)} onRated={loadOrders} />
+            <ReturnWorkflow key={`return-${order.id}`} order={order} onUpdated={loadOrders} />
         </article>)}
     </div>;
 }

@@ -8,6 +8,8 @@ const { createDeliveryService } = require('./deliveryService');
 const { fail, positiveInteger, resultOf, canReadOrder, encodeVnpay, signVnpay, verifyVnpay } = require('../utils/commerce');
 const commerce = createCommerceService(db);
 const delivery = createDeliveryService(db);
+const afterSales = require('./afterSalesService').createAfterSalesService(db);
+const { safeShipment } = require('./shippingProviderService');
 const admin = actor => actor && ['R1', 'R4'].includes(actor.roleId);
 const safeUser = { exclude: ['password', 'usertoken', 'image'] };
 const shipperFields = ['id', 'firstName', 'lastName', 'phonenumber', 'roleId', 'statusId'];
@@ -35,6 +37,17 @@ async function hydrateOrder(order, actor) {
     order.canRateShipper = !!actor && order.statusId === 'S6' && Number(order.shipperId) > 0 &&
         String(order.addressUser && order.addressUser.userId) === String(actor.id) &&
         String(order.shipperId) !== String(actor.id) && !order.shipperRating;
+    order.events = db.OrderEvent ? await db.OrderEvent.findAll({ where: { orderId: order.id }, attributes: ['id', 'type', 'title', 'message', 'createdAt'], order: [['id', 'ASC']], raw: true }) : [];
+    order.returnRequest = db.ReturnRequest ? await db.ReturnRequest.findOne({ where: { orderId: order.id }, order: [['id', 'DESC']], raw: true }) : null;
+    if (order.returnRequest && actor?.roleId === 'R3') {
+        delete order.returnRequest.refundProof; delete order.returnRequest.refundReference;
+        delete order.returnRequest.payoutDetails;
+    }
+    order.returnEligibility = afterSales.returnEligibility(order, actor, order.returnRequest, order.addressUser);
+    order.shipment = db.Shipment ? safeShipment(await db.Shipment.findOne({ where: { orderId: order.id }, raw: true })) : null;
+    const payment = await db.PaymentSession.findOne({ where: { orderId: order.id }, attributes: ['id', 'provider', 'status', 'totalPrice', 'currency', 'paidAt', 'reviewReason', 'gatewayOutcome'], raw: true });
+    order.paymentSession = payment ? { ...payment, providerOutcome: payment.gatewayOutcome ? JSON.parse(payment.gatewayOutcome) : null } : null;
+    if (order.paymentSession) delete order.paymentSession.gatewayOutcome;
     order.voucherData = order.voucherData || { id: null };
     order.voucherData.typeVoucherOfVoucherData = order.voucherData.typeVoucherId ? await db.TypeVoucher.findOne({ where: { id: order.voucherData.typeVoucherId }, raw: true }) : null;
     const details = await db.OrderDetail.findAll({ where: { orderId: order.id }, raw: true });
@@ -98,7 +111,7 @@ const getAllOrdersByShipper = (data = {}, actor) => resultOf(async () => {
     if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền truy cập.', 403);
     const where = { shipperId: admin(actor) ? data.shipperId || actor.id : actor.id };
     if (!positiveInteger(where.shipperId)) fail('Người giao hàng không hợp lệ.');
-    if (data.status === 'working') where.statusId = 'S5';
+    if (data.status === 'working') where.statusId = { [db.Sequelize.Op.in]: ['S5', 'S8', 'S9'] };
     if (data.status === 'done') where.statusId = 'S6';
     const orders = await db.OrderProduct.findAll({ where, include: orderIncludes(), order: [['createdAt', 'DESC']], raw: true, nest: true });
     for (const order of orders) await hydrateOrder(order, actor);
@@ -116,11 +129,16 @@ const confirmOrder = delivery.confirmOrder;
 const updateImageOrder = delivery.updateImageOrder;
 const rateShipper = delivery.rateShipper;
 const getActiveShippers = delivery.getActiveShippers;
+const reportDeliveryFailure = delivery.reportDeliveryFailure;
+const retryDelivery = delivery.retryDelivery;
+const startReturnToWarehouse = delivery.startReturnToWarehouse;
+const receiveUndeliveredReturn = delivery.receiveUndeliveredReturn;
 
 function configurePaypal() {
     if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) fail('Cổng PayPal chưa được cấu hình. Vui lòng chọn thanh toán khi nhận hàng.', 3);
     paypal.configure({ mode: process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox', client_id: process.env.PAYPAL_CLIENT_ID, client_secret: process.env.PAYPAL_CLIENT_SECRET, request_timeout: 20000 });
 }
+const paymentGateway = require('./paymentGatewayService').gateway;
 const paypalCall = (method, ...args) => new Promise((resolve, reject) => paypal.payment[method](...args, (error, payment) => error ? reject(error) : resolve(payment)));
 const frontendUrl = () => process.env.URL_REACT || 'http://localhost:3000';
 
@@ -159,47 +177,7 @@ const paymentOrder = data => resultOf(async () => {
     }
 });
 
-async function finishSession(data, provider, verifyPayment) {
-    if (typeof data.checkoutToken !== 'string' || !positiveInteger(data.userId)) fail('Thiếu phiên thanh toán hợp lệ.');
-    return commerce.transaction(async tx => {
-        const session = await db.PaymentSession.findOne({ where: { id: data.checkoutToken, userId: data.userId, provider }, ...commerce.lockOptions(tx), raw: false });
-        if (!session) fail('Không tìm thấy phiên thanh toán của bạn.', 403);
-        if (provider === 'paypal' && session.providerPaymentId !== data.paymentId) fail('Mã thanh toán không khớp phiên đặt hàng.', 403);
-        if (provider === 'vnpay' && session.id !== data.vnp_TxnRef) fail('Mã giao dịch không khớp phiên đặt hàng.', 403);
-        if (session.status === 'COMPLETED' && session.orderId) {
-            const order = await db.OrderProduct.findOne({ where: { id: session.orderId }, transaction: tx, raw: true });
-            return { errCode: 0, errMessage: 'Đơn hàng đã được xác nhận.', orderId: session.orderId, data: order };
-        }
-        if (session.status !== 'PENDING') fail('Phiên thanh toán không còn hiệu lực.', 2);
-        if (new Date(session.expiresAt).getTime() < Date.now()) fail('Phiên thanh toán đã hết hạn. Nếu đã bị trừ tiền, vui lòng liên hệ cửa hàng với mã giao dịch để đối soát.', 2);
-        const checkout = JSON.parse(session.checkoutData);
-        await commerce.checkStock(checkout.lines, tx, session.id);
-        const address = await db.AddressUser.findOne({ where: { id: checkout.addressUserId, userId: session.userId }, transaction: tx, raw: true });
-        if (!address) fail('Địa chỉ giao hàng không còn tồn tại. Vui lòng liên hệ cửa hàng nếu đã thanh toán.', 2);
-        await verifyPayment(session);
-        const result = await commerce.persistOrder(checkout, tx, true);
-        session.status = 'COMPLETED';
-        session.orderId = result.orderId;
-        await session.save({ transaction: tx });
-        return result;
-    });
-}
-
-const paymentOrderSuccess = data => resultOf(async () => {
-    if (!data.PayerID || !data.paymentId) fail('Thiếu thông tin xác nhận PayPal.');
-    configurePaypal();
-    return finishSession(data, 'paypal', async session => {
-        let payment;
-        try {
-            payment = await paypalCall('get', session.providerPaymentId);
-            if (payment.state !== 'approved') payment = await paypalCall('execute', session.providerPaymentId, { payer_id: data.PayerID });
-        } catch (error) { fail('PayPal chưa xác nhận thanh toán thành công. Vui lòng thử lại.', 3); }
-        const transaction = payment.transactions && payment.transactions[0];
-        if (payment.state !== 'approved' || !transaction || transaction.custom !== session.id || transaction.amount.currency !== session.currency || Number(transaction.amount.total).toFixed(2) !== Number(session.providerAmount).toFixed(2)) {
-            fail('Kết quả PayPal không khớp số tiền đặt hàng. Vui lòng liên hệ cửa hàng.', 3);
-        }
-    });
-});
+const paymentOrderSuccess = data => paymentGateway().completePaypal(data);
 
 function configureVnpay() {
     if (!process.env.VNP_TMNCODE || !process.env.VNP_HASHSECRET || process.env.VNP_HASHSECRET === 'SECRETKEY') fail('Cổng VNPay chưa được cấu hình. Vui lòng chọn thanh toán khi nhận hàng.', 3);
@@ -211,12 +189,14 @@ const paymentOrderVnpay = req => resultOf(async () => {
     const returnUrl = new URL(process.env.VNP_RETURNURL || `${frontendUrl()}/payment/vnpay_return`);
     returnUrl.searchParams.set('checkoutToken', session.id);
     const formatDate = date => moment(date).utcOffset(7).format('YYYYMMDDHHmmss');
+    session.gatewayTransactionDate = formatDate(session.createdAt || new Date());
+    await session.save();
     const params = {
         vnp_Version: '2.1.0', vnp_Command: 'pay', vnp_TmnCode: process.env.VNP_TMNCODE,
         vnp_Locale: req.body.language === 'en' ? 'en' : 'vn', vnp_CurrCode: 'VND', vnp_TxnRef: session.id,
         vnp_OrderInfo: `Thanh toan don hang ${session.id}`, vnp_OrderType: 'other', vnp_Amount: session.providerAmount,
         vnp_ReturnUrl: returnUrl.toString(), vnp_IpAddr: req.ip || (req.socket && req.socket.remoteAddress) || '127.0.0.1',
-        vnp_CreateDate: formatDate(new Date()), vnp_ExpireDate: formatDate(session.expiresAt)
+        vnp_CreateDate: session.gatewayTransactionDate, vnp_ExpireDate: formatDate(session.expiresAt)
     };
     if (req.body.bankCode && /^[a-z\d]{2,30}$/i.test(req.body.bankCode)) params.vnp_BankCode = req.body.bankCode;
     params.vnp_SecureHash = signVnpay(params, process.env.VNP_HASHSECRET);
@@ -225,18 +205,11 @@ const paymentOrderVnpay = req => resultOf(async () => {
 });
 
 function validateVnpay(data) {
-    configureVnpay();
-    if (!verifyVnpay(data, process.env.VNP_HASHSECRET) || data.vnp_TmnCode !== process.env.VNP_TMNCODE) fail('Chữ ký giao dịch VNPay không hợp lệ.', 3);
+    paymentGateway().validateVnpayNotice(data);
     if (data.vnp_ResponseCode !== '00' || data.vnp_TransactionStatus !== '00') fail('Giao dịch VNPay bị hủy hoặc chưa thanh toán thành công.', 2);
 }
 
-const paymentOrderVnpaySuccess = data => resultOf(async () => {
-    validateVnpay(data);
-    return finishSession(data, 'vnpay', async session => {
-        if (String(data.vnp_Amount) !== String(session.providerAmount) || !data.vnp_TransactionNo || data.vnp_TransactionNo === '0') fail('Số tiền hoặc mã giao dịch VNPay không hợp lệ.', 3);
-        session.providerPaymentId = `vnpay:${data.vnp_TransactionNo}`;
-    });
-});
+const paymentOrderVnpaySuccess = data => paymentGateway().completeVnpay(data);
 
 // Compatibility endpoint verifies the gateway response; order creation is only
 // performed by paymentOrderVnpaySuccess with the persisted checkout session.
@@ -245,4 +218,4 @@ const confirmOrderVnpay = data => resultOf(async () => {
     return { errCode: 0, errMessage: 'Chữ ký giao dịch hợp lệ.' };
 });
 
-module.exports = { createNewOrder, getAllOrders, getDetailOrderById, updateStatusOrder, getAllOrdersByUser, getAllOrdersByShipper, getAvailableOrdersForShipper, getActiveShippers, rateShipper, confirmOrder, updateImageOrder, paymentOrder, paymentOrderSuccess, paymentOrderVnpay, paymentOrderVnpaySuccess, confirmOrderVnpay };
+module.exports = { createNewOrder, getAllOrders, getDetailOrderById, updateStatusOrder, getAllOrdersByUser, getAllOrdersByShipper, getAvailableOrdersForShipper, getActiveShippers, rateShipper, confirmOrder, updateImageOrder, reportDeliveryFailure, retryDelivery, startReturnToWarehouse, receiveUndeliveredReturn, paymentOrder, paymentOrderSuccess, paymentOrderVnpay, paymentOrderVnpaySuccess, confirmOrderVnpay };

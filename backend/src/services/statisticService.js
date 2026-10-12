@@ -113,11 +113,12 @@ const getStatisticStockProduct = (data = {}) => resultOf(async () => {
     const { rows, count } = await db.ProductDetailSize.findAndCountAll(filter);
     if (!rows.length) return { errCode: 0, data: [], count };
     const ids = rows.map(row => row.id);
-    const [receipts, lines, sessions, details] = await Promise.all([
+    const [receipts, lines, sessions, details, adjustments] = await Promise.all([
         db.ReceiptDetail.findAll({ where: { productDetailSizeId: { [Op.in]: ids } }, raw: true }),
         db.OrderDetail.findAll({ where: { productId: { [Op.in]: ids } }, raw: true }),
         db.PaymentSession.findAll({ where: { status: 'PENDING', expiresAt: { [Op.gt]: new Date() } }, raw: true }),
         db.ProductDetail.findAll({ where: { id: { [Op.in]: [...new Set(rows.map(row => row.productdetailId))] } }, raw: true }),
+        db.InventoryAdjustment ? db.InventoryAdjustment.findAll({ where: { productDetailSizeId: { [Op.in]: ids } }, raw: true }) : [],
     ]);
     const orderIds = [...new Set(lines.map(line => line.orderId))];
     const [orders, products] = await Promise.all([
@@ -132,8 +133,9 @@ const getStatisticStockProduct = (data = {}) => resultOf(async () => {
         const received = receipts.filter(item => Number(item.productDetailSizeId) === Number(row.id)).reduce((sum, item) => sum + Number(item.quantity), 0);
         const sold = lines.filter(item => Number(item.productId) === Number(row.id) && active.has(Number(item.orderId))).reduce((sum, item) => sum + Number(item.quantity), 0);
         const reserved = reservedLines.filter(item => Number(item.productId) === Number(row.id)).reduce((sum, item) => sum + Number(item.quantity), 0);
+        const returned = adjustments.filter(item => Number(item.productDetailSizeId) === Number(row.id)).reduce((sum, item) => sum + Number(item.quantity), 0);
         const detail = details.find(item => Number(item.id) === Number(row.productdetailId)) || {};
-        return { ...row, productDetaildData: detail, productdData: products.find(item => Number(item.id) === Number(detail.productId)) || {}, onHand: Math.max(0, received - sold), reserved, stock: Math.max(0, received - sold - reserved) };
+        return { ...row, productDetaildData: detail, productdData: products.find(item => Number(item.id) === Number(detail.productId)) || {}, returned, onHand: Math.max(0, received + returned - sold), reserved, stock: Math.max(0, received + returned - sold - reserved) };
     });
     return { errCode: 0, data: result, count };
 });

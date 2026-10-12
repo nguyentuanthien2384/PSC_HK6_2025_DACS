@@ -44,6 +44,13 @@
 .delivery-form input { display: block; margin: 8px 0; max-width: 100%; }
 .delivery-form img { display: block; margin: 12px 0; }
 .order-status-message { padding: 20px; border-radius: 8px; background: #f3f5ef; margin: 16px 0; }
+.workflow-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 12px 0; }
+.order-action-form .form-control, .order-action-form .form-select { margin: 8px 0 14px; }
+.workflow-evidence input { display: block; margin: 8px 0; max-width: 100%; }
+.workflow-evidence img { display: block; margin: 12px 0; }
+.workflow-checkbox { display: flex !important; gap: 10px; align-items: center; margin: 12px 0; }
+.workflow-checkbox input { width: auto; }
+.order-return-status { border-left: 3px solid #85b943; padding: 10px 16px; background: #f8faf4; margin: 12px 0; }
 @media (max-width: 600px) {
     .user-workspace { flex-direction: column; }
     .user-workspace > .col-md-3 { width: 100%; }

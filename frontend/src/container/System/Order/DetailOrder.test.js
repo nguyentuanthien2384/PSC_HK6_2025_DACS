@@ -8,6 +8,7 @@ let mockOrderId = '3';
 jest.mock('react-router-dom', () => ({ Link: ({ children, to }) => <a href={to}>{children}</a>, useParams: () => ({ id: mockOrderId }) }), { virtual: true });
 jest.mock('../../../services/userService', () => ({ getDetailOrder: jest.fn(), updateStatusOrderService: jest.fn() }));
 jest.mock('../../../services/shippingService', () => ({ assignShippingOrder: jest.fn(), completeShippingOrder: jest.fn(), getActiveShippers: jest.fn(), rateShipper: jest.fn() }));
+jest.mock('../../../services/orderOperationsService', () => ({ getShippingProviders: jest.fn(() => Promise.resolve({ errCode: 0, data: [] })) }));
 jest.mock('react-toastify', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 const order = { id: 3, statusId: 'S4', shipperId: null, totalPrice: 100000, isPaymentOnlien: 0, orderDetail: [] };
 beforeEach(() => { mockOrderId = '3'; jest.clearAllMocks(); getDetailOrder.mockResolvedValue({ errCode: 0, data: order }); getActiveShippers.mockResolvedValue({ errCode: 0, data: [{ id: 9, firstName: 'An', phonenumber: '0900000000' }] }); });

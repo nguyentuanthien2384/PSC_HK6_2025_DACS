@@ -1,5 +1,6 @@
 const { Op, Transaction } = require('sequelize');
 const { fail, positiveInteger, money, normalizeLines, voucherDiscount, voucherIsActive } = require('../utils/commerce');
+const { recordOrderEvent } = require('./orderEventService');
 
 // Inventory is receipts minus non-cancelled orders and unexpired payment reservations.
 function createCommerceService(db) {
@@ -25,7 +26,8 @@ function createCommerceService(db) {
         const sold = lines.reduce((total, line) => total + (activeOrderIds.has(Number(line.orderId)) ? Number(line.quantity) : 0), 0);
         const reservations = await activeSessions(tx, excludeSessionId);
         const reserved = reservations.reduce((total, session) => total + session.checkout.lines.reduce((sum, line) => sum + (Number(line.productId) === Number(productId) ? Number(line.quantity) : 0), 0), 0);
-        return Math.max(0, received - sold - reserved);
+        const returned = db.InventoryAdjustment ? Number(await db.InventoryAdjustment.sum('quantity', { where: { productDetailSizeId: productId }, ...options(tx) })) || 0 : 0;
+        return Math.max(0, received + returned - sold - reserved);
     }
 
     async function lockVariants(lines, tx) {
@@ -115,6 +117,7 @@ function createCommerceService(db) {
             }
         }
         if (checkout.voucherId) await db.VoucherUsed.update({ status: 1 }, { where: { userId, voucherId: checkout.voucherId, status: 0 }, ...options(tx) });
+        await recordOrderEvent(db, { order, type: 'ORDER_CREATED', title: 'Đặt hàng thành công', message: `Đơn #${order.id} đã được tạo${paid ? ' và thanh toán trực tuyến được xác nhận' : ', thanh toán khi nhận hàng'}.`, actorId: userId, metadata: { paid, totalPrice: checkout.totalPrice } }, tx);
         return { errCode: 0, errMessage: 'Đặt hàng thành công.', orderId: order.id, data: order.get ? order.get({ plain: true }) : order };
     }
 

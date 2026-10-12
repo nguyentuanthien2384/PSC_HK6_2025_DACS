@@ -3,6 +3,7 @@ import React from "react";
 import { clearAuth } from "../../utils/token";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import NotificationsBell from "../../component/Notifications/NotificationsBell";
 const Header = () => {
     const [user, setUser] = useState({});
     let handleLogout = () => {
@@ -32,6 +33,7 @@ const Header = () => {
             <form className="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"></form>
             {/* Navbar*/}
             <ul className="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+                {user?.id && <li className="nav-item"><NotificationsBell /></li>}
                 <li className="nav-item dropdown">
                     <a
                         className="nav-link dropdown-toggle"

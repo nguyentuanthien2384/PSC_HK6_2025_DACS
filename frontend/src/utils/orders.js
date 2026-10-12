@@ -1,5 +1,6 @@
 export const ORDER_STATUSES = {
     S3: 'Chờ xác nhận', S4: 'Chờ người giao hàng', S5: 'Đang giao hàng', S6: 'Đã giao hàng', S7: 'Đã hủy',
+    S8: 'Giao không thành công', S9: 'Đang hoàn về kho', S10: 'Đã hoàn về kho',
 };
 
 export const formatOrderMoney = (value) => new Intl.NumberFormat('vi-VN', {
@@ -26,9 +27,18 @@ export function orderTotals(order) {
     return { subtotal, shippingFee, discountAmount, totalPrice: Number(order.totalPrice ?? subtotal + shippingFee - discountAmount) };
 }
 
-export const canCustomerCancel = (order) => ['S3', 'S4'].includes(order.statusId) && Number(order.isPaymentOnlien) === 0;
+export const canCustomerCancel = (order) => ['S3', 'S4'].includes(order.statusId) && Number(order.isPaymentOnlien) === 0 && !order.shipment && (!order.deliveryProvider || order.deliveryProvider === 'internal');
 export const canCustomerConfirmReceipt = (order) => order.statusId === 'S5' && Boolean(order.shipperId);
 export const canCustomerRateShipper = (order) => order.statusId === 'S6' && Boolean(order.shipperId) && order.canRateShipper === true && !order.shipperRating;
+
+export const RETURN_STATUSES = { REQUESTED: 'Chờ duyệt trả hàng', APPROVED: 'Đã duyệt, chờ gửi hàng', SHIPPED: 'Khách đã gửi hàng về', REFUND_PENDING: 'Đã nhận hàng, chờ hoàn tiền', REFUNDED: 'Đã hoàn tiền', REJECTED: 'Yêu cầu bị từ chối' };
+
+export function paymentLabel(order) {
+    if (order.paymentStatus === 'REFUNDED' || order.returnRequest?.status === 'REFUNDED') return 'Đã hoàn tiền';
+    if (order.paymentStatus === 'REFUND_PENDING' || order.returnRequest?.status === 'REFUND_PENDING') return 'Chờ hoàn tiền';
+    if (order.paymentStatus && order.paymentStatus !== 'PAID') return ({ PENDING: 'Chờ thanh toán', FAILED: 'Thanh toán thất bại', CANCELLED: 'Thanh toán đã hủy', EXPIRED: 'Thanh toán hết hạn' })[order.paymentStatus] || order.paymentStatus;
+    return Number(order.isPaymentOnlien) === 1 ? 'Đã thanh toán trực tuyến' : order.statusId === 'S6' ? 'Đã thu tiền khi giao hàng' : 'Tiền mặt khi nhận hàng';
+}
 
 export function flattenCustomerOrders(addresses = []) {
     return addresses.flatMap(address => address.order || [])
