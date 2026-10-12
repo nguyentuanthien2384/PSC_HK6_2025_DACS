@@ -13,8 +13,7 @@ function UserHomePage(props) {
 
     return (
         <div
-            style={{ display: "flex" }}
-            className="container rounded bg-white mt-5 mb-5"
+            className="container user-workspace rounded bg-white mt-5 mb-5"
         >
             <Routes>
                 <Route path="detail/:id" element={<DetailUserPage />} />

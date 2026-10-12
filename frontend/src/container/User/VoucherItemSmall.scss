@@ -1,7 +1,7 @@
 .box-voucher-small{
     color: rgb(238, 77, 45);
     width: 460px;
-     height: 118px;
+    min-height: 118px;
     border: 1px solid #c4c4c4;
     border-left: 0;
     border-radius: 2px;
@@ -46,6 +46,9 @@
                
             }
             .use-voucher{
+                border: 0;
+                background: transparent;
+                &:disabled { color: #999; cursor: not-allowed; }
                 position: absolute;
                 top: 3px;
                 right: 18px;

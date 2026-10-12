@@ -14,7 +14,10 @@ function ReviewProduct(props) {
         activeStar: '', imageReview: '', image: '', content: '', user: getUser(), dataReview: [], countStar: {}, isOpen: false,
         isOpenModal: false, parentId: ''
     });
+    const [reviewEligibility, setReviewEligibility] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
     useEffect(() => {
+        setReviewEligibility(null);
         let fetchAllReview = async () => {
             await loadAllReview()
         }
@@ -36,8 +39,9 @@ function ReviewProduct(props) {
             let count2 = res.data.filter(item => item.star === 2)
             let count1 = res.data.filter(item => item.star === 1)
 
-            await setInputValues({
-                ...inputValues, ["dataReview"]: res.data, ["countStar"]: {
+            setReviewEligibility(res.reviewEligibility);
+            setInputValues(previous => ({
+                ...previous, ["dataReview"]: res.data, ["countStar"]: {
                     star5: count5.length,
                     star4: count4.length,
                     star3: count3.length,
@@ -47,8 +51,8 @@ function ReviewProduct(props) {
                     quantity: count5.length + count4.length + count3.length + count2.length + count1.length
                 },
                 ["content"]: '', ["image"]: '', ["imageReview"]: '', ["activeStar"]: '', ["isOpenModal"]: false
-            })
-        }
+            }))
+        } else throw new Error(res?.errMessage || 'Không thể tải đánh giá sản phẩm.');
     }
     let handleChooseStart = (number) => {
         setInputValues({ ...inputValues, ["activeStar"]: number })
@@ -73,10 +77,13 @@ function ReviewProduct(props) {
 
     };
     let handleSaveComment = async () => {
+        if (submitting) return;
         if (!inputValues.user?.id) toast.error("Vui lòng đăng nhập để đánh giá")
+        else if (!reviewEligibility?.canReview) toast.error(reviewEligibility?.message || "Đang kiểm tra điều kiện đánh giá.")
         else if (!inputValues.activeStar) toast.error("Bạn chưa chọn sao !")
-        else if (!inputValues.content) toast.error("Nội dung không được để trống !")
+        else if (!inputValues.content.trim()) toast.error("Nội dung không được để trống !")
         else {
+            setSubmitting(true);
             try {
             let response = await createNewReviewService({
                 productId: id,
@@ -91,9 +98,11 @@ function ReviewProduct(props) {
                 await loadAllReview()
 
             } else {
-                toast.error(response.errMessage)
+                if (response?.reviewEligibility) setReviewEligibility(response.reviewEligibility);
+                toast.error(response?.errMessage || 'Không thể gửi đánh giá.')
             }
             } catch (error) { toast.error(error.message); }
+            finally { setSubmitting(false); }
         }
     }
     let closeModal = () => {
@@ -184,11 +193,12 @@ function ReviewProduct(props) {
                     </div>
                 </div>
                 <div className="review_list">
-                    {inputValues.user &&
+                    <p role="status">{reviewEligibility?.message || 'Đang kiểm tra điều kiện đánh giá...'}</p>
+                    {inputValues.user && reviewEligibility?.canReview &&
                         <div className="review_item">
                             <div className="form-group">
                                 <label style={{ color: '#333', fontSize: '16px', fontWeight: '600' }}>Viết đánh giá của bạn</label>
-                                <textarea name="content" value={inputValues.content} onChange={(event) => handleOnChange(event)} rows="3" className="form-control"></textarea>
+                                <textarea aria-label="Nội dung đánh giá" name="content" maxLength={10000} disabled={submitting} value={inputValues.content} onChange={(event) => handleOnChange(event)} rows="3" className="form-control"></textarea>
                             </div>
                             <div className="content-review">
                                 <div className="content-left">
@@ -197,14 +207,14 @@ function ReviewProduct(props) {
                                     <input type="file" id="cmtImg" accept=".jpg,.png"
                                         hidden onChange={(event) => handleOnChangeImage(event)}
                                     />
-                                    <div className={inputValues.activeStar === 1 ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(1)}><i className="fa fa-star" /></div>
-                                    <div className={inputValues.activeStar === 2 ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(2)} ><i className="fa fa-star" /><i className="fa fa-star" /></div>
-                                    <div className={inputValues.activeStar === 3 ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(3)}><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /></div>
-                                    <div className={inputValues.activeStar === 4 ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(4)}><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /></div>
-                                    <div className={inputValues.activeStar === 5 ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(5)}><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /><i className="fa fa-star" /></div>
+                                    {[1, 2, 3, 4, 5].map(star => <button type="button" key={star} disabled={submitting}
+                                        aria-label={`Đánh giá ${star} sao`} aria-pressed={inputValues.activeStar === star}
+                                        className={inputValues.activeStar === star ? 'box-star active' : 'box-star'} onClick={() => handleChooseStart(star)}>
+                                        {Array.from({ length: star }, (_, index) => <i key={index} className="fa fa-star" />)}
+                                    </button>)}
                                 </div>
                                 <div className="content-right">
-                                    <button onClick={() => handleSaveComment()} className="btn btn-primary"><i className="fas fa-pencil-alt"></i> Share</button>
+                                    <button disabled={submitting} onClick={() => handleSaveComment()} className="btn btn-primary"><i className="fas fa-pencil-alt"></i> {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}</button>
                                 </div>
                             </div>
                             <div style={{ backgroundImage: `url(${inputValues.imageReview})` }} className="preview-cmt-img">
@@ -237,7 +247,7 @@ function ReviewProduct(props) {
                                                         )
                                                     })
                                                 }
-                                                {inputValues.user && inputValues.user.roleId === "R1" &&
+                                                {inputValues.user && ['R1', 'R4'].includes(inputValues.user.roleId) &&
                                                     <a style={{ cursor: 'pointer' }} onClick={() => handleOpenModal(item.id)} className="reply_btn" >Phản hồi</a>
                                                 }
 
@@ -256,7 +266,7 @@ function ReviewProduct(props) {
                                                         <div key={index} className="box-reply">
                                                             <span>Phản hồi của người bán</span>
                                                             <p>{item.content}</p>
-                                                            {inputValues.user && inputValues.user.roleId === "R1" &&
+                                                            {inputValues.user && ['R1', 'R4'].includes(inputValues.user.roleId) &&
                                                                 <button onClick={() => handleDeleteReply(item.id)} className="btn-delete-reply" type="button">Xóa</button>
                                                             }
                                                         </div>

@@ -1,5 +1,5 @@
 import { getUser } from "../../utils/token";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ShopCartItem from "../../component/ShopCart/ShopCartItem";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import AddressUsersModal from "./AdressUserModal";
 import { toast } from "react-toastify";
 import CommonUtils from "../../utils/CommonUtils";
-import { discountedSubtotal } from "../../utils/checkout";
+import { cartItemAvailabilityError, discountedSubtotal } from "../../utils/checkout";
 
 function ShopCartPage(props) {
     const dispatch = useDispatch();
@@ -29,7 +29,15 @@ function ShopCartPage(props) {
     let dataTypeShip = useSelector((state) => state.shopcart.dataTypeShip);
     let dataCart = useSelector((state) => state.shopcart.listCartItem);
     let dataVoucher = useSelector((state) => state.shopcart.dataVoucher);
+    const cartAvailabilityError = (dataCart || []).map(cartItemAvailabilityError).find(Boolean);
     const [priceShip, setpriceShip] = useState(0);
+    const [editingItems, setEditingItems] = useState(new Set());
+    const handleCartEditing = useCallback((id, pending) => setEditingItems(previous => {
+        if (previous.has(id) === pending) return previous;
+        const next = new Set(previous);
+        if (pending) next.add(id); else next.delete(id);
+        return next;
+    }), []);
 
     useEffect(() => {
         const userData = getUser();
@@ -77,6 +85,8 @@ function ShopCartPage(props) {
     };
     let handleOpenAddressUserModal = async () => {
         if (!dataCart?.length) { toast.error("Giỏ hàng đang trống"); return; }
+        if (editingItems.size) { toast.error("Vui lòng hoàn tất cập nhật số lượng trước khi thanh toán."); return; }
+        if (cartAvailabilityError) { toast.error(cartAvailabilityError); return; }
         if (!dataTypeShip?.id) { toast.error("Vui lòng chọn đơn vị vận chuyển"); return; }
         try {
         if (user && user.id) {
@@ -95,8 +105,6 @@ function ShopCartPage(props) {
     const totalPriceDiscount = discountedSubtotal;
 
     let sendDataFromModalAddress = async (data) => {
-        setisOpenModalAddressUser(false);
-
         try {
         let res = await createNewAddressUserrService({
             shipName: data.shipName,
@@ -104,14 +112,18 @@ function ShopCartPage(props) {
             shipEmail: data.shipEmail,
             shipPhonenumber: data.shipPhonenumber,
             userId: user.id,
+            isDefault: data.isDefault,
         });
         if (res && res.errCode === 0) {
             toast.success("Thêm địa chỉ thành công !");
+            setisOpenModalAddressUser(false);
             navigate(`/order/${user.id}`);
+            return true;
         } else {
             toast.error(res.errMessage);
+            return false;
         }
-        } catch (error) { toast.error(error.message); }
+        } catch (error) { toast.error(error.message); return false; }
     };
     let closeModalFromVoucherItem = () => {
         setisOpenModal(false);
@@ -172,6 +184,10 @@ function ShopCartPage(props) {
                                                         .discountPrice
                                                 }
                                                 quantity={item.quantity}
+                                                stock={item.productdetailsizeData.stock}
+                                                available={item.available}
+                                                availabilityError={cartItemAvailabilityError(item)}
+                                                onEditingChange={handleCartEditing}
                                                 image={
                                                     item.productDetailImage?.[0]?.image || "/resources/img/logo.png"
                                                 }
@@ -263,7 +279,9 @@ function ShopCartPage(props) {
                             </span>
                         </div>
                         <div className="checkout_btn_inner">
-                            <button type="button" disabled={!dataCart?.length}
+                            {cartAvailabilityError && <p role="alert" style={{ color: '#b91c1c' }}>{cartAvailabilityError}</p>}
+                            {editingItems.size > 0 && <p role="status">Vui lòng hoàn tất cập nhật số lượng trước khi thanh toán.</p>}
+                            <button type="button" disabled={!dataCart?.length || !!cartAvailabilityError || editingItems.size > 0}
                                 onClick={() => handleOpenAddressUserModal()}
                                 className="main_btn"
                             >
@@ -275,7 +293,7 @@ function ShopCartPage(props) {
             </div>
             <VoucherModal
                 closeModalFromVoucherItem={closeModalFromVoucherItem}
-                price={price + +priceShip}
+                price={price}
                 isOpenModal={isOpenModal}
                 closeModal={closeModal}
                 id={user && user.id}

@@ -14,6 +14,7 @@ import { ChooseVoucherStart } from '../../action/ShopCartAction';
 function VoucherItemSmall(props) {
     const dispatch = useDispatch()
     let handleClickApplyVoucher = () => {
+        if (props.disabled) return;
         try {
             dispatch(ChooseVoucherStart(props.data))
             props.closeModalFromVoucherItem()
@@ -36,7 +37,8 @@ function VoucherItemSmall(props) {
             <div className="content-right">
                 <div className="box-content-right">
                     <span className="name-voucher">Giảm {props.typeVoucher}</span>
-                    <a style={{ cursor: 'pointer' }} onClick={() => handleClickApplyVoucher()} className="use-voucher">Dùng ngay</a>
+                    <button type="button" disabled={props.disabled} onClick={handleClickApplyVoucher} className="use-voucher">Dùng ngay</button>
+                    {props.eligibilityMessage && <span style={{ color: '#b91c1c' }}>{props.eligibilityMessage}</span>}
                     <span className="max-value-voucher">Giảm tối đa {props.maxValue}</span>
                     <div className="box-percent">
                         <div className="wrap-percent">

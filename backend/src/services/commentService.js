@@ -6,6 +6,28 @@ const contentOf = data => {
   if (!content || content.length > 10000 || !positiveInteger(data.userId)) fail('Nội dung hoặc tài khoản không hợp lệ.');
   return content;
 };
+const reviewEligibility = async (productId, userId, transaction) => {
+  const blocked = (reason, message) => ({ canReview: false, reason, message });
+  if (!positiveInteger(userId)) return blocked('LOGIN_REQUIRED', 'Vui lòng đăng nhập để đánh giá sản phẩm.');
+  const options = { transaction, raw: true };
+  const existing = await db.Comment.findOne({ where: { productId, userId, parentId: { [Op.is]: null } }, ...options });
+  if (existing) return blocked('ALREADY_REVIEWED', 'Bạn đã đánh giá sản phẩm này. Mỗi sản phẩm chỉ được đánh giá một lần.');
+  const addresses = await db.AddressUser.findAll({ where: { userId }, attributes: ['id'], ...options });
+  const orders = addresses.length ? await db.OrderProduct.findAll({
+    where: { addressUserId: { [Op.in]: addresses.map(row => row.id) }, statusId: 'S6' }, attributes: ['id'], ...options,
+  }) : [];
+  const details = orders.length ? await db.ProductDetail.findAll({ where: { productId }, attributes: ['id'], ...options }) : [];
+  const variants = details.length ? await db.ProductDetailSize.findAll({
+    where: { productdetailId: { [Op.in]: details.map(row => row.id) } }, attributes: ['id'], ...options,
+  }) : [];
+  // OrderDetail.productId stores a size/variant id, not a catalog product id.
+  const purchased = variants.length && await db.OrderDetail.findOne({
+    where: { orderId: { [Op.in]: orders.map(row => row.id) }, productId: { [Op.in]: variants.map(row => row.id) } },
+    attributes: ['id'], ...options,
+  });
+  if (!purchased) return blocked('DELIVERED_PURCHASE_REQUIRED', 'Bạn chỉ có thể đánh giá sản phẩm đã mua sau khi đơn hàng được giao thành công.');
+  return { canReview: true, reason: null, message: 'Bạn đã nhận sản phẩm và có thể viết đánh giá.' };
+};
 const createEntry = async (data, type, reply = false) => {
   const content = contentOf(data);
   const key = type === 'product' ? 'productId' : 'blogId';
@@ -19,14 +41,23 @@ const createEntry = async (data, type, reply = false) => {
     if (!parent) fail('Không tìm thấy bình luận gốc.', 2);
     values.parentId = data.parentId;
   } else {
-    if (type === 'product' && (!positiveInteger(data.star) || Number(data.star) > 5)) fail('Đánh giá phải từ 1 đến 5 sao.');
+    if (type === 'product' && (!['number', 'string'].includes(typeof data.star) || !positiveInteger(data.star) || Number(data.star) > 5)) fail('Đánh giá phải từ 1 đến 5 sao.');
     if (type === 'product') values.star = Number(data.star);
     if (data.image) values.image = data.image;
   }
-  await db.Comment.create(values);
+  if (type === 'product' && !reply) {
+    await db.sequelize.transaction(async transaction => {
+      // Serialize submissions for this author even when no review row exists yet.
+      const user = await db.User.findByPk(data.userId, { attributes: ['id'], transaction, lock: transaction.LOCK.UPDATE, raw: true });
+      if (!user) fail('Tài khoản không hợp lệ.');
+      const eligibility = await reviewEligibility(data.productId, data.userId, transaction);
+      if (!eligibility.canReview) fail(eligibility.message, 2, { reviewEligibility: eligibility });
+      await db.Comment.create(values, { transaction });
+    });
+  } else await db.Comment.create(values);
   return { errCode: 0, errMessage: 'ok' };
 };
-const loadEntries = async (id, key) => {
+const loadEntries = async (id, key, userId) => {
   if (!positiveInteger(id)) fail('Mã nội dung không hợp lệ.');
   const rows = await db.Comment.findAll({ where: { [key]: id, parentId: { [Op.is]: null } }, order: [['createdAt', 'DESC']], raw: true });
   const userCache = new Map();
@@ -44,7 +75,7 @@ const loadEntries = async (id, key) => {
     row.childComment = await db.Comment.findAll({ where: { parentId: row.id }, order: [['createdAt', 'ASC']], raw: true });
     for (const child of row.childComment) await attach(child);
   }
-  return { errCode: 0, data: rows };
+  return { errCode: 0, data: rows, ...(key === 'productId' ? { reviewEligibility: await reviewEligibility(id, userId) } : {}) };
 };
 const deleteEntry = async data => {
   if (!positiveInteger(data.id)) fail('Mã bình luận không hợp lệ.');
@@ -57,7 +88,7 @@ module.exports = {
   createNewComment: data => resultOf(() => createEntry(data, 'blog')),
   ReplyReview: data => resultOf(() => createEntry(data, 'product', true)),
   ReplyComment: data => resultOf(() => createEntry(data, 'blog', true)),
-  getAllReviewByProductId: id => resultOf(() => loadEntries(id, 'productId')),
+  getAllReviewByProductId: (id, userId) => resultOf(() => loadEntries(id, 'productId', userId)),
   getAllCommentByBlogId: id => resultOf(() => loadEntries(id, 'blogId')),
   deleteReview: data => resultOf(() => deleteEntry(data)),
   deleteComment: data => resultOf(() => deleteEntry(data)),

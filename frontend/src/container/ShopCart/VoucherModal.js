@@ -1,129 +1,81 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-
-import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 import '../User/StoreVoucher.scss';
 import { getAllVoucherByUserIdService } from '../../services/userService';
 import CommonUtils from '../../utils/CommonUtils';
+import { voucherAvailabilityError } from '../../utils/voucher';
+import { ChooseVoucherStart } from '../../action/ShopCartAction';
 import VoucherItemSmall from '../User/VoucherItemSmall';
 
-
-const VoucherModal = (props) => {
-    const [inputValues, setInputValues] = useState({
-        codeVoucher: '', activeBtn: false
-    });
-    const [dataVoucher, setdataVoucher] = useState([])
-    let handleCloseModal = () => {
-        props.closeModal()
-    }
-    function compareDates(d1, d2) {
-        //  lon hon la false
-        //  be hon la true
-
-        var parts = d1.split('/');
-        var d1 = Number(parts[2] + parts[1] + parts[0]);
-        parts = d2.split('/');
-        var d2 = Number(parts[2] + parts[1] + parts[0]);
-        if (d1 <= d2) return true
-        if (d1 >= d2) return false
-
-    }
+const VoucherModal = props => {
+    const dispatch = useDispatch();
+    const [codeVoucher, setCodeVoucher] = useState('');
+    const [dataVoucher, setDataVoucher] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     useEffect(() => {
+        if (!props.isOpenModal || !props.id) return;
+        let active = true;
+        setLoading(true);
+        setError('');
+        setCodeVoucher('');
+        getAllVoucherByUserIdService({ limit: '', offset: '', id: props.id }).then(response => {
+            if (!active) return;
+            if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể tải voucher.');
+            setDataVoucher(response.data || []);
+        }).catch(reason => {
+            if (active) { setError(reason.message); setDataVoucher([]); }
+        }).finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [props.isOpenModal, props.id]);
 
-        let id = props.id
-        if (id) {
-            let fetchData = async () => {
-                let arrData = await getAllVoucherByUserIdService({
-
-                    limit: '',
-                    offset: '',
-                    id: props.id
-                })
-                let arrTemp = []
-                if (arrData && arrData.errCode === 0) {
-                    let nowDate = moment.unix(Date.now() / 1000).format('DD/MM/YYYY')
-
-                    for (let i = 0; i < arrData.data.length; i++) {
-                        let fromDate = moment.unix(arrData.data[i].voucherData.fromDate / 1000).format('DD/MM/YYYY')
-                        let toDate = moment.unix(arrData.data[i].voucherData.toDate / 1000).format('DD/MM/YYYY')
-                        let amount = arrData.data[i].voucherData.amount
-                        let usedAmount = arrData.data[i].voucherData.usedAmount
-                        let minValue = arrData.data[i].voucherData.typeVoucherOfVoucherData.minValue
-
-                        if (amount > usedAmount && compareDates(toDate, nowDate) === false && compareDates(fromDate, nowDate) === true && minValue <= props.price) {
-                            arrTemp.push(arrData.data[i])
-
-                        }
-                    }
-                    setdataVoucher(arrTemp)
-
-                }
-            }
-            fetchData().catch((error) => toast.error(error.message))
-        }
-
-    }, [props.isOpenModal])
-    const handleOnChange = event => {
-        const { name, value } = event.target;
-
-        if (value !== '') {
-            setInputValues({ ...inputValues, ["activeBtn"]: true, [name]: value })
-        } else {
-            setInputValues({ ...inputValues, ["activeBtn"]: false, [name]: value })
-        }
+    const applyCode = () => {
+        const entry = dataVoucher.find(item => item.voucherData?.codeVoucher?.toLowerCase() === codeVoucher.trim().toLowerCase());
+        if (!entry) { toast.error('Mã này chưa có trong voucher đã lưu của bạn.'); return; }
+        const issue = voucherAvailabilityError(entry, props.price);
+        if (issue) { toast.error(issue); return; }
+        dispatch(ChooseVoucherStart(entry));
+        props.closeModalFromVoucherItem();
+    };
+    const removeVoucher = () => {
+        dispatch(ChooseVoucherStart({}));
+        props.closeModalFromVoucherItem();
     };
 
-    let closeModalFromVoucherItem = () => {
-        props.closeModalFromVoucherItem()
-    }
-    return (
-        <div className="">
-            <Modal isOpen={props.isOpenModal} className={'booking-modal-container'}
-                size="md" centered
-            >
-                <div className="modal-header">
-                    <h5 className="modal-title">Chọn Eiser Voucher</h5>
-                    <button onClick={handleCloseModal} type="button" className="btn btn-time" aria-label="Close">X</button>
-                </div>
-                <ModalBody>
-
-
-                    <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }} className="container-voucher">
-                        {dataVoucher && dataVoucher.length > 0 &&
-                            dataVoucher.map((item, index) => {
-                                let percent = ""
-                                if (item.voucherData.typeVoucherOfVoucherData.typeVoucher === "percent") {
-                                    percent = item.voucherData.typeVoucherOfVoucherData.value + "%"
-                                }
-                                if (item.voucherData.typeVoucherOfVoucherData.typeVoucher === "money") {
-                                    percent = CommonUtils.formatter.format(item.voucherData.typeVoucherOfVoucherData.value)
-
-                                }
-                                let MaxValue = CommonUtils.formatter.format(item.voucherData.typeVoucherOfVoucherData.maxValue)
-
-                                return (
-                                    <VoucherItemSmall closeModalFromVoucherItem={closeModalFromVoucherItem} data={item} id={item.id} key={index} name={item.voucherData.codeVoucher} maxValue={MaxValue} usedAmount={Math.round((item.voucherData.usedAmount * 100 / item.voucherData.amount) * 10) / 10} typeVoucher={percent} />
-                                )
-                            })
-                        }
-
-
-                    </div>
-
-                </ModalBody>
-                <ModalFooter>
-
-                    {' '}
-                    <Button onClick={handleCloseModal}>
-                        Hủy
-                    </Button>
-                </ModalFooter>
-            </Modal>
-
-        </div >
-    )
-}
+    return <Modal isOpen={props.isOpenModal} className="booking-modal-container" size="md" centered>
+        <div className="modal-header">
+            <h5 className="modal-title">Chọn voucher</h5>
+            <button onClick={props.closeModal} type="button" className="btn btn-time" aria-label="Đóng">X</button>
+        </div>
+        <ModalBody>
+            <label htmlFor="saved-voucher-code">Mã voucher đã lưu</label>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <input id="saved-voucher-code" className="form-control" value={codeVoucher} onChange={event => setCodeVoucher(event.target.value)}
+                    onKeyDown={event => { if (event.key === 'Enter' && !loading) applyCode(); }} />
+                <Button disabled={loading || !codeVoucher.trim()} onClick={applyCode}>Áp dụng</Button>
+            </div>
+            {loading && <p role="status">Đang tải voucher...</p>}
+            {error && <p role="alert">{error}</p>}
+            {!loading && !error && !dataVoucher.length && <p>Bạn chưa có voucher còn hiệu lực. Hãy lưu voucher tại mục Voucher trước khi áp dụng.</p>}
+            <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }} className="container-voucher">
+                {!loading && dataVoucher.map(item => {
+                    const voucher = item.voucherData;
+                    const rule = voucher.typeVoucherOfVoucherData;
+                    const issue = voucherAvailabilityError(item, props.price);
+                    const discount = rule.typeVoucher === 'percent' ? `${rule.value}%` : CommonUtils.formatter.format(rule.maxValue || rule.value);
+                    return <VoucherItemSmall key={item.id} data={item} id={item.id} name={voucher.codeVoucher}
+                        maxValue={CommonUtils.formatter.format(rule.maxValue || rule.value)} typeVoucher={discount}
+                        usedAmount={Math.round(Number(voucher.usedAmount || 0) * 100 / Number(voucher.amount || 1))}
+                        disabled={!!issue} eligibilityMessage={issue} closeModalFromVoucherItem={props.closeModalFromVoucherItem} />;
+                })}
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button onClick={removeVoucher}>Không dùng voucher</Button>
+            <Button onClick={props.closeModal}>Đóng</Button>
+        </ModalFooter>
+    </Modal>;
+};
 export default VoucherModal;

@@ -133,6 +133,7 @@ const Header = (props) => {
                                                 Giới thiệu
                                             </NavLink>
                                         </li>
+                                        {user?.roleId === "R3" && <li className="nav-item"><NavLink to="/shipper" className="nav-link">Giao hàng</NavLink></li>}
                                     </ul>
                                 </div>
                                 <div className="col-lg-3 pr-0">

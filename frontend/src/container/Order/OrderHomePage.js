@@ -22,6 +22,7 @@ import ShopCartItem from "../../component/ShopCart/ShopCartItem";
 import VoucherModal from "../ShopCart/VoucherModal";
 import CommonUtils from "../../utils/CommonUtils";
 import { cartSubtotal, createCheckoutPayload, discountedSubtotal } from "../../utils/checkout";
+import { preferredAddressIndex } from "../../utils/address";
 function OrderHomePage(props) {
     const dispatch = useDispatch();
     const [dataAddressUser, setdataAddressUser] = useState([]);
@@ -73,12 +74,13 @@ function OrderHomePage(props) {
         }
     }, []);
 
-    let loadDataAddress = async (userId) => {
+    let loadDataAddress = async (userId, preferredId) => {
         let res = await getAllAddressUserByUserIdService(userId);
         if (res && res.errCode === 0) {
             setdataAddressUser(res.data || []);
-            setaddressUserId(res.data?.[0]?.id || "");
-            setstt(0);
+            const selected = preferredAddressIndex(res.data, preferredId);
+            setaddressUserId(res.data?.[selected]?.id || "");
+            setstt(selected);
             if (!res.data?.length) setisChangeAdress(true);
         } else {
             throw new Error(res.errMessage || "Không thể tải địa chỉ nhận hàng");
@@ -91,8 +93,6 @@ function OrderHomePage(props) {
         setisOpenModalAddressUser(true);
     };
     let sendDataFromModalAddress = async (data) => {
-        setisOpenModalAddressUser(false);
-
         try {
         let res = await createNewAddressUserrService({
             shipName: data.shipName,
@@ -100,14 +100,18 @@ function OrderHomePage(props) {
             shipEmail: data.shipEmail,
             shipPhonenumber: data.shipPhonenumber,
             userId: userId,
+            isDefault: data.isDefault,
         });
         if (res && res.errCode === 0) {
             toast.success("Thêm địa chỉ thành công !");
-            await loadDataAddress(userId);
+            await loadDataAddress(userId, res.data?.id);
+            setisOpenModalAddressUser(false);
+            return true;
         } else {
             toast.error(res.errMessage);
+            return false;
         }
-        } catch (error) { toast.error(error.message); }
+        } catch (error) { toast.error(error.message); return false; }
     };
     let handleOnChange = (id, index) => {
         setaddressUserId(id);
@@ -242,11 +246,12 @@ function OrderHomePage(props) {
                                                     />
                                                     <label
                                                         className="form-check-label wrap-radio-address"
-                                                        for={`addressRadios${index}`}
+                                                        htmlFor={`addressRadios${index}`}
                                                     >
                                                         <div className="content-left">
                                                             <span>
                                                                 {item.shipName}{" "}
+                                                                {item.isDefault && <span className="badge bg-success ms-1">Mặc định</span>}
                                                                 (
                                                                 {
                                                                     item.shipPhonenumber
@@ -269,7 +274,7 @@ function OrderHomePage(props) {
                             )}
 
                             <div className="content-right">
-                                <span className="text-default">Mặc định</span>
+                                {dataAddressUser[stt]?.isDefault && <span className="text-default">Mặc định</span>}
                                 {isChangeAdress === false && (
                                     <span
                                         onClick={() => setisChangeAdress(true)}
@@ -578,7 +583,7 @@ function OrderHomePage(props) {
                 </div>
                 <VoucherModal
                     closeModalFromVoucherItem={closeModalFromVoucherItem}
-                    price={price + +priceShip}
+                    price={price}
                     isOpenModal={isOpenModal}
                     closeModal={closeModal}
                     id={userId}

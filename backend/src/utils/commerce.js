@@ -75,13 +75,17 @@ function verifyVnpay(data, secret) {
 }
 
 function canReadOrder(order, address, actor) {
-    return !!actor && (['R1', 'R4'].includes(actor.roleId) || String(address && address.userId) === String(actor.id) || (actor.roleId === 'R3' && String(order.shipperId) === String(actor.id)));
+    return !!actor && (['R1', 'R4'].includes(actor.roleId) || String(address && address.userId) === String(actor.id) ||
+        (actor.roleId === 'R3' && (String(order.shipperId) === String(actor.id) || (order.statusId === 'S4' && !Number(order.shipperId)))));
 }
 
 function canTransitionOrder(order, address, actor, nextStatus) {
     if (!actor) return false;
     const transitions = { S3: ['S4', 'S7'], S4: ['S5', 'S7'], S5: ['S6'], S6: [], S7: [] };
     if (!(transitions[order.statusId] || []).includes(nextStatus)) return false;
+    if (nextStatus === 'S5') return false; // A valid courier must be assigned through confirmOrder.
+    if (nextStatus === 'S7' && Number(order.isPaymentOnlien) === 1) return false;
+    if (nextStatus === 'S6' && !positiveInteger(order.shipperId)) return false;
     if (['R1', 'R4'].includes(actor.roleId)) return true;
     if (String(address && address.userId) === String(actor.id)) {
         return (nextStatus === 'S7' && Number(order.isPaymentOnlien) === 0) || (order.statusId === 'S5' && nextStatus === 'S6');

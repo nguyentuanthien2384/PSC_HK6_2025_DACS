@@ -118,6 +118,24 @@ VNPay dùng `VNP_TMNCODE`, `VNP_HASHSECRET`, `VNP_URL`, `VNP_RETURNURL`. Thiếu
 
 Phiên thanh toán hết hạn có thể cần đối soát thủ công nếu khách đã bị trừ tiền. Hoàn tiền tự động và webhook/IPN đối soát nền chưa được triển khai; không coi callback trình duyệt là giải pháp đối soát đầy đủ để đưa thanh toán thật vào vận hành.
 
+## Bổ sung sau rà soát ngày 12/10/2026
+
+- **Giao hàng:** tài khoản R3 đăng nhập vào `/shipper`, xem đơn chờ nhận, đơn đang giao và lịch sử. Đơn đi qua chờ xác nhận S3 → chờ lấy hàng S4 → được gán shipper S5 → giao xong S6. Admin chọn shipper đang hoạt động hoặc shipper tự nhận đơn S4. Khóa transaction ngăn hai người nhận cùng một đơn; gửi lại yêu cầu không đổi người giao hay thời điểm giao xong. Shipper chỉ hoàn tất đơn của mình, có thể đính kèm ảnh minh chứng.
+- **Đánh giá shipper:** người mua đánh giá 1–5 sao và nhận xét sau khi đơn có shipper đã giao xong, mỗi đơn một lần. Khách, shipper và admin xem được đánh giá trong đơn; trang shipper có tổng đơn và điểm trung bình. Khách xác nhận đã nhận hàng chỉ khi đơn đang giao và có shipper.
+- **Quản lý đơn:** khách lọc/tìm đơn, mở chi tiết và lịch sử trạng thái, hủy đơn COD trước giao với lý do. Admin không thể bỏ qua bước phân công; xuất Excel lấy đủ các trang. API chặn hủy đơn online đã thanh toán khi chưa có quy trình đối soát/hoàn tiền.
+- **Đánh giá sản phẩm:** chỉ khách đã nhận sản phẩm mua trong đơn S6 được đánh giá; truy vấn đối chiếu đúng biến thể/kích thước. Mỗi tài khoản chỉ đánh giá một lần cho mỗi sản phẩm, kể cả gửi đồng thời. Giao diện thông báo điều kiện chưa đạt, trạng thái gửi và lỗi để thử lại.
+- **Giỏ hàng/voucher:** chặn checkout với sản phẩm ngừng bán, hết hàng, vượt tồn hoặc số lượng chưa lưu. Nhập nhiều chữ số rồi lưu bằng Enter/rời ô. Voucher có ô nhập mã đã lưu, áp dụng/bỏ chọn và lý do không đủ điều kiện; giá trị tối thiểu tính trên tiền hàng, ngày hết hạn bao gồm hết ngày đó.
+- **Địa chỉ:** lưu lựa chọn mặc định theo tài khoản, tự chọn địa chỉ đầu tiên khi chưa có địa chỉ, đổi mặc định và chọn lại sau khi xóa. Checkout ưu tiên địa chỉ mặc định. Thay đổi mặc định không sửa nội dung địa chỉ đã dùng trong lịch sử; địa chỉ đang liên quan đơn/phiên thanh toán được bảo vệ.
+- **Thống kê:** doanh thu dùng giá đã chốt và thời điểm giao xong theo UTC+7; thống kê trạng thái lọc theo ngày đặt. Tồn kho có phân trang, số đang giữ thanh toán và số có thể bán. Báo cáo có trạng thái tải/lỗi/trống, xuất Excel và không xuất dữ liệu cũ sau khi lọc thất bại. Lợi nhuận được ghi rõ là ước tính, dùng giá nhập bình quân trước thời điểm giao, chưa trừ chi phí vận hành/giao hàng thực tế.
+
+Hai migration mới là `zzzz-20261012-delivery-ratings.js` và `zzzzz-20261012-default-address.js`; chỉ thêm cột/bảng/index và điền địa chỉ mặc định, không reset database. Đã áp dụng trên database local `ecom`. Với checkout khác, chạy `npm run db:migrate` trước khi khởi động bản mới.
+
+Đơn cũ chưa lưu `deliveredAt` dùng `updatedAt` để thống kê. Nếu ngày cập nhật từng bị thay đổi sau giao hàng, dữ liệu cũ không đủ để khôi phục chính xác ngày giao ban đầu; các đơn hoàn thành từ bản mới lưu thời điểm giao riêng.
+
+Đã kiểm tra trực tiếp giao diện shipper, đơn khách hàng/đánh giá, địa chỉ và thống kê bằng tài khoản demo. Cổng frontend lấy từ `frontend/.env` (môi trường hiện tại: `http://127.0.0.1:3001`), backend cổng 6969. Chạy `npm start` nếu tiến trình chưa hoạt động.
+
+Các phần cần triển khai tiếp để vận hành đầy đủ: webhook/IPN và đối soát nền, hoàn tiền/đổi trả, ghi nhận giao thất bại và giao lại, thông báo trạng thái đơn, cùng nội dung trang giới thiệu/footer hiện còn là mẫu. SMTP và thanh toán thật vẫn cần tài khoản dịch vụ để xác minh. Các kiểm thử hiện tại không thay thế kiểm thử giao dịch thật.
+
 ## Kiểm thử
 
 ```powershell
@@ -125,9 +143,9 @@ npm test
 npm run build
 ```
 
-Frontend có 24 kiểm thử; backend có 24 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP.
+Frontend có 94 kiểm thử; backend có 81 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua một mục integration opt-in.
 
-Bộ tích hợp có 17 kịch bản dùng MySQL thật. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; fixture thêm dữ liệu, không xóa dữ liệu hiện có. Migration database này trước khi chạy.
+Bộ tích hợp có 20 kịch bản dùng MySQL thật, gồm nhận đơn/đánh giá đồng thời, địa chỉ mặc định và checkout đồng thời với xóa địa chỉ. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; fixture thêm dữ liệu, không xóa dữ liệu hiện có. Migration database này trước khi chạy.
 
 ```powershell
 $env:NODE_ENV='test'
@@ -143,7 +161,7 @@ npm --prefix backend run test:integration
 
 Đã kiểm thử migration và checkout đồng thời trên một MySQL riêng ở cổng 13306, không sửa database đang dùng. VNPay trong bộ test dùng chữ ký thử nghiệm do test tạo; kết quả này xác minh logic nội bộ, không thay thế việc thử tài khoản sandbox của VNPay.
 
-Bản production build có các cảnh báo ESLint từ giao diện cũ. Cần tiếp tục cải thiện các liên kết/biến không dùng và hook dependency; build vẫn tạo bundle thành công. Kiểm thử giao diện trực tiếp chưa thực hiện được vì cơ chế xét duyệt tự động chặn lệnh khởi chạy máy chủ preview.
+Bản production build tạo bundle thành công, còn các cảnh báo ESLint từ giao diện cũ và dependency động của react-datepicker. Cần tiếp tục cải thiện các liên kết/biến không dùng, hook dependency và kích thước bundle. Đã kiểm tra giao diện trực tiếp bằng trình duyệt với backend/MySQL local; chưa kiểm thử email hoặc giao dịch thanh toán thật.
 
 ## Lưu ý Git
 

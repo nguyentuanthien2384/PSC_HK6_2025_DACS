@@ -4,10 +4,14 @@ import moment from 'moment';
 import { EXCHANGE_RATES } from '../utils/constants';
 const crypto = require('crypto');
 const { createCommerceService } = require('./commerceService');
-const { fail, positiveInteger, resultOf, canReadOrder, canTransitionOrder, encodeVnpay, signVnpay, verifyVnpay } = require('../utils/commerce');
+const { createDeliveryService } = require('./deliveryService');
+const { fail, positiveInteger, resultOf, canReadOrder, encodeVnpay, signVnpay, verifyVnpay } = require('../utils/commerce');
 const commerce = createCommerceService(db);
+const delivery = createDeliveryService(db);
 const admin = actor => actor && ['R1', 'R4'].includes(actor.roleId);
 const safeUser = { exclude: ['password', 'usertoken', 'image'] };
+const shipperFields = ['id', 'firstName', 'lastName', 'phonenumber', 'roleId', 'statusId'];
+const deliveryCustomerFields = ['id', 'firstName', 'lastName', 'phonenumber'];
 const orderIncludes = () => [
     { model: db.TypeShip, as: 'typeShipData' },
     { model: db.Voucher, as: 'voucherData' },
@@ -20,11 +24,17 @@ const createNewOrder = data => resultOf(async () => {
     return commerce.transaction(async tx => commerce.persistOrder(await commerce.quote(data, tx), tx));
 });
 
-async function hydrateOrder(order) {
+async function hydrateOrder(order, actor) {
     order.image = decodeImage(order.image);
     order.addressUser = await db.AddressUser.findOne({ where: { id: order.addressUserId }, raw: true });
-    order.userData = order.addressUser ? await db.User.findOne({ where: { id: order.addressUser.userId }, attributes: safeUser, raw: true }) : null;
-    order.shipperData = order.shipperId ? await db.User.findOne({ where: { id: order.shipperId }, attributes: safeUser, raw: true }) : null;
+    order.userData = order.addressUser ? await db.User.findOne({ where: { id: order.addressUser.userId },
+        attributes: actor && actor.roleId === 'R3' ? deliveryCustomerFields : safeUser, raw: true }) : null;
+    order.shipperData = order.shipperId ? await db.User.findOne({ where: { id: order.shipperId }, attributes: shipperFields, raw: true }) : null;
+    order.shipperRating = await db.ShipperRating.findOne({ where: { orderId: order.id }, raw: true });
+    if (order.shipperData) Object.assign(order.shipperData, await delivery.ratingSummary(order.shipperId));
+    order.canRateShipper = !!actor && order.statusId === 'S6' && Number(order.shipperId) > 0 &&
+        String(order.addressUser && order.addressUser.userId) === String(actor.id) &&
+        String(order.shipperId) !== String(actor.id) && !order.shipperRating;
     order.voucherData = order.voucherData || { id: null };
     order.voucherData.typeVoucherOfVoucherData = order.voucherData.typeVoucherId ? await db.TypeVoucher.findOne({ where: { id: order.voucherData.typeVoucherId }, raw: true }) : null;
     const details = await db.OrderDetail.findAll({ where: { orderId: order.id }, raw: true });
@@ -59,7 +69,7 @@ const getAllOrders = (data = {}, actor) => resultOf(async () => {
     }
     if (data.statusId && data.statusId !== 'ALL') filter.where = { statusId: data.statusId };
     const result = await db.OrderProduct.findAndCountAll(filter);
-    for (const order of result.rows) await hydrateOrder(order);
+    for (const order of result.rows) await hydrateOrder(order, actor);
     return { errCode: 0, data: result.rows, count: result.count };
 });
 
@@ -69,69 +79,43 @@ const getDetailOrderById = (id, actor) => resultOf(async () => {
     if (!order) fail('Không tìm thấy đơn hàng.', 2);
     const address = await db.AddressUser.findOne({ where: { id: order.addressUserId }, raw: true });
     if (!canReadOrder(order, address, actor)) fail('Bạn không có quyền truy cập đơn hàng này.', 403);
-    return { errCode: 0, data: await hydrateOrder(order) };
+    return { errCode: 0, data: await hydrateOrder(order, actor) };
 });
 
-const updateStatusOrder = (data, actor) => resultOf(async () => {
-    if (!positiveInteger(data.id) || !data.statusId) fail('Mã đơn hàng hoặc trạng thái không hợp lệ.');
-    return commerce.transaction(async tx => {
-        const order = await db.OrderProduct.findOne({ where: { id: data.id }, ...commerce.lockOptions(tx), raw: false });
-        if (!order) fail('Không tìm thấy đơn hàng.', 2);
-        const address = await db.AddressUser.findOne({ where: { id: order.addressUserId }, transaction: tx, raw: true });
-        if (!canTransitionOrder(order, address, actor, data.statusId)) fail('Bạn không có quyền thay đổi hoặc trạng thái đơn hàng không hợp lệ.', 403);
-        order.statusId = data.statusId;
-        await order.save({ transaction: tx });
-        // Cancellation releases stock because the inventory query excludes S7 orders.
-        return { errCode: 0, errMessage: 'Cập nhật đơn hàng thành công.' };
-    });
-});
+const updateStatusOrder = delivery.updateStatusOrder;
 
 const getAllOrdersByUser = userId => resultOf(async () => {
     if (!positiveInteger(userId)) fail('Tài khoản không hợp lệ.');
     const addresses = await db.AddressUser.findAll({ where: { userId }, raw: true });
     for (const address of addresses) {
         address.order = await db.OrderProduct.findAll({ where: { addressUserId: address.id }, include: orderIncludes(), raw: true, nest: true, order: [['createdAt', 'DESC']] });
-        for (const order of address.order) await hydrateOrder(order);
+        for (const order of address.order) await hydrateOrder(order, { id: userId });
     }
     return { errCode: 0, data: addresses };
 });
 
-const getAllOrdersByShipper = (data, actor) => resultOf(async () => {
+const getAllOrdersByShipper = (data = {}, actor) => resultOf(async () => {
     if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền truy cập.', 403);
     const where = { shipperId: admin(actor) ? data.shipperId || actor.id : actor.id };
+    if (!positiveInteger(where.shipperId)) fail('Người giao hàng không hợp lệ.');
     if (data.status === 'working') where.statusId = 'S5';
     if (data.status === 'done') where.statusId = 'S6';
     const orders = await db.OrderProduct.findAll({ where, include: orderIncludes(), order: [['createdAt', 'DESC']], raw: true, nest: true });
-    for (const order of orders) await hydrateOrder(order);
-    return { errCode: 0, data: orders };
+    for (const order of orders) await hydrateOrder(order, actor);
+    return { errCode: 0, data: orders, summary: await delivery.shipperSummary(where.shipperId) };
 });
 
-const confirmOrder = (data, actor) => resultOf(async () => {
-    if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền nhận giao hàng.', 403);
-    if (!positiveInteger(data.orderId) || data.statusId !== 'S5') fail('Yêu cầu nhận giao hàng không hợp lệ.');
-    const shipperId = admin(actor) ? Number(data.shipperId) : Number(actor.id);
-    if (!positiveInteger(shipperId)) fail('Vui lòng chọn người giao hàng.');
-    return commerce.transaction(async tx => {
-        const shipper = await db.User.findOne({ where: { id: shipperId, roleId: 'R3', statusId: 'S1' }, transaction: tx, raw: true });
-        if (!shipper) fail('Người giao hàng không hợp lệ.', 2);
-        const order = await db.OrderProduct.findOne({ where: { id: data.orderId }, ...commerce.lockOptions(tx), raw: false });
-        if (!order || order.statusId !== 'S4' || order.shipperId) fail('Đơn hàng chưa sẵn sàng hoặc đã có người nhận giao.', 2);
-        order.shipperId = shipperId;
-        order.statusId = 'S5';
-        await order.save({ transaction: tx });
-        return { errCode: 0, errMessage: 'Nhận giao hàng thành công.' };
-    });
+const getAvailableOrdersForShipper = (data = {}, actor) => resultOf(async () => {
+    if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền xem đơn chờ giao.', 403);
+    const orders = await db.OrderProduct.findAll({ where: delivery.availableWhere(), include: orderIncludes(), order: [['createdAt', 'ASC']], raw: true, nest: true });
+    for (const order of orders) await hydrateOrder(order, actor);
+    return { errCode: 0, data: orders, count: orders.length };
 });
 
-const updateImageOrder = (data, actor) => resultOf(async () => {
-    if (!positiveInteger(data.id) || typeof data.image !== 'string' || data.image.length > 8 * 1024 * 1024) fail('Ảnh đơn hàng không hợp lệ.');
-    const order = await db.OrderProduct.findOne({ where: { id: data.id }, raw: false });
-    if (!order) fail('Không tìm thấy đơn hàng.', 2);
-    if (!admin(actor) && !(actor && actor.roleId === 'R3' && String(order.shipperId) === String(actor.id))) fail('Bạn không có quyền cập nhật ảnh đơn hàng.', 403);
-    order.image = data.image;
-    await order.save();
-    return { errCode: 0, errMessage: 'ok' };
-});
+const confirmOrder = delivery.confirmOrder;
+const updateImageOrder = delivery.updateImageOrder;
+const rateShipper = delivery.rateShipper;
+const getActiveShippers = delivery.getActiveShippers;
 
 function configurePaypal() {
     if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) fail('Cổng PayPal chưa được cấu hình. Vui lòng chọn thanh toán khi nhận hàng.', 3);
@@ -261,4 +245,4 @@ const confirmOrderVnpay = data => resultOf(async () => {
     return { errCode: 0, errMessage: 'Chữ ký giao dịch hợp lệ.' };
 });
 
-module.exports = { createNewOrder, getAllOrders, getDetailOrderById, updateStatusOrder, getAllOrdersByUser, getAllOrdersByShipper, confirmOrder, updateImageOrder, paymentOrder, paymentOrderSuccess, paymentOrderVnpay, paymentOrderVnpaySuccess, confirmOrderVnpay };
+module.exports = { createNewOrder, getAllOrders, getDetailOrderById, updateStatusOrder, getAllOrdersByUser, getAllOrdersByShipper, getAvailableOrdersForShipper, getActiveShippers, rateShipper, confirmOrder, updateImageOrder, paymentOrder, paymentOrderSuccess, paymentOrderVnpay, paymentOrderVnpaySuccess, confirmOrderVnpay };

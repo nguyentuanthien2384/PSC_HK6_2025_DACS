@@ -47,7 +47,7 @@ const TopMenu = (props) => {
                   )}
                 </li>
                 <li>
-                  <a>VI</a>
+                  {user?.roleId === 'R3' ? <NavLink to="/shipper">Giao hàng</NavLink> : <span>VI</span>}
                 </li>
               </ul>
             </div>

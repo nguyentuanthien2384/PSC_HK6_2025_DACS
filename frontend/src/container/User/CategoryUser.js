@@ -20,23 +20,11 @@ function CategoryUser(props) {
                     </ul>
                 </li>
                 <li>
-                    <img
-                        width="20px"
-                        height="20px"
-                        style={{ marginLeft: "-3px" }}
-                        src="/resources/img/orderLogo.png"
-                        alt=""
-                    ></img>{" "}
+                    <i aria-hidden="true" style={{ color: '#1e5bb8' }} className="fas fa-shopping-bag" />{" "}
                     <Link to={`/user/order/${props.id}`}>Đơn mua</Link>
                 </li>
                 <li>
-                    <img
-                        width="20px"
-                        height="20px"
-                        style={{ marginLeft: "-3px" }}
-                        src="/resources/img/storeVoucher.png"
-                        alt=""
-                    ></img>{" "}
+                    <i aria-hidden="true" style={{ color: '#1e5bb8' }} className="fas fa-ticket-alt" />{" "}
                     <Link to={`/user/store-voucher/${props.id}`}>
                         Kho voucher
                     </Link>

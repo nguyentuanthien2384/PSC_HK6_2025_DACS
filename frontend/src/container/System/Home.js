@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -52,6 +52,24 @@ let getOptions = (title) => {
 
 
 const Home = () => {
+  const [errors, setErrors] = useState({});
+  const versions = useRef({});
+  const loadReport = async (key, fetchReport, apply) => {
+    const version = (versions.current[key] || 0) + 1;
+    versions.current[key] = version;
+    setErrors(previous => ({ ...previous, [key]: '' }));
+    try {
+      const result = await fetchReport();
+      if (versions.current[key] !== version) return;
+      if (!result || result.errCode !== 0) throw new Error(result?.errMessage || 'Không tải được thống kê.');
+      apply(result.data);
+    } catch (failure) {
+      if (versions.current[key] === version) {
+        apply({});
+        setErrors(previous => ({ ...previous, [key]: failure.message || 'Không tải được thống kê.' }));
+      }
+    }
+  };
   const [CountCard, setCountCard] = useState({})
   const [CountStatusOrder, setCountStatusOrder] = useState({})
   const [StatisticOrderByMonth, setStatisticOrderByMonth] = useState({})
@@ -74,7 +92,7 @@ const Home = () => {
     labels: CountStatusOrder.arrayLable || [],
     datasets: [
       {
-        label: '# of Votes',
+        label: 'Số đơn hàng',
         data: CountStatusOrder.arrayValue || [],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
@@ -124,54 +142,42 @@ const Home = () => {
     ],
   };
   let loadCountCard = async () => {
-
-    let res = await getCountCardStatistic()
-    if (res && res.errCode == 0) {
-      setCountCard(res.data)
-    }
-
-
+    await loadReport('cards', getCountCardStatistic, setCountCard);
   }
 
   let loadStatusOrder = async () => {
 
-    let res = await getCountStatusOrder({
+    await loadReport('status', () => getCountStatusOrder({
       oneDate: type == 'day' ? startDate : DateTime,
       twoDate: endDate,
       type: type
-    })
-    if (res && res.errCode == 0) {
-      setCountStatusOrder(res.data)
-    }
+    }), setCountStatusOrder);
   }
   let handleOnclick = () => {
 
     loadStatusOrder()
   }
   let loadStatisticOrderByMonth = async (year) => {
-    let res = await getStatisticByMonth(year)
-    if (res && res.errCode == 0) {
-      setStatisticOrderByMonth(res.data)
-    }
+    await loadReport('month', () => getStatisticByMonth(year), setStatisticOrderByMonth);
   }
   let loadStatisticOrderByDay = async (year, month) => {
-    let res = await getStatisticByDay({ year, month })
-    if (res && res.errCode == 0) {
-      setStatisticOrderByDay(res.data)
-    }
+    await loadReport('day', () => getStatisticByDay({ year, month }), setStatisticOrderByDay);
   }
   let handleOnChangeYear = (year) => {
+    if (!year) return;
     setyear(year)
     loadStatisticOrderByMonth(moment(year).format("YYYY"))
   }
   let handleOnChangeDatePickerFromDate = (date) => {
-
+    if (!date) return;
     setmonth(date)
     loadStatisticOrderByDay(moment(date).format("YYYY"), moment(date).format("M"))
   }
   return (
     <div className="container-fluid px-4">
       <h1 className="mt-4">THỐNG KÊ</h1>
+      {Object.values(errors).filter(Boolean).map((error, index) => <p role="alert" className="text-danger" key={index}>{error}</p>)}
+      <p>Doanh thu ghi nhận khi giao xong. Biểu đồ trạng thái thống kê các đơn đặt trong kỳ.</p>
       <ol className="breadcrumb mb-4">
         <li className="breadcrumb-item active">Trang thống kê</li>
       </ol>
@@ -189,7 +195,7 @@ const Home = () => {
           <div className="card bg-warning text-white mb-4">
             <div className="card-body">ĐÁNH GIÁ ({CountCard.countReview || 0})</div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <a className="small text-white stretched-link" href="#">Chi tiết</a>
+              <Link className="small text-white stretched-link" to="/system/home/list-product">Xem sản phẩm</Link>
               <div className="small text-white"><i className="fas fa-angle-right" /></div>
             </div>
           </div>
@@ -292,7 +298,7 @@ const Home = () => {
             </div>
             <button type="button" onClick={() => handleOnclick()} className="btn btn-primary">Lọc</button>
           </form>
-          <Pie data={dataPie} options={getOptions('Thống kê trạng thái đơn hàng')} />;
+          <Pie data={dataPie} options={getOptions('Trạng thái các đơn đặt trong kỳ')} />
         </div>
       </div>
       <div className='row'>

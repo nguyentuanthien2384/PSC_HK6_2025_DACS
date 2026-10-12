@@ -227,17 +227,33 @@ test('forgot-password success does not disclose whether an account exists', asyn
 
 test('address service scopes edit, delete, and detail queries to their owner', async () => {
     const queries = [];
-    const service = loadSource('services/addressUserService.js', { '../models/index': { AddressUser: {
-        async findOne(query) { queries.push(query.where); return null; },
-        async destroy(query) { queries.push(query.where); return 0; },
-    } } });
+    const ownerLocks = [];
+    const addressLocks = [];
+    const transaction = { LOCK: { UPDATE: 'UPDATE' } };
+    const foreignAddress = { id: 20, userId: 999 };
+    const service = loadSource('services/addressUserService.js', { '../models/index': {
+        sequelize: { async transaction(work) { return work(transaction); } },
+        User: { async findByPk(id, options) { ownerLocks.push({ id, ...options }); return { id }; } },
+        AddressUser: {
+            async findOne(query) {
+                queries.push(query.where);
+                if (query.transaction) addressLocks.push(query);
+                return query.where.userId === foreignAddress.userId ? foreignAddress : null;
+            },
+            async destroy() { assert.fail('Cannot delete an address owned by another account'); },
+        },
+    } });
     assert.equal((await service.editAddressUser({ id: 20, userId: 7, shipName: 'Buyer', shipAdress: 'Street', shipEmail: actor.email, shipPhonenumber: '0901234567' })).errCode, 2);
     assert.equal((await service.deleteAddressUser({ id: 20, userId: 7 })).errCode, 2);
     assert.equal((await service.getDetailAddressUserById(20, 7)).errCode, 2);
     assert.deepEqual(queries, [{ id: 20, userId: 7 }, { id: 20, userId: 7 }, { id: 20, userId: 7 }]);
+    assert.equal(ownerLocks.length, 2);
+    assert.ok(ownerLocks.every(options => options.id === 7 && options.transaction === transaction && options.lock === 'UPDATE'));
+    assert.equal(addressLocks.length, 2);
+    assert.ok(addressLocks.every(options => options.transaction === transaction && options.lock === 'UPDATE'));
 });
 
-test('address controller overwrites forged user identity on create/list/edit/delete/detail', async () => {
+test('address controller overwrites forged user identity on create/list/edit/delete/detail/default', async () => {
     const seen = [];
     const controller = loadSource('controllers/addressUserController.js', { '../services/addressUserService': {
         async createNewAddressUser(data) { seen.push(data.userId); return { errCode: 0 }; },
@@ -245,10 +261,15 @@ test('address controller overwrites forged user identity on create/list/edit/del
         async editAddressUser(data) { seen.push(data.userId); return { errCode: 0 }; },
         async deleteAddressUser(data) { seen.push(data.userId); return { errCode: 0 }; },
         async getDetailAddressUserById(id, userId) { seen.push(userId); return { errCode: 0 }; },
+        async setDefaultAddressUser(data) { seen.push(data.userId); return { errCode: 0 }; },
     } });
     const req = { user: actor, body: { id: 20, userId: 999 }, query: { id: 20, userId: 999 } };
-    for (const operation of Object.values(controller)) await operation(req, response());
-    assert.deepEqual(seen, [7, 7, 7, 7, 7]);
+    for (const operation of Object.values(controller)) {
+        const res = response();
+        await operation(req, res);
+        assert.equal(res.body.errCode, 0);
+    }
+    assert.deepEqual(seen, [7, 7, 7, 7, 7, 7]);
 });
 
 test('email delivery uses configured sender and escapes user-controlled HTML', async () => {

@@ -17,4 +17,5 @@ module.exports = {
     deleteAddressUser: handle((req) => addressUserService.deleteAddressUser({ ...req.body, userId: req.user.id })),
     editAddressUser: handle((req) => addressUserService.editAddressUser({ ...req.body, userId: req.user.id })),
     getDetailAddressUserById: handle((req) => addressUserService.getDetailAddressUserById(req.query.id, req.user.id)),
+    setDefaultAddressUser: handle((req) => addressUserService.setDefaultAddressUser({ ...req.body, userId: req.user.id })),
 };

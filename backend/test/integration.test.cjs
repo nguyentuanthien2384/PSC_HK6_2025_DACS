@@ -95,6 +95,53 @@ if (!enabled) {
     const user = await call(`/api/get-detail-user-by-id?id=${f.buyer.id}`, { token: f.other.token });
     assert.equal(user.status, 403);
   });
+  test('default addresses persist across reloads, enforce ownership and preserve historical contents', async () => {
+    const f = await fixture();
+    assert.equal(f.address.isDefault, true);
+    const body = { userId: f.other.id, shipName: 'Second address', shipAdress: '456 Test street', shipEmail: 'second@example.com', shipPhonenumber: '0901234567' };
+    const second = await call('/api/create-new-address-user', { token: f.buyer.token, method: 'POST', body });
+    assert.equal(second.errCode, 0); assert.equal(second.data.isDefault, false);
+    const [third, fourth] = await Promise.all([1, 2].map(index => call('/api/create-new-address-user', { token: f.buyer.token, method: 'POST', body: { ...body, shipName: 'Concurrent ' + index, isDefault: true } })));
+    assert.equal(third.errCode, 0); assert.equal(fourth.errCode, 0);
+    assert.equal(await db.AddressUser.count({ where: { userId: f.buyer.id, isDefault: true } }), 1);
+    const defaults = await Promise.all([third.data.id, fourth.data.id].map(id => call('/api/set-default-address-user', { token: f.buyer.token, method: 'POST', body: { id } })));
+    assert.ok(defaults.every(result => result.errCode === 0));
+    assert.equal(await db.AddressUser.count({ where: { userId: f.buyer.id, isDefault: true } }), 1);
+    const denied = await call('/api/set-default-address-user', { token: f.other.token, method: 'POST', body: { id: f.address.id, userId: f.buyer.id } });
+    assert.notEqual(denied.errCode, 0);
+    await add(f, f.buyer, 1);
+    const placed = await call('/api/create-new-order', { token: f.buyer.token, method: 'POST', body: payload(f, 1) });
+    assert.equal(placed.errCode, 0);
+    const historical = placed.data;
+    const selected = await call('/api/set-default-address-user', { token: f.buyer.token, method: 'POST', body: { id: f.address.id, userId: f.other.id } });
+    assert.equal(selected.errCode, 0);
+    const loaded = await call(`/api/get-all-address-user?userId=${f.other.id}`, { token: f.buyer.token });
+    assert.equal(loaded.data[0].id, f.address.id); assert.equal(loaded.data[0].isDefault, true);
+    const removed = await call('/api/delete-address-user', { token: f.buyer.token, method: 'DELETE', body: { id: f.address.id } });
+    assert.notEqual(removed.errCode, 0);
+    assert.equal((await db.AddressUser.findByPk(f.address.id)).shipName, f.address.shipName);
+    assert.equal((await db.OrderProduct.findByPk(historical.id)).addressUserId, f.address.id);
+    await call('/api/set-default-address-user', { token: f.buyer.token, method: 'POST', body: { id: second.data.id } });
+    assert.equal((await call('/api/delete-address-user', { token: f.buyer.token, method: 'DELETE', body: { id: second.data.id } })).errCode, 0);
+    assert.equal(await db.AddressUser.count({ where: { userId: f.buyer.id, isDefault: true } }), 1);
+  });
+  test('simultaneous checkout and address deletion never orphan an order', async () => {
+    const f = await fixture(); await add(f);
+    const [checkout, deletion] = await Promise.all([
+      call('/api/create-new-order', { token: f.buyer.token, method: 'POST', body: payload(f) }),
+      call('/api/delete-address-user', { token: f.buyer.token, method: 'DELETE', body: { id: f.address.id } }),
+    ]);
+    assert.equal([checkout, deletion].filter(result => result.errCode === 0).length, 1);
+    if (checkout.errCode === 0) {
+      assert.notEqual(deletion.errCode, 0);
+      assert.ok(await db.AddressUser.findByPk(f.address.id));
+    } else {
+      assert.equal(deletion.errCode, 0);
+      assert.equal(await db.OrderProduct.count({ where: { addressUserId: f.address.id } }), 0);
+      assert.equal(await db.ShopCart.count({ where: { userId: f.buyer.id } }), 1);
+    }
+  });
+
   test('COD checkout persists authoritative totals, consumes cart once and keeps historical prices', async () => {
     const f = await fixture(); await add(f);
     const result = await call('/api/create-new-order', { token: f.buyer.token, method: 'POST', body: payload(f) });
@@ -160,6 +207,8 @@ if (!enabled) {
   });
   test('review author comes from JWT, nested replies do not duplicate ratings or expose secrets', async () => {
     const f = await fixture();
+    const delivered = await db.OrderProduct.create({ addressUserId: f.address.id, typeShipId: f.shipping.id, statusId: 'S6', isPaymentOnlien: 0 });
+    await db.OrderDetail.create({ orderId: delivered.id, productId: f.variant.id, quantity: 1, realPrice: 100000 });
     const created = await call('/api/create-new-review', { token: f.buyer.token, method: 'POST', body: { productId: f.product.id, userId: f.other.id, content: 'Tốt', star: 5 } });
     assert.equal(created.errCode, 0);
     const row = await db.Comment.findOne({ where: { productId: f.product.id }, raw: true }); assert.equal(row.userId, f.buyer.id);
@@ -299,5 +348,64 @@ if (!enabled) {
     ]);
     assert.equal(results.filter(result => result.errCode === 0).length, 1);
     assert.equal(await db.User.count({ where: { email } }), 1);
+  });
+
+  test('delivery queue, concurrent claiming, completion and shipper ratings follow the real order lifecycle', async () => {
+    const f = await fixture(); await add(f);
+    const created = await call('/api/create-new-order', { token: f.buyer.token, method: 'POST', body: payload(f) });
+    assert.equal(created.errCode, 0);
+    const orderId = created.orderId;
+    const couriers = [];
+    for (let i = 0; i < 2; i++) {
+      const password = 'Courier123!';
+      const user = await db.User.create({ email: `courier-${crypto.randomUUID()}@example.com`, password: await bcrypt.hash(password, 4), firstName: 'Courier', lastName: String(i), roleId: 'R3', statusId: 'S1', usertoken: '' });
+      const login = await call('/api/login', { method: 'POST', body: { email: user.email, password } });
+      assert.equal(login.errCode, 0); couriers.push({ id: user.id, token: login.accessToken });
+    }
+    const claim = courier => call('/api/confirm-order', { token: courier.token, method: 'PUT', body: { orderId, statusId: 'S5', shipperId: f.other.id } });
+    assert.notEqual((await claim(couriers[0])).errCode, 0, 'Pending customer order is not available for delivery.');
+    const pendingQueue = await call('/api/get-available-order-for-shipper', { token: couriers[0].token });
+    assert.ok(!pendingQueue.data.some(order => order.id === orderId));
+    assert.equal((await call('/api/get-available-order-for-shipper', { token: f.buyer.token })).status, 403);
+    assert.equal((await call('/api/update-status-order', { token: f.admin.token, method: 'PUT', body: { id: orderId, statusId: 'S4' } })).errCode, 0);
+    assert.notEqual((await call('/api/update-status-order', { token: f.admin.token, method: 'PUT', body: { id: orderId, statusId: 'S5' } })).errCode, 0, 'Admin cannot bypass courier assignment.');
+    const queue = await call('/api/get-available-order-for-shipper', { token: couriers[0].token });
+    assert.ok(queue.data.some(order => order.id === orderId));
+    assert.equal((await call(`/api/get-detail-order?id=${orderId}`, { token: couriers[0].token })).errCode, 0);
+    const active = await call('/api/get-active-shipper', { token: f.admin.token });
+    assert.ok(active.data.some(user => user.id === couriers[0].id));
+    assert.ok(active.data.every(user => user.roleId === 'R3' && user.statusId === 'S1' && user.password === undefined && user.usertoken === undefined));
+    const claims = await Promise.all(couriers.map(claim));
+    assert.equal(claims.filter(result => result.errCode === 0).length, 1, JSON.stringify(claims));
+    const assigned = await db.OrderProduct.findByPk(orderId, { raw: true });
+    const winner = couriers.find(courier => courier.id === assigned.shipperId);
+    const loser = couriers.find(courier => courier.id !== assigned.shipperId);
+    assert.ok(winner); assert.ok(assigned.assignedAt);
+    assert.equal((await claim(winner)).errCode, 0, 'Retry is idempotent.');
+    assert.equal((await call(`/api/get-detail-order?id=${orderId}`, { token: loser.token })).status, 403);
+    assert.notEqual((await call('/api/rate-shipper', { token: f.buyer.token, method: 'POST', body: { orderId, rating: 5 } })).errCode, 0);
+    assert.equal((await call('/api/update-status-order', { token: loser.token, method: 'PUT', body: { id: orderId, statusId: 'S6' } })).status, 403);
+    const image = 'data:image/png;base64,aGVsbG8=';
+    assert.equal((await call('/api/update-status-order', { token: winner.token, method: 'PUT', body: { id: orderId, statusId: 'S6', image } })).errCode, 0);
+    const delivered = await db.OrderProduct.findByPk(orderId, { raw: true });
+    assert.ok(delivered.deliveredAt); assert.equal(Buffer.from(delivered.image).toString('utf8'), image);
+    assert.equal((await call('/api/update-status-order', { token: winner.token, method: 'PUT', body: { id: orderId, statusId: 'S6' } })).errCode, 0);
+    assert.equal((await db.OrderProduct.findByPk(orderId, { raw: true })).deliveredAt.getTime(), delivered.deliveredAt.getTime());
+    assert.equal((await call('/api/rate-shipper', { token: f.other.token, method: 'POST', body: { orderId, rating: 5 } })).status, 403);
+    const reviews = await Promise.all([
+      call('/api/rate-shipper', { token: f.buyer.token, method: 'POST', body: { orderId, rating: 5, comment: 'Giao nhanh', userId: f.other.id, shipperId: loser.id } }),
+      call('/api/rate-shipper', { token: f.buyer.token, method: 'POST', body: { orderId, rating: 1, comment: 'Lặp lại' } })
+    ]);
+    assert.equal(reviews.filter(result => result.errCode === 0).length, 1, JSON.stringify(reviews));
+    assert.equal(await db.ShipperRating.count({ where: { orderId } }), 1);
+    const review = await db.ShipperRating.findOne({ where: { orderId }, raw: true });
+    assert.equal(review.userId, f.buyer.id); assert.equal(review.shipperId, winner.id);
+    const details = await call(`/api/get-detail-order?id=${orderId}`, { token: f.buyer.token });
+    assert.equal(details.data.canRateShipper, false); assert.equal(details.data.shipperRating.id, review.id);
+    assert.equal(details.data.shipperData.ratingCount, 1); assert.equal(details.data.shipperData.ratingAverage, review.rating);
+    const history = await call(`/api/get-all-order-by-shipper?shipperId=${loser.id}&status=done`, { token: winner.token });
+    assert.ok(history.data.some(order => order.id === orderId));
+    assert.equal(history.summary.working, 0); assert.equal(history.summary.done, 1); assert.equal(history.summary.ratingCount, 1);
+    assert.equal(history.summary.ratingAverage, review.rating);
   });
 }

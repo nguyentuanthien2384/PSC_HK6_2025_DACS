@@ -19,6 +19,7 @@ import TopMenu from "./container/Header/TopMenu";
 import HomePageAdmin from "./container/System/HomePageAdmin";
 import VerifyEmail from "./container/System/Email/VerifyEmail";
 import ForgotPasswordPage from "./container/Login/ForgotPasswordPage";
+import ShipperPage from "./container/Shipper/ShipperPage";
 import RequireAuth from "./component/RequireAuth";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
@@ -28,6 +29,7 @@ function App() {
             <Routes>
                 <Route path="/forgot-password" element={<><Header /><ForgotPasswordPage /><Footer /></>} />
                 <Route path="/verify-forgotpassword" element={<><Header /><ForgotPasswordPage reset /><Footer /></>} />
+                <Route path="/shipper" element={<RequireAuth roles={["R3"]}><Header /><ShipperPage /><Footer /></RequireAuth>} />
                 {/* Day 1-5: Trang chủ */}
                 <Route
                     path="/"

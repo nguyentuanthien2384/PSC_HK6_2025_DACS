@@ -95,6 +95,9 @@ let initwebRoutes = (app) => {
     router.post('/api/payment-order-vnpay-success', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpaySuccess)
     router.put('/api/confirm-order', middlewareControllers.verifyTokenUser, orderController.confirmOrder)
     router.get('/api/get-all-order-by-shipper', middlewareControllers.verifyTokenUser, orderController.getAllOrdersByShipper)
+    router.get('/api/get-available-order-for-shipper', middlewareControllers.verifyTokenUser, orderController.getAvailableOrdersForShipper)
+    router.get('/api/get-active-shipper', middlewareControllers.verifyTokenAdmin, orderController.getActiveShippers)
+    router.post('/api/rate-shipper', middlewareControllers.verifyTokenUser, orderController.rateShipper)
     router.post('/api/payment-order-vnpay', middlewareControllers.verifyTokenUser, orderController.paymentOrderVnpay)
     router.post('/api/vnpay_return', middlewareControllers.verifyTokenUser, orderController.confirmOrderVnpay)
     router.put('/api/update-image-order', middlewareControllers.verifyTokenUser, orderController.updateImageOrder)
@@ -104,6 +107,7 @@ let initwebRoutes = (app) => {
     router.get('/api/get-all-address-user', middlewareControllers.verifyTokenUser, addressUserController.getAllAddressUserByUserId)
     router.delete('/api/delete-address-user', middlewareControllers.verifyTokenUser, addressUserController.deleteAddressUser)
     router.put('/api/edit-address-user', middlewareControllers.verifyTokenUser, addressUserController.editAddressUser)
+    router.post('/api/set-default-address-user', middlewareControllers.verifyTokenUser, addressUserController.setDefaultAddressUser)
     router.get('/api/get-detail-address-user-by-id', middlewareControllers.verifyTokenUser, addressUserController.getDetailAddressUserById)
 
     //====================API TYPE SHIP==========================//
@@ -139,7 +143,7 @@ let initwebRoutes = (app) => {
     router.get('/api/get-new-blog', blogController.getNewBlog)
     //=======================API REVIEW======================//
     router.post('/api/create-new-review', middlewareControllers.verifyTokenUser, commentController.createNewReview)
-    router.get('/api/get-all-review-by-productId', commentController.getAllReviewByProductId)
+    router.get('/api/get-all-review-by-productId', middlewareControllers.optionalTokenUser, commentController.getAllReviewByProductId)
     router.post('/api/reply-review', middlewareControllers.verifyTokenAdmin, commentController.ReplyReview)
     router.delete('/api/delete-review', middlewareControllers.verifyTokenAdmin, commentController.deleteReview)
     //=======================API COMMENT======================//

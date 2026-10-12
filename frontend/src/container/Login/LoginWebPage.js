@@ -34,7 +34,7 @@ export default function LoginWebPage() {
             setAuth(result.accessToken, result.user);
             const redirect = params.get("redirect");
             const safeRedirect = redirect?.startsWith("/") && !redirect.startsWith("//") && !redirect.includes("\\");
-            window.location.href = safeRedirect ? redirect : ["R1", "R4"].includes(result.user.roleId) ? "/system/home" : "/";
+            window.location.href = safeRedirect ? redirect : ["R1", "R4"].includes(result.user.roleId) ? "/system/home" : result.user.roleId === "R3" ? "/shipper" : "/";
         } catch (error) {
             toast.error(error.message);
         } finally {

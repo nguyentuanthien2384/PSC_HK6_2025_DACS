@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         discountAmount: DataTypes.BIGINT,
         totalPrice: DataTypes.BIGINT,
         shipperId: DataTypes.INTEGER,
+        assignedAt: DataTypes.DATE,
+        deliveredAt: DataTypes.DATE,
+        cancelledAt: DataTypes.DATE,
+        cancellationReason: DataTypes.STRING(1000),
         image: DataTypes.BLOB('long')
     }, {
         sequelize,

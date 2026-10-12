@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     };
     AddressUser.init({
         userId: DataTypes.INTEGER,
+        isDefault: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
         shipName: DataTypes.STRING,
         shipAdress: DataTypes.STRING,
         shipEmail: DataTypes.STRING,

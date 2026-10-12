@@ -70,7 +70,8 @@ function createCommerceService(db) {
             const quantity = carts.filter(cart => Number(cart.productdetailsizeId) === line.productId).reduce((sum, cart) => sum + Number(cart.quantity), 0);
             if (quantity < line.quantity) fail('Giỏ hàng đã thay đổi hoặc đơn hàng đã được gửi. Vui lòng tải lại giỏ hàng.', 2);
         }
-        const address = await db.AddressUser.findOne({ where: { id: data.addressUserId, userId: data.userId }, ...options(tx), raw: true });
+        // Serialize checkout with address edits/deletion before storing its order reference.
+        const address = await db.AddressUser.findOne({ where: { id: data.addressUserId, userId: data.userId }, ...lockOptions(tx), raw: true });
         if (!address) fail('Địa chỉ giao hàng không thuộc tài khoản của bạn.', 403);
         const shipping = await db.TypeShip.findOne({ where: { id: data.typeShipId }, ...options(tx), raw: true });
         if (!shipping) fail('Phương thức vận chuyển không tồn tại.', 2);
