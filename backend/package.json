@@ -12,6 +12,8 @@
     "db:seed": "sequelize-cli db:seed:all",
     "db:seed:demo": "node scripts/seed-demo-data.cjs",
     "db:verify:demo": "node scripts/verify-demo-data.cjs",
+    "db:seed:activity": "node scripts/seed-demo-activity.cjs",
+    "db:verify:activity": "node scripts/verify-demo-activity.cjs",
     "catalog:assets": "node scripts/prepare-catalog-assets.cjs",
     "catalog:check": "node scripts/import-sourced-catalog.cjs --dry-run",
     "catalog:import": "node scripts/import-sourced-catalog.cjs",

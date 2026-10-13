@@ -10,7 +10,9 @@
     "db:check": "npm --prefix backend run db:check",
     "db:migrate": "npm --prefix backend run db:migrate",
     "db:seed:demo": "npm --prefix backend run db:seed:demo",
-    "db:verify:demo": "npm --prefix backend run db:verify:demo"
+    "db:verify:demo": "npm --prefix backend run db:verify:demo",
+    "db:seed:activity": "npm --prefix backend run db:seed:activity",
+    "db:verify:activity": "npm --prefix backend run db:verify:activity"
   },
   "engines": { "node": ">=20.9.0" }
 }

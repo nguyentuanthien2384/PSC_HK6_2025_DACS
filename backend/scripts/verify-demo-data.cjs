@@ -18,7 +18,7 @@ const db = require('../src/models');
 
 const DOMAIN = '@demo.dacs.test';
 const PRODUCT_PREFIX = '[DEMO] ';
-const ORDER_PREFIX = '[DEMO DACS v1] ';
+const ORDER_PREFIX = '[DEMO DACS v1]';
 const MARKER = 'DEMO_DACS_V1_SEEDED';
 const isId = value => Number.isSafeInteger(Number(value)) && Number(value) > 0;
 const isMoney = value => value !== null && value !== '' && Number.isSafeInteger(Number(value)) && Number(value) >= 0;
@@ -52,7 +52,8 @@ function verifyImage(value, label) {
 
 async function verifyDatabase(database) {
   const modelNames = ['Allcode', 'User', 'Product', 'ProductDetail', 'ProductDetailSize', 'OrderProduct', 'OrderDetail',
-    'AddressUser', 'Supplier', 'Receipt', 'ReceiptDetail', 'TypeShip', 'TypeVoucher', 'Voucher', 'VoucherUsed', 'ShopCart', 'Blog', 'Comment', 'RoomMessage', 'Message', 'Banner'];
+    'AddressUser', 'Supplier', 'Receipt', 'ReceiptDetail', 'TypeShip', 'TypeVoucher', 'Voucher', 'VoucherUsed', 'ShopCart', 'Blog', 'Comment', 'RoomMessage', 'Message', 'Banner',
+    'InventoryAdjustment', 'StockMovement'];
   const attributes = {
     User: ['id', 'email', 'roleId', 'genderId', 'statusId'],
     Blog: ['id', 'title', 'subjectId', 'statusId', 'userId', 'image'],
@@ -95,7 +96,8 @@ async function verifyDatabase(database) {
   const banners = rows.Banner.filter(row => catalog.banners.some(item => item.name === row.name));
   const suppliers = rows.Supplier.filter(row => catalog.suppliers.some(item => item.name === row.name));
   const shippingMethods = rows.TypeShip.filter(row => catalog.shippingMethods.some(item => item.type === row.type));
-  const paymentSessions = (await database.PaymentSession.findAll({ raw: true })).filter(row =>
+  const allPaymentSessions = await database.PaymentSession.findAll({ raw: true });
+  const paymentSessions = allPaymentSessions.filter(row =>
     row.providerPaymentId?.startsWith('DEMO-') || userIds.has(Number(row.userId)) || orderIds.has(Number(row.orderId)));
   const voucherEntries = rows.VoucherUsed.filter(row => userIds.has(Number(row.userId)));
   const linkedVoucherIds = new Set([...orders.map(row => Number(row.voucherId)), ...voucherEntries.map(row => Number(row.voucherId))]);
@@ -188,11 +190,18 @@ async function verifyDatabase(database) {
   }
   const received = groupBy(rows.ReceiptDetail, 'productDetailSizeId');
   const sold = groupBy(rows.OrderDetail, 'productId');
+  const credits = groupBy(rows.InventoryAdjustment, 'productDetailSizeId');
+  const movements = groupBy(rows.StockMovement, 'productDetailSizeId');
+  const held = groupBy(allPaymentSessions.filter(session => session.status === 'PENDING' && new Date(session.expiresAt).getTime() > Date.now())
+    .flatMap(session => JSON.parse(session.checkoutData).lines || []), 'productId');
   const stock = variants.map(variant => {
     const quantityIn = (received.get(Number(variant.id)) || []).reduce((sum, line) => sum + Number(line.quantity), 0);
     const quantityOut = (sold.get(Number(variant.id)) || []).reduce((sum, line) => sum + (maps.OrderProduct.get(Number(line.orderId))?.statusId !== 'S7' ? Number(line.quantity) : 0), 0);
-    const available = quantityIn - quantityOut;
-    assert.ok(Number.isSafeInteger(available) && available >= 0, `Variant ${variant.id}: receipts minus non-cancelled orders is negative`);
+    const returned = (credits.get(Number(variant.id)) || []).reduce((sum, line) => sum + Number(line.quantity), 0);
+    const adjusted = (movements.get(Number(variant.id)) || []).reduce((sum, line) => sum + Number(line.quantity), 0);
+    const reserved = (held.get(Number(variant.id)) || []).reduce((sum, line) => sum + Number(line.quantity), 0);
+    const available = quantityIn + returned + adjusted - quantityOut - reserved;
+    assert.ok(Number.isSafeInteger(available) && available >= 0, `Variant ${variant.id}: available stock after receipts, returns, adjustments, sales and reservations is negative`);
     return available;
   });
   assert.ok(stock.some(value => value === 0), 'Missing out-of-stock demo scenario');
@@ -340,11 +349,16 @@ async function verifyHttp(fixtures, password) {
       sessions[name] = { token: result.accessToken, user: result.user };
     }
     const { admin, staff1, shipper1, customer01, customer02 } = sessions;
-    const activeProduct = fixtures.products.find(row => row.statusId === 'S1');
-    assert.ok(activeProduct, 'No active demo product for public catalog checks');
-    const detail = fixtures.details.find(row => Number(row.productId) === Number(activeProduct.id));
-    const variant = fixtures.variants.find(row => Number(row.productdetailId) === Number(detail.id));
-    const catalog = await ok('/api/get-all-product-user?limit=100&offset=0&keyword=%5BDEMO%5D');
+    // Imported catalogues may archive the original demo collection. Public
+    // smoke checks should use an active product from the current catalogue.
+    const activeProduct = fixtures.products.find(row => row.statusId === 'S1')
+      || [...fixtures.maps.Product.values()].find(row => row.statusId === 'S1');
+    assert.ok(activeProduct, 'No active product for public catalog checks');
+    const detail = [...fixtures.maps.ProductDetail.values()].find(row => Number(row.productId) === Number(activeProduct.id));
+    assert.ok(detail, 'Active public product has no detail');
+    const variant = [...fixtures.maps.ProductDetailSize.values()].find(row => Number(row.productdetailId) === Number(detail.id));
+    assert.ok(variant, 'Active public product detail has no variant');
+    const catalog = await ok('/api/get-all-product-user?limit=100&offset=0');
     assert.ok(catalog.data.length > 0 && catalog.data.every(row => row.statusId === 'S1'), 'Public catalog is empty or exposes inactive products');
     // Full product/blog detail GETs increment view counters; use their read-only
     // detail/variant/image/list APIs so verification remains repeatable.
@@ -381,12 +395,18 @@ async function verifyHttp(fixtures, password) {
     assert.equal((await call(`/api/get-detail-user-by-id?id=${customer01.user.id}`, customer02.token)).status, 403, 'Unrelated customer can read another profile');
     const latestOrder = [...fixtures.orders].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
     const date = new Date(latestOrder.updatedAt).toISOString().slice(0, 10), year = date.slice(0, 4), month = Number(date.slice(5, 7));
+    const ownerRoutes = ['/api/get-all-user?limit=100&offset=0', '/api/get-count-card-statistic',
+      `/api/get-count-status-order?oneDate=${date}&type=year`, `/api/get-statistic-by-month?year=${year}`,
+      `/api/get-statistic-by-day?year=${year}&month=${month}`, `/api/get-statistic-overturn?oneDate=${date}&type=year`,
+      `/api/get-statistic-profit?oneDate=${date}&type=year`];
     for (const session of [admin, staff1]) {
-      for (const route of ['/api/get-all-user?limit=100&offset=0', '/api/get-all-product-admin?limit=10&offset=0', '/api/get-all-order?limit=10&offset=0',
+      for (const route of ['/api/get-all-product-admin?limit=10&offset=0', '/api/get-all-order?limit=10&offset=0',
         '/api/get-all-supplier?limit=20&offset=0', '/api/get-all-receipt?limit=20&offset=0', '/api/get-all-typevoucher?limit=20&offset=0',
-        '/api/list-room-of-admin', '/api/get-count-card-statistic', `/api/get-count-status-order?oneDate=${date}&type=year`,
-        `/api/get-statistic-by-month?year=${year}`, `/api/get-statistic-by-day?year=${year}&month=${month}`,
-        `/api/get-statistic-overturn?oneDate=${date}&type=year`, `/api/get-statistic-profit?oneDate=${date}&type=year`, '/api/get-statistic-stock-product?limit=100&offset=0']) noSecrets((await ok(route, session.token)).data);
+        '/api/list-room-of-admin', '/api/get-statistic-stock-product?limit=100&offset=0']) noSecrets((await ok(route, session.token)).data);
+    }
+    for (const route of ownerRoutes) {
+      noSecrets((await ok(route, admin.token)).data);
+      assert.equal((await call(route, staff1.token)).status, 403, `${route}: staff can access owner-only information`);
     }
     assert.ok(fixtures.receipts.length, 'No demo receipts');
     noSecrets((await ok(`/api/get-detail-receipt?id=${fixtures.receipts[0].id}`, admin.token)).data);

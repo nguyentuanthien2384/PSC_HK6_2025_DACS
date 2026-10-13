@@ -79,6 +79,29 @@ Các khách đầu tiên có sẵn giỏ hàng, địa chỉ và voucher để t
 
 `db:verify:demo` kiểm tra liên kết dữ liệu, tồn kho, giá chốt đơn và truy cập API bằng các vai trò trên database đã seed. Không dùng `test:integration` với database đang làm việc; bộ integration cần database kiểm thử riêng.
 
+### Dữ liệu hoạt động cho khách hàng, shipper và dashboard
+
+Nạp thêm lịch sử kinh doanh và các tình huống vận hành trên database đã migration:
+
+```powershell
+npm run db:seed:activity
+npm run db:verify:activity
+```
+
+Lệnh tự nạp bộ demo cơ bản nếu chưa có, sau đó thêm 96 khách hàng (`customer25@demo.dacs.test` đến `customer120@demo.dacs.test`) và 5 shipper (`shipper4@demo.dacs.test` đến `shipper8@demo.dacs.test`). Tài khoản mới dùng `Demo@123456`, hoặc `SEED_DEMO_PASSWORD` nếu đã cấu hình. Tài khoản cũ giữ nguyên mật khẩu, hồ sơ và địa chỉ.
+
+Bộ mở rộng gồm 1.200 đơn đã giao trải 365 ngày, mỗi ngày có doanh thu và có thêm lượng mua khác nhau theo thời gian. Mỗi khách hàng đang hoạt động có thêm một đơn ở từng trạng thái chờ xác nhận, chờ lấy hàng, đang giao, đã giao và đã hủy. Mỗi shipper đang hoạt động có thêm đơn giao thất bại, đang hoàn kho và đã nhận lại kho. Các tài khoản khách hàng/shipper có sẵn cũng được bổ sung đơn giả lập, kể cả tài khoản chưa xác thực email; seeder không thay đổi trạng thái xác thực.
+
+Lần nạp local ngày 13/10/2026 thêm **1.847 đơn / 4.616 dòng hàng**, **900 đánh giá shipper**, **493 đánh giá sản phẩm đã mua**, **6.474 sự kiện xử lý đơn**, **4.804 thông báo** và **18 yêu cầu trả hàng** trải đủ sáu trạng thái. Có 13 phiếu nhập bù đúng lượng hàng dùng trong đơn mẫu và 40 dòng nhập lại kho cho hàng hoàn. Database sau nạp có 1.943 đơn và 140 tài khoản. Số lượng ở môi trường khác phụ thuộc số khách hàng và shipper đang hoạt động.
+
+Đơn lưu đầy đủ ngày phân công/giao/hủy, lý do hủy hoặc giao thất bại và giá đã chốt để dashboard mặc định 30 ngày, biểu đồ tháng/năm, báo cáo doanh thu/lợi nhuận có dữ liệu. `customer01@demo.dacs.test` có đơn vừa giao chưa đánh giá shipper/chưa yêu cầu trả hàng để thử thao tác. Các thông báo có cả chưa đọc và đã đọc. Xem `/system/home`, `/system/home/statistics`, `/shipper` và lịch sử đơn trong tài khoản khách hàng.
+
+341 phiên thanh toán online và ba khoản hoàn COD trong bộ local đều là **mô phỏng**, được đánh dấu `DEMO-`; không gọi cổng thanh toán, hãng vận chuyển, ngân hàng, email hay socket. Minh chứng khoản hoàn dùng ảnh logo minh họa. Toàn bộ thông tin và giao dịch mới là dữ liệu thử nghiệm, không phải giao dịch hoặc dữ liệu cá nhân thu thập từ người dùng thật.
+
+Seeder chỉ thêm dữ liệu trong transaction, có khóa chống chạy đồng thời và marker `DEMO_DACS_ACTIVITY_V2_SEEDED`. Chạy lại không tạo trùng, không đặt lại mật khẩu và không thay đổi đơn đã thao tác. Không chạy ở `NODE_ENV=production`. Không reset database hoặc dùng `sync({ force: true })`.
+
+`db:verify:activity` chỉ đọc dữ liệu: đối chiếu đơn, thanh toán, thời gian xử lý, đánh giá đã mua, thông báo, hàng hoàn và tồn kho; kiểm tra API theo vai trò và so sánh từng cột doanh thu ngày/tháng với các đơn thực sự lưu trong database. Lịch sử ban đầu v1 vẫn được kiểm tra bằng `db:verify:demo`.
+
 ## Chạy dự án
 
 ```powershell
