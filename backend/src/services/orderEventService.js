@@ -8,6 +8,14 @@ async function recordOrderEvent(db, { order, type, title, message, actorId, meta
         const { createNotificationService } = require('./notificationService');
         await createNotificationService(db).forOrderEvent(order, event, transaction);
     }
+    if (db.AdminAudit && actorId && transaction) {
+        const actor = await db.User.findOne({ where: { id: actorId }, attributes: ['id', 'roleId', 'firstName', 'lastName'], raw: true, transaction });
+        if (actor && ['R1', 'R4'].includes(actor.roleId)) await require('./adminAuditService').recordAdminAudit(db, {
+            actor, entityType: 'ORDER', entityId: order.id, action: type, summary: title,
+            before: metadata.fromStatus ? { statusId: metadata.fromStatus } : undefined,
+            after: { statusId: order.statusId, ...metadata }, sourceEventId: event.id
+        }, transaction);
+    }
     return event;
 }
 module.exports = { recordOrderEvent };

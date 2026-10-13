@@ -15,7 +15,7 @@ function createCommerceService(db) {
         return rows.filter(row => row.id !== excludeSessionId).map(row => ({ ...row, checkout: JSON.parse(row.checkoutData) }));
     }
 
-    async function availableStock(productId, tx, excludeSessionId) {
+    async function stockSnapshot(productId, tx, excludeSessionId) {
         const received = Number(await db.ReceiptDetail.sum('quantity', { where: { productDetailSizeId: productId }, ...options(tx) })) || 0;
         const lines = await db.OrderDetail.findAll({ where: { productId }, ...options(tx), raw: true });
         const orderIds = [...new Set(lines.map(line => line.orderId))];
@@ -27,7 +27,12 @@ function createCommerceService(db) {
         const reservations = await activeSessions(tx, excludeSessionId);
         const reserved = reservations.reduce((total, session) => total + session.checkout.lines.reduce((sum, line) => sum + (Number(line.productId) === Number(productId) ? Number(line.quantity) : 0), 0), 0);
         const returned = db.InventoryAdjustment ? Number(await db.InventoryAdjustment.sum('quantity', { where: { productDetailSizeId: productId }, ...options(tx) })) || 0 : 0;
-        return Math.max(0, received + returned - sold - reserved);
+        const adjusted = db.StockMovement ? Number(await db.StockMovement.sum('quantity', { where: { productDetailSizeId: productId }, ...options(tx) })) || 0 : 0;
+        const onHand = received + returned + adjusted - sold;
+        return { onHand, reserved, available: Math.max(0, onHand - reserved) };
+    }
+    async function availableStock(productId, tx, excludeSessionId) {
+        return (await stockSnapshot(productId, tx, excludeSessionId)).available;
     }
 
     async function lockVariants(lines, tx) {
@@ -121,7 +126,7 @@ function createCommerceService(db) {
         return { errCode: 0, errMessage: 'Đặt hàng thành công.', orderId: order.id, data: order.get ? order.get({ plain: true }) : order };
     }
 
-    return { transaction, options, lockOptions, activeSessions, availableStock, lockVariants, checkStock, checkVoucher, quote, persistOrder };
+    return { transaction, options, lockOptions, activeSessions, stockSnapshot, availableStock, lockVariants, checkStock, checkVoucher, quote, persistOrder };
 }
 
 module.exports = { createCommerceService };

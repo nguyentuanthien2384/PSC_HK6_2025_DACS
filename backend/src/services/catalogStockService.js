@@ -23,6 +23,11 @@ async function catalogStocks(db, variantIds) {
         attributes: ['productDetailSizeId', [fn('SUM', col('quantity')), 'quantity']],
         group: ['productDetailSizeId'], raw: true,
     }) : [];
+    const movements = db.StockMovement ? await db.StockMovement.findAll({
+        where: { productDetailSizeId: { [Op.in]: ids } },
+        attributes: ['productDetailSizeId', [fn('SUM', col('quantity')), 'quantity']],
+        group: ['productDetailSizeId'], raw: true,
+    }) : [];
     const sessions = await db.PaymentSession.findAll({
         where: { status: 'PENDING', expiresAt: { [Op.gt]: new Date() } }, attributes: ['checkoutData'], raw: true,
     });
@@ -30,6 +35,7 @@ async function catalogStocks(db, variantIds) {
     const add = (id, quantity) => { if (stock.has(Number(id))) stock.set(Number(id), stock.get(Number(id)) + Number(quantity)); };
     for (const row of received) add(row.productDetailSizeId, row.quantity);
     for (const row of adjustments) add(row.productDetailSizeId, row.quantity);
+    for (const row of movements) add(row.productDetailSizeId, row.quantity);
     const activeOrders = new Set(orders.map(order => Number(order.id)));
     for (const row of soldLines) if (activeOrders.has(Number(row.orderId))) add(row.productId, -Number(row.quantity));
     for (const session of sessions) {
