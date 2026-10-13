@@ -12,7 +12,7 @@ function NewProductFeature({ title, description, data = [], loading = false, err
             <div className="product-collection__container">
                 <ProductCollectionHeader titleId={titleId} title={title} eyebrow="Vừa có mặt" description={description} />
                 {loading || error || !data.length ? (
-                    <ProductCollectionState loading={loading} error={error} />
+                    <ProductCollectionState loading={loading} error={error} count={8} />
                 ) : (
                     <div className="product-collection__grid" role="list" aria-label={title}>
                         {data.map((item) => {

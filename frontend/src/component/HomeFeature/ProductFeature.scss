@@ -132,6 +132,7 @@
     &__skeleton-image { aspect-ratio: 1; background: #edf0ed; }
     &__skeleton-body {
         display: grid;
+        min-height: 188px;
         gap: 12px;
         padding: 20px;
         span { height: 14px; border-radius: 4px; background: #edf0ed; }
@@ -170,4 +171,7 @@
         &__navigation button { width: 40px; height: 40px; }
         &__skeleton-body { padding: 12px; }
     }
+}
+@media (max-width: 575px) {
+    .product-collection__skeleton-body { min-height: 170px; }
 }

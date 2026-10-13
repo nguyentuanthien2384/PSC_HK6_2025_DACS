@@ -3,6 +3,9 @@
     top: -30px;
     transition: none;
 }
+@media (max-width: 575px) {
+    .header_area { top: 0; }
+}
 .header_area .main_menu,
 .header_area.navbar_fixed .main_menu {
     // Keep the menu in document flow so scrolling does not move the product grid.

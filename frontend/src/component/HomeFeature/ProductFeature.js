@@ -68,7 +68,7 @@ function ProductFeature({ title, description, eyebrow = 'Được yêu thích', 
                     )}
                 </ProductCollectionHeader>
                 {loading || error || !data.length ? (
-                    <ProductCollectionState loading={loading} error={error} />
+                    <ProductCollectionState loading={loading} error={error} carousel />
                 ) : (
                     <div ref={carouselRef} className="product-collection__carousel" role="list" aria-label={title} tabIndex={0}>
                         {data.map((item) => {

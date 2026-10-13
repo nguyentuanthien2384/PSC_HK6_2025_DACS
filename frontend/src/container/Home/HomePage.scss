@@ -22,6 +22,12 @@
     .product-collection + .product-collection:not(.product-collection--new) { padding-top: 16px; }
     .blog-area { padding: 56px 0; }
     .blog-area .main_title { margin-bottom: 32px; }
+    .blog-area .meta-top > span {
+        display: inline-block;
+        margin-right: 30px;
+        font-weight: 300;
+        i { margin-right: 10px; position: relative; top: 2px; }
+    }
 }
 
 @media (max-width: 991px) {

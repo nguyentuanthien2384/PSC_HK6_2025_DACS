@@ -4,7 +4,7 @@
 
 ## Yêu cầu
 
-- Node.js 20 trở lên và npm.
+- Node.js 20.9 trở lên và npm (local đang dùng Node.js 24).
 - MySQL 8, một database và tài khoản có quyền tạo/cập nhật bảng.
 - SMTP và tài khoản sandbox PayPal/VNPay nếu dùng email hoặc thanh toán trực tuyến. COD hoạt động độc lập với các dịch vụ này.
 
@@ -92,6 +92,15 @@ npm --prefix backend run dev
 npm --prefix frontend start
 ```
 
+Để sử dụng bản build nhẹ hơn khi xem sản phẩm, dừng `npm start` rồi chạy:
+
+```powershell
+npm run build
+npm run preview
+```
+
+`preview` chạy backend cùng frontend đã build trên HOST/PORT trong `frontend/.env` (local: `http://127.0.0.1:3001`). Chế độ này không có biên dịch/watch trong trình duyệt; sau khi sửa frontend cần build lại. HTML được kiểm tra lại, tài nguyên JavaScript có tên hash được cache và nén. `npm start` vẫn dùng cho phát triển.
+
 Frontend: http://localhost:3000. Health API: http://localhost:6969/api/health.
 
 Nếu database hoặc JWT chưa được cấu hình đúng, backend báo lỗi khởi động cụ thể. Với XAMPP, kiểm tra cổng MySQL trong `mysql/bin/my.ini`: môi trường local ngày 09/10/2026 dùng cổng 3333 và database `ecom`. Khi thay đổi cấu hình, khởi động lại backend và đăng nhập lại để nhận token mới.
@@ -155,9 +164,25 @@ npm test
 npm run build
 ```
 
-Frontend có 164 kiểm thử; backend có 170 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 4 bộ MySQL opt-in.
+Frontend có 179 kiểm thử; backend có 192 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 5 bộ MySQL opt-in.
 
-Bộ tích hợp có 37 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền và vận đơn GHN/GHTK. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; fixture thêm dữ liệu, không xóa dữ liệu hiện có. Migration database này trước khi chạy.
+Bộ tích hợp có 39 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền, vận đơn GHN/GHTK và phân trang/tồn kho catalog. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; không xóa dữ liệu hiện có. Fixture catalog chạy trong transaction và rollback. Migration database này trước khi chạy.
+
+## Tối ưu tải sản phẩm ngày 13/10/2026
+
+Danh sách, bộ sưu tập trang chủ và blog/banner dùng dữ liệu gọn; không gửi ảnh base64 hoặc toàn bộ mô tả trong JSON. Catalog công khai dùng 4 truy vấn SQL cho một trang, không tăng theo số sản phẩm; sắp xếp giá diễn ra trước phân trang. Trang chi tiết vẫn lấy đúng giá và tồn có thể bán; checkout tiếp tục khóa và xác minh tồn trong transaction.
+
+Ảnh sản phẩm, banner và blog được phục vụ riêng tại `/api/media/...` bằng WebP có giới hạn kích thước, giữ tỷ lệ và không phóng ảnh nhỏ. Ảnh có ETag, URL theo hash nguồn và cache trình duyệt/disk; thay ảnh đổi URL kể cả cập nhật trong cùng một giây. Gốc trong database và tệp catalog vẫn được giữ, endpoint chỉnh sửa quản trị vẫn dùng ảnh gốc. Cache phát sinh ở `backend/.cache/product-media`, tối đa 128 MB/1000 tệp; cache phản hồi ảnh trong RAM tối đa 16 MB/128 ảnh, xử lý tối đa 2 ảnh đồng thời. Migration `zzzzzzzzzzz-20261013-product-image-version.js` thêm metadata hash, không reset/xóa ảnh hay sản phẩm. Chạy migration trước khi dùng mã mới.
+
+Đo trên dữ liệu local hiện có: JSON trang 6 sản phẩm giảm từ **2.339.424 xuống 4.057 byte** (chưa tính ảnh tách riêng); ảnh WebP của trang đó **36.090 byte**, trong khi JSON cũ chứa khoảng 2,32 MB ảnh base64. Trang chủ 4 nhóm sản phẩm/banner/blog giảm JSON từ khoảng **6,43 MB xuống 16 KB**; ảnh tách riêng khoảng **565 KB**, được tải theo nhu cầu và cache. Đây là phép đo payload, không phải cam kết thời gian tải trên mọi máy/mạng.
+
+Bundle JavaScript ban đầu production giảm từ **3.181.889 xuống 395.154 byte**, gzip từ **944.750 xuống 123.409 byte**. Trang quản trị, biểu đồ, trình soạn thảo, chat và Excel chỉ tải khi cần. Đã bỏ script plugin cũ/trùng; menu mobile và Bootstrap quản trị vẫn hoạt động. Header giữ chiều cao khi cuộn, skeleton giữ bố cục gần với thẻ thật; xử lý scroll theo animation frame, hủy request đã lỗi thời và gộp request đang chạy. Không cache giá/tồn kho theo TTL trong frontend.
+
+Lặp phép đo listing/ảnh/ETag với backend đang chạy:
+
+```powershell
+npm --prefix backend run benchmark:catalog
+```
 
 ```powershell
 $env:NODE_ENV='test'

@@ -17,6 +17,7 @@
     "catalog:import": "node scripts/import-sourced-catalog.cjs",
     "catalog:restore": "node scripts/import-sourced-catalog.cjs --restore",
     "catalog:verify": "node scripts/verify-sourced-catalog.cjs",
+    "benchmark:catalog": "node scripts/benchmark-catalog.cjs",
     "db:check": "node scripts/check-db.cjs",
     "test:integration": "node --test test/*.integration.test.cjs test/integration.test.cjs"
   },
@@ -63,6 +64,6 @@
     "sequelize-cli": "^6.6.5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9.0"
   }
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 
-function ProductCollectionState({ loading, error }) {
+function ProductCollectionState({ loading, error, count = 4, carousel = false }) {
     if (loading) {
         return (
             <div className="product-collection__loading" role="status">
                 <span className="product-collection__sr-only">Đang tải sản phẩm…</span>
-                <div className="product-collection__grid" aria-hidden="true">
-                    {Array.from({ length: 4 }, (_, index) => (
+                <div className={carousel ? 'product-collection__carousel' : 'product-collection__grid'} aria-hidden="true">
+                    {Array.from({ length: count }, (_, index) => (
                         <div key={index} className="product-collection__skeleton">
                             <div className="product-collection__skeleton-image" />
                             <div className="product-collection__skeleton-body"><span /><span /><span /></div>

@@ -179,6 +179,7 @@
 
         &__body {
             display: grid;
+            min-height: 188px;
             gap: 10px;
             padding: 18px;
 
@@ -229,6 +230,9 @@
 
         .is-disabled .shop-pagination__link { opacity: 0.35; cursor: default; }
     }
+}
+@media (max-width: 575px) {
+    .shop-catalog .shop-product-skeleton__body { min-height: 170px; }
 }
 
 @media (max-width: 1199px) {
