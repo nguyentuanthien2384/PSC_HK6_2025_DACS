@@ -157,6 +157,24 @@ Hai migration mới là `zzzz-20261012-delivery-ratings.js` và `zzzzz-20261012-
 
 Luồng nội bộ hoạt động với database thật. Kiểm thử provider dùng phản hồi API có kiểm soát; **chưa có giao dịch sandbox trực tiếp với nhà cung cấp** vì chưa có tài khoản/khóa merchant. SMTP cần cấu hình để xác nhận gửi email thật. Hiện trả cả đơn; chưa có đổi hàng tự động hoặc trả một phần từng sản phẩm.
 
+## Trung tâm quản trị cửa hàng ngày 13/10/2026
+
+Trang `/system/home` có giao diện quản trị riêng, sidebar/menu điện thoại, tìm đơn từ header và tải từng trang khi cần. Các màn hình nghiệp vụ dùng dữ liệu MySQL thật:
+
+- **Tổng quan:** hàng đợi xác nhận, phân công, giao thất bại, hoàn kho và trả hàng; doanh thu sau khoản hoàn đã xác nhận, biểu đồ ngày, đơn gần đây và cảnh báo tồn. Khoảng ngày theo UTC+7. Đơn cũ thiếu ngày giao riêng dùng `updatedAt` với thông báo rõ giới hạn; đơn mới dùng `deliveredAt`. Không tự bịa tổng tiền của đơn cũ thiếu dữ liệu.
+- **Đơn hàng:** lọc trạng thái, người nhận/mã đơn, hình thức thanh toán, đơn vị vận chuyển và ngày đặt; phân trang và xuất trang đang xem. Xác nhận/phân công nhiều đơn có bước xem lại, kiểm tra điều kiện từng đơn trong transaction và báo kết quả từng dòng. Bộ lọc nằm trong URL, hỗ trợ liên kết từ dashboard, tải lại và nút Back.
+- **Trả hàng:** hàng đợi riêng theo các bước yêu cầu, duyệt, gửi trả, nhận kho và chờ hoàn; mở đúng chi tiết đơn để xử lý. Không đánh dấu đã hoàn tiền khi cổng thanh toán chưa xác nhận hoặc chưa có chứng từ COD.
+- **Kho:** theo màu/kích cỡ/SKU, lọc hết/sắp hết trước phân trang, tách tồn ghi nhận, giữ thanh toán và có thể bán. Kiểm kê có lý do, ảnh chụp số tồn lúc mở phiếu, khóa cùng biến thể với checkout và mã chống gửi trùng. Tồn thay đổi yêu cầu xem lại rồi xác nhận; lỗi mạng giữ cùng mã để tránh ghi hai lần. Không giảm dưới hàng đang giữ cho thanh toán. Dòng kiểm kê có lịch sử riêng và tham gia phép tính tồn ở catalog, báo cáo và checkout.
+- **Catalog:** danh sách gọn có bộ lọc, giá, số biến thể, ảnh thumbnail và phân trang; ẩn/mở bán nhiều sản phẩm có lý do và lịch sử. Phiếu nhập/biến thể có lịch sử bán hoặc kiểm kê được bảo vệ khỏi xóa. Thêm dòng và xóa phiếu nhập khóa cùng phiếu trước khi khóa biến thể để không bỏ sót dòng vừa được thêm đồng thời.
+- **Tài khoản:** lọc cả tài khoản hoạt động/bị khóa, tạo và sửa thông tin, đổi vai trò/khóa/mở khóa có lý do. Không tự khóa/đổi vai trò hoặc loại hết quản trị viên; shipper đang giao/hoàn kho phải xử lý đơn trước. Đổi quyền/khóa thu hồi JWT cũ và ngắt socket sau commit; mở lại phải đăng nhập mới. Admin có thể sửa thông tin của tài khoản đang khóa mà không mở lại quyền đăng nhập.
+- **Nhật ký:** ghi người thao tác, thời điểm, đối tượng, lý do và thay đổi trước/sau cho tạo/đổi quyền/khóa tài khoản, ẩn/mở catalog, kiểm kê và các sự kiện đơn do quản trị thực hiện. Nhật ký cùng transaction với thay đổi; lỗi lưu lịch sử hủy thay đổi tương ứng. API không cung cấp sửa/xóa nhật ký, không ghi mật khẩu/token/ảnh chứng từ. Lọc đối tượng, từ khóa và ngày; không tạo lại lịch sử quản trị đã xảy ra trước khi có bảng này.
+
+Quản trị viên `R1` quản lý tài khoản, catalog, nội dung/khuyến mãi, cấu hình và tài chính. Nhân viên `R4` có dashboard vận hành, đơn/trả hàng/đối soát, kho/phiếu nhập/nhà cung cấp và hỗ trợ khách; dữ liệu tài chính tổng hợp và các trang chủ cửa hàng bị chặn ở cả giao diện lẫn API, kể cả endpoint cũ. Shipper/khách hàng không truy cập admin. Form sửa tài khoản không gửi vai trò đã tải trước đó; request tải chậm của tài khoản cũ không ghi đè tài khoản vừa chuyển sang.
+
+Ba migration `zzzzzzzzzzzz-20261013-admin-audit.js`, `zzzzzzzzzzzz-20261013-admin-inventory.js` và `zzzzzzzzzzzz-20261013-user-auth-version.js` chỉ thêm bảng/cột/index. Đã áp dụng vào `ecom`, giữ nguyên 39 tài khoản, 87 sản phẩm, 96 đơn/240 dòng hàng, 16 phiếu nhập và 269 ảnh. Không reset dữ liệu.
+
+Đây là quản trị một cửa hàng với nghiệp vụ thực tế, chưa phải nền tảng marketplace nhiều người bán, nhiều kho, chia hoa hồng hay hạ tầng ở quy mô Shopee/Tiki/Lazada. Tích hợp thanh toán/vận chuyển vẫn cần khóa và HTTPS để thử trực tiếp sandbox như hướng dẫn phía trên.
+
 ## Kiểm thử
 
 ```powershell
@@ -164,9 +182,9 @@ npm test
 npm run build
 ```
 
-Frontend có 179 kiểm thử; backend có 192 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 5 bộ MySQL opt-in.
+Frontend có 220 kiểm thử; backend có 206 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 7 bộ MySQL opt-in.
 
-Bộ tích hợp có 39 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền, vận đơn GHN/GHTK và phân trang/tồn kho catalog. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; không xóa dữ liệu hiện có. Fixture catalog chạy trong transaction và rollback. Migration database này trước khi chạy.
+Bộ tích hợp có 52 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền, vận đơn GHN/GHTK, phân trang/tồn kho catalog, phân quyền admin, xử lý nhiều đơn, kiểm kê đồng thời và thu hồi phiên đăng nhập/socket. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; không xóa dữ liệu hiện có. Fixture catalog chạy trong transaction và rollback. Migration database này trước khi chạy.
 
 ## Tối ưu tải sản phẩm ngày 13/10/2026
 

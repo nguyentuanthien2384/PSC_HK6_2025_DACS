@@ -19,7 +19,7 @@ if (process.env.RUN_DB_TESTS !== 'true') {
 
     function scopedDatabase(transaction, sql) {
         const scoped = { ...db };
-        for (const name of ['Product', 'ProductDetail', 'ProductDetailSize', 'ProductImage', 'ReceiptDetail', 'OrderDetail', 'OrderProduct', 'PaymentSession', 'InventoryAdjustment']) {
+        for (const name of ['Product', 'ProductDetail', 'ProductDetailSize', 'ProductImage', 'ReceiptDetail', 'OrderDetail', 'OrderProduct', 'PaymentSession', 'InventoryAdjustment', 'StockMovement']) {
             scoped[name] = Object.fromEntries(['findAll', 'findAndCountAll', 'sum'].map(method => [method, (...args) => {
                 const options = args.at(-1);
                 args[args.length - 1] = { ...options, transaction, logging: statement => sql.push(statement) };
@@ -94,10 +94,15 @@ if (process.env.RUN_DB_TESTS !== 'true') {
             const sql = [], scoped = scopedDatabase(transaction, sql);
             const actual = await catalogStocks(scoped, [first.id, second.id]);
             assert.deepEqual([...actual], [[first.id, 4], [second.id, 0]]);
-            assert.equal(sql.length, 5);
+            assert.equal(sql.length, 6);
             const commerce = createCommerceService(scoped);
             assert.equal(actual.get(first.id), await commerce.availableStock(first.id, transaction));
             assert.equal(actual.get(second.id), await commerce.availableStock(second.id, transaction));
+            await db.StockMovement.create({ productDetailSizeId: first.id, actorId: 1, quantity: -2,
+                onHandBefore: 7, onHandAfter: 5, reservedAtCount: 3, reason: 'Kiểm kê hàng thiếu', idempotencyKey: `count-${tag}` }, { transaction });
+            const afterCount = await catalogStocks(scoped, [first.id]);
+            assert.equal(afterCount.get(first.id), 2);
+            assert.equal(afterCount.get(first.id), await commerce.availableStock(first.id, transaction));
         } finally {
             await transaction.rollback();
         }

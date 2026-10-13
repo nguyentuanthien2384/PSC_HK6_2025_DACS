@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         roleId: DataTypes.STRING,
         statusId: DataTypes.STRING,
         usertoken: DataTypes.STRING,
+        authVersion: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
 
     }, {
         sequelize,

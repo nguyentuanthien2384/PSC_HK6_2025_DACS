@@ -22,6 +22,16 @@ function createAdminAuditService(db) {
     const list = (query = {}, actor) => resultOf(async () => {
         if (actor?.roleId !== 'R1') fail('Chỉ quản trị viên được xem nhật ký toàn hệ thống.', 403);
         const where = {};
+        let from, to;
+        for (const key of ['from', 'to']) {
+            if (!query[key]) continue;
+            if (typeof query[key] !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(query[key])) fail('Ngày lọc không hợp lệ.');
+            const date = new Date(`${query[key]}T00:00:00+07:00`);
+            if (!Number.isFinite(+date) || new Date(+date + 7 * 3600000).toISOString().slice(0, 10) !== query[key]) fail('Ngày lọc không hợp lệ.');
+            if (key === 'from') from = date; else to = new Date(+date + 86400000);
+        }
+        if (from && to && from >= to) fail('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.');
+        if (from || to) where.createdAt = { ...(from ? { [Op.gte]: from } : {}), ...(to ? { [Op.lt]: to } : {}) };
         if (query.entityType && query.entityType !== 'ALL') {
             if (!/^[A-Z_]{2,30}$/.test(query.entityType)) fail('Loại nhật ký không hợp lệ.');
             where.entityType = query.entityType;

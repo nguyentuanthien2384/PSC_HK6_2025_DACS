@@ -478,7 +478,7 @@ async function assertUnusedVariant(id, tx) {
         await db.ShopCart.count({ where: { productdetailsizeId: id }, transaction: tx }) ||
         (db.StockMovement && await db.StockMovement.count({ where: { productDetailSizeId: id }, transaction: tx })) ||
         (await commerce.activeSessions(tx)).some(session => session.checkout.lines.some(line => Number(line.productId) === Number(id)))) {
-        fail('Không thể xóa biến thể đang có trong giỏ hàng, phiếu nhập hoặc đơn hàng. Hãy ngừng kinh doanh sản phẩm thay vì xóa.', 2);
+        fail('Không thể xóa biến thể đã có giỏ hàng, phiếu nhập, đơn hàng hoặc lịch sử kiểm kê. Hãy ngừng kinh doanh sản phẩm thay vì xóa.', 2);
     }
 }
 const getAllProductDetailSizeById = async (data) => {

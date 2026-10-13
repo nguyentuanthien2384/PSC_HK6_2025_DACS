@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { getOperationsOrders, bulkOperationsOrders } from '../../../services/adminOperationsService';
 import { getActiveShippers } from '../../../services/shippingService';
 import { ORDER_STATUSES, shipperName } from '../../../utils/orders';
-import { operationDate, orderMoney, useOperationsQuery } from './operationsShared';
+import { operationDate, orderMoney, useOperationsFilters, useOperationsQuery } from './operationsShared';
 import './Operations.scss';
 
 const initialFilters = { keyword: '', status: 'ALL', payment: 'ALL', carrier: 'ALL', from: '', to: '' };
+const filterOptions = { status: ['ALL', ...Object.keys(ORDER_STATUSES)], payment: ['ALL', 'COD', 'ONLINE'], carrier: ['ALL', 'internal', 'ghn', 'ghtk'] };
 export default function OperationsOrders() {
-    const [draft, setDraft] = useState(initialFilters); const [filters, setFilters] = useState(initialFilters);
-    const [page, setPage] = useState(1); const [selected, setSelected] = useState([]); const [action, setAction] = useState('CONFIRM');
+    const { draft, setDraft, filters, page, apply } = useOperationsFilters(initialFilters, filterOptions);
+    const [selected, setSelected] = useState([]); const [action, setAction] = useState('CONFIRM');
     const [confirming, setConfirming] = useState(false); const [busy, setBusy] = useState(false); const [results, setResults] = useState(null);
     const [actionError, setActionError] = useState(''); const [shippers, setShippers] = useState([]); const [shipperId, setShipperId] = useState('');
     const [shipperState, setShipperState] = useState({ loading: false, error: '' }); const [shipperRevision, setShipperRevision] = useState(0);
@@ -21,6 +22,7 @@ export default function OperationsOrders() {
     const changeFilter = (name, value) => setDraft(old => ({ ...old, [name]: value }));
     const clearSelection = () => { setSelected([]); setConfirming(false); setResults(null); setActionError(''); };
     useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+    useEffect(() => { setSelected([]); setConfirming(false); setResults(null); setActionError(''); }, [filters, page]);
     useEffect(() => {
         if (action !== 'ASSIGN') return undefined;
         let active = true; setShipperState({ loading: true, error: '' });
@@ -51,16 +53,16 @@ export default function OperationsOrders() {
     return <main className="admin-operations admin-workspace-page">
         <div className="operations-page-heading"><div><p className="operations-eyebrow">Vận hành bán hàng</p><h1>Trung tâm đơn hàng</h1><p>Lọc, kiểm tra và xử lý đơn theo trạng thái thực tế.</p></div><button type="button" className="btn btn-outline-secondary" onClick={() => { clearSelection(); reload(); }} disabled={loading || busy}>Làm mới</button></div>
         <div className="operations-state-tabs" aria-label="Số đơn theo trạng thái">
-            {Object.entries(ORDER_STATUSES).map(([code, label]) => <button type="button" key={code} aria-pressed={filters.status === code} disabled={busy} onClick={() => { clearSelection(); setPage(1); setFilters(old => ({ ...old, status: code })); setDraft(old => ({ ...old, status: code })); }}>{label}<strong>{response?.counters?.[code] ?? '—'}</strong></button>)}
+            {Object.entries(ORDER_STATUSES).map(([code, label]) => <button type="button" key={code} aria-pressed={filters.status === code} disabled={busy} onClick={() => { clearSelection(); apply({ ...filters, status: code }); }}>{label}<strong>{response?.counters?.[code] ?? '—'}</strong></button>)}
         </div>
-        <form className="operations-filter-panel" onSubmit={event => { event.preventDefault(); clearSelection(); setPage(1); setFilters({ ...draft }); }}>
+        <form className="operations-filter-panel" onSubmit={event => { event.preventDefault(); clearSelection(); apply(draft); }}>
             <label className="operations-search">Tìm đơn hoặc khách hàng<input value={draft.keyword} maxLength={100} disabled={busy} placeholder="Mã đơn, tên, email hoặc điện thoại" onChange={event => changeFilter('keyword', event.target.value)} /></label>
             <label>Trạng thái<select value={draft.status} disabled={busy} onChange={event => changeFilter('status', event.target.value)}><option value="ALL">Tất cả trạng thái</option>{Object.entries(ORDER_STATUSES).map(([code, label]) => <option value={code} key={code}>{label}</option>)}</select></label>
             <label>Thanh toán<select value={draft.payment} disabled={busy} onChange={event => changeFilter('payment', event.target.value)}><option value="ALL">Tất cả hình thức</option><option value="COD">COD</option><option value="ONLINE">Trực tuyến</option></select></label>
             <label>Vận chuyển<select value={draft.carrier} disabled={busy} onChange={event => changeFilter('carrier', event.target.value)}><option value="ALL">Tất cả đơn vị</option><option value="internal">Shipper cửa hàng</option><option value="ghn">GHN</option><option value="ghtk">GHTK</option></select></label>
             <label>Từ ngày đặt<input type="date" value={draft.from} disabled={busy} onChange={event => changeFilter('from', event.target.value)} /></label>
             <label>Đến ngày đặt<input type="date" value={draft.to} min={draft.from || undefined} disabled={busy} onChange={event => changeFilter('to', event.target.value)} /></label>
-            <button type="submit" className="btn btn-primary" disabled={busy}>Áp dụng bộ lọc</button><button type="button" className="btn btn-outline-secondary" disabled={busy} onClick={() => { clearSelection(); setDraft(initialFilters); setFilters(initialFilters); setPage(1); }}>Xóa bộ lọc</button>
+            <button type="submit" className="btn btn-primary" disabled={busy}>Áp dụng bộ lọc</button><button type="button" className="btn btn-outline-secondary" disabled={busy} onClick={() => { clearSelection(); setDraft(initialFilters); apply(initialFilters); }}>Xóa bộ lọc</button>
             <small>Ngày đặt được tính theo giờ Việt Nam (UTC+7). Số trên các trạng thái áp dụng cùng bộ lọc.</small>
         </form>
         <section className="operations-panel" aria-label="Danh sách đơn hàng">
@@ -79,7 +81,7 @@ export default function OperationsOrders() {
                 {!rows.length && <tr><td colSpan={7} className="operations-empty">Không có đơn phù hợp. Thử thay đổi bộ lọc.</td></tr>}
                 {rows.map(row => <tr key={row.id}><td><input type="checkbox" aria-label={`Chọn đơn ${row.id}`} checked={selected.includes(row.id)} disabled={busy || !(action === 'CONFIRM' ? row.actions?.confirm : row.actions?.assign)} onChange={event => setSelected(old => event.target.checked ? [...old, row.id] : old.filter(id => id !== row.id))} /></td><td><Link to={`/system/home/order-detail/${row.id}`}><strong>#{row.id}</strong></Link><small>{operationDate(row.createdAt)}</small></td><td>{row.customerName || 'Không còn thông tin người nhận'}<small>{row.customerPhone || row.customerEmail || '—'}</small></td><td>{orderMoney(row.totalPrice)}<small>{Number(row.isPaymentOnlien) === 1 ? `Trực tuyến${row.paymentProvider ? ` · ${row.paymentProvider.toUpperCase()}` : ''}` : 'COD'}</small></td><td><span className={`operations-status status-${row.statusId}`}>{ORDER_STATUSES[row.statusId] || row.statusId}</span></td><td>{row.deliveryProvider === 'internal' ? 'Shipper cửa hàng' : row.deliveryProvider?.toUpperCase()}<small>{row.trackingCode || (row.shipperId ? `Shipper #${row.shipperId}` : 'Chưa phân công')}</small></td><td><Link to={`/system/home/order-detail/${row.id}`}>Chi tiết</Link></td></tr>)}
             </tbody></table></div>}
-            <nav className="operations-pagination" aria-label="Phân trang đơn hàng"><span>{count ? `${(page - 1) * 20 + 1}–${Math.min(page * 20, count)} / ${count}` : '0 đơn'}</span><button type="button" disabled={busy || loading || page === 1} onClick={() => { clearSelection(); setPage(old => old - 1); }}>Trang trước</button><button type="button" disabled={busy || loading || page * 20 >= count} onClick={() => { clearSelection(); setPage(old => old + 1); }}>Trang sau</button></nav>
+            <nav className="operations-pagination" aria-label="Phân trang đơn hàng"><span>{count ? `${(page - 1) * 20 + 1}–${Math.min(page * 20, count)} / ${count}` : '0 đơn'}</span><button type="button" disabled={busy || loading || page === 1} onClick={() => { clearSelection(); apply(filters, page - 1); }}>Trang trước</button><button type="button" disabled={busy || loading || page * 20 >= count} onClick={() => { clearSelection(); apply(filters, page + 1); }}>Trang sau</button></nav>
         </section>
     </main>;
 }

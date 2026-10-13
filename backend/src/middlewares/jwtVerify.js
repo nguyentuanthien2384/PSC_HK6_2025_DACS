@@ -34,7 +34,8 @@ const authenticate = async (req, res, next, optional = false) => {
             attributes: { exclude: ['image', 'usertoken'] },
             raw: true,
         });
-        if (!user || payload.ver !== CommonUtils.passwordVersion(user.password)) {
+        if (!user || payload.ver !== CommonUtils.passwordVersion(user.password) ||
+            (payload.authVersion ?? 0) !== Number(user.authVersion || 0)) {
             return rejectAuthentication(res);
         }
         const { password, usertoken, ...safeUser } = user;
@@ -55,4 +56,9 @@ const verifyTokenAdmin = (req, res, next) => authenticate(req, res, () => {
     return next();
 });
 
-module.exports = { verifyTokenUser, verifyTokenAdmin, optionalTokenUser };
+const verifyTokenOwner = (req, res, next) => authenticate(req, res, () => {
+    if (req.user.roleId !== 'R1') return res.status(403).json({ errCode: 403, status: false, errMessage: 'Chỉ quản trị viên có quyền thực hiện thao tác này' });
+    return next();
+});
+
+module.exports = { verifyTokenUser, verifyTokenAdmin, verifyTokenOwner, optionalTokenUser };

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { createHash, randomBytes } from 'crypto';
 import emailService from './emailService';
 import CommonUtils from '../utils/CommonUtils';
+const { createAdminAccountService } = require('./adminAccountService');
+const { recordAdminAudit } = require('./adminAuditService');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
@@ -39,13 +41,20 @@ const handleCreateNewUser = async (data = {}, actor) => {
     const phonenumber = clean(data.phonenumber);
     if (phonenumber && await db.User.findOne({ where: { phonenumber } })) return fail(1, 'Số điện thoại đã được sử dụng');
     try {
-        await db.User.create({
+        const fields = {
             email, password: await bcrypt.hash(data.password, 10),
             firstName: clean(data.firstName), lastName: clean(data.lastName),
             address: clean(data.address), genderId: data.genderId || null,
             phonenumber, image: data.avatar || data.image || null, dob: data.dob || null,
             roleId, isActiveEmail: false, statusId: 'S1', usertoken: '',
-        });
+        };
+        if (db.AdminAudit && actor?.roleId === 'R1') {
+            await db.sequelize.transaction(async transaction => {
+                const user = await db.User.create(fields, { transaction });
+                await recordAdminAudit(db, { actor, entityType: 'USER', entityId: user.id, action: 'USER_CREATED',
+                    summary: 'Tạo tài khoản từ quản trị', after: { roleId, statusId: 'S1' } }, transaction);
+            });
+        } else await db.User.create(fields);
     } catch (error) {
         if (error.name === 'SequelizeUniqueConstraintError') return fail(1, 'Email hoặc số điện thoại đã được sử dụng');
         throw error;
@@ -58,19 +67,17 @@ const handleLogin = async (data = {}) => {
     if (!validEmail(email) || typeof data.password !== 'string' || !data.password) return fail(4, 'Vui lòng nhập email và mật khẩu');
     const user = await db.User.findOne({ where: { email, statusId: 'S1' }, raw: true });
     if (!user || !user.password || !await bcrypt.compare(data.password, user.password)) return fail(3, 'Email hoặc mật khẩu không chính xác');
-    return ok({ user: safeUser(user), accessToken: CommonUtils.encodeToken(user.id, user.password) });
+    return ok({ user: safeUser(user), accessToken: CommonUtils.encodeToken(user.id, user.password, user.authVersion) });
 };
 
 const updateUserData = async (data = {}, actor) => {
     const id = data.id || (actor && actor.id);
     if (!validId(id)) return fail(2, 'Thiếu mã người dùng');
-    const user = await db.User.findOne({ where: { id, statusId: 'S1' }, raw: false });
+    const user = await db.User.findOne({ where: { id, ...(actor?.roleId === 'R1' ? {} : { statusId: 'S1' }) }, raw: false });
     if (!user) return fail(1, 'Người dùng không tồn tại');
     if (!canManage(user, actor)) return fail(403, 'Bạn không có quyền cập nhật người dùng này');
     if (data.roleId && data.roleId !== user.roleId) {
-        if (actor.roleId !== 'R1') return fail(403, 'Bạn không có quyền thay đổi vai trò');
-        if (!['R1', 'R2', 'R3', 'R4'].includes(data.roleId)) return fail(2, 'Vai trò không hợp lệ');
-        user.roleId = data.roleId;
+        return fail(actor.roleId === 'R1' ? 2 : 403, 'Đổi vai trò tại trang quản lý tài khoản và ghi nhận lý do.');
     }
     if (data.lastName !== undefined && !clean(data.lastName)) return fail(2, 'Họ tên không được để trống');
     if (data.phonenumber !== undefined && clean(data.phonenumber)) {
@@ -89,7 +96,8 @@ const updateUserData = async (data = {}, actor) => {
 
 const deleteUser = async (id, actor) => {
     if (!validId(id)) return fail(1, 'Thiếu mã người dùng');
-    if (!isManager(actor)) return fail(403, 'Bạn không có đủ quyền');
+    if (actor?.roleId !== 'R1') return fail(403, 'Chỉ quản trị viên được khóa tài khoản');
+    if (db.AdminAudit) return createAdminAccountService(db).change({ id, statusId: 'S2', reason: 'Khóa tài khoản từ quản trị' }, actor);
     const user = await db.User.findOne({ where: { id }, raw: false });
     if (!user) return fail(2, 'Người dùng không tồn tại');
     if (String(actor.id) === String(id)) return fail(2, 'Không thể xóa tài khoản đang đăng nhập');
@@ -110,7 +118,7 @@ const handleChangePassword = async (data = {}, actor) => {
     user.password = await bcrypt.hash(data.password, 10);
     user.usertoken = '';
     await user.save();
-    return ok({ accessToken: CommonUtils.encodeToken(user.id, user.password) });
+    return ok({ accessToken: CommonUtils.encodeToken(user.id, user.password, user.authVersion) });
 };
 
 const getAllUser = async (data = {}, actor) => {
@@ -130,7 +138,7 @@ const getDetailUserById = async (id, actor) => {
     if (!validId(id)) return fail(1, 'Thiếu mã người dùng');
     if (!canRead(id, actor)) return fail(403, 'Bạn không có quyền xem thông tin người dùng này');
     const user = await db.User.findOne({
-        where: { id, statusId: 'S1' }, attributes: { exclude: ['password', 'usertoken'] },
+        where: { id, ...(actor?.roleId === 'R1' ? {} : { statusId: 'S1' }) }, attributes: { exclude: ['password', 'usertoken'] },
         include: userIncludes(), raw: true, nest: true,
     });
     return user ? ok({ data: safeUser(user) }) : fail(2, 'Người dùng không tồn tại');

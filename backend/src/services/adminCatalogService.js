@@ -68,7 +68,7 @@ function createAdminCatalogService(db, options = {}) {
         for (const id of [...new Set(data.ids.map(Number))].sort((a, b) => a - b)) {
             try {
                 const outcome = await db.sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async tx => {
-                    const product = await db.Product.findOne({ where: { id }, transaction: tx, lock: tx.LOCK.UPDATE });
+                    const product = await db.Product.findOne({ where: { id }, transaction: tx, lock: tx.LOCK.UPDATE, raw: false });
                     if (!product) fail('Sản phẩm không còn tồn tại.', 2);
                     if (product.statusId === data.statusId) return 'skipped';
                     if (!['S1', 'S2'].includes(product.statusId)) fail('Trạng thái hiện tại không hỗ trợ thao tác này.', 2);

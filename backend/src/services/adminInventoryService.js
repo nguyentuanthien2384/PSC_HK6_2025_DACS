@@ -53,9 +53,9 @@ function createAdminInventoryService(db, dependencies = {}) {
             LEFT JOIN (SELECT productDetailSizeId, SUM(quantity) AS quantity FROM ${quoteTable(db.ReceiptDetail)} GROUP BY productDetailSizeId) received ON received.productDetailSizeId = v.id
             LEFT JOIN (SELECT productDetailSizeId, SUM(quantity) AS quantity FROM ${quoteTable(db.InventoryAdjustment)} GROUP BY productDetailSizeId) credits ON credits.productDetailSizeId = v.id
             LEFT JOIN (SELECT productDetailSizeId, SUM(quantity) AS quantity FROM ${quoteTable(db.StockMovement)} GROUP BY productDetailSizeId) movements ON movements.productDetailSizeId = v.id
-            LEFT JOIN (SELECT lines.productId, SUM(lines.quantity) AS quantity FROM ${quoteTable(db.OrderDetail)} lines
-                INNER JOIN ${quoteTable(db.OrderProduct)} orders ON orders.id = lines.orderId AND orders.statusId <> 'S7'
-                GROUP BY lines.productId) sales ON sales.productId = v.id
+            LEFT JOIN (SELECT order_lines.productId, SUM(order_lines.quantity) AS quantity FROM ${quoteTable(db.OrderDetail)} order_lines
+                INNER JOIN ${quoteTable(db.OrderProduct)} placed_orders ON placed_orders.id = order_lines.orderId AND placed_orders.statusId <> 'S7'
+                GROUP BY order_lines.productId) sales ON sales.productId = v.id
             ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''} ORDER BY p.name ASC, v.id ASC`, { replacements, type: QueryTypes.SELECT });
         const [sessions, codes] = await Promise.all([
             db.PaymentSession.findAll({ where: { status: 'PENDING', expiresAt: { [Op.gt]: new Date() } }, attributes: ['checkoutData'], raw: true }),

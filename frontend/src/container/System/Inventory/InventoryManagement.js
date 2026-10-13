@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { countInventory, getAdminInventory, getInventoryHistory } from '../../../services/adminInventoryService';
 import { formatOrderDate } from '../../../utils/orders';
 import './InventoryManagement.scss';
@@ -6,13 +7,25 @@ import './InventoryManagement.scss';
 const pageSize = 25;
 const requestKey = () => window.crypto?.randomUUID?.() || `count_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 const checked = response => {
-    if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể tải tồn kho.');
+    if (response?.errCode !== 0) {
+        const error = new Error(response?.errMessage || 'Không thể tải tồn kho.');
+        error.current = response?.current;
+        throw error;
+    }
     return response;
 };
+const inventoryFilters = params => ({
+    search: (params.get('keyword') || params.get('search') || '').trim().slice(0, 150),
+    categoryId: (params.get('categoryId') || '').slice(0, 50),
+    statusId: ['S1', 'S2'].includes(params.get('statusId')) ? params.get('statusId') : '',
+    stock: ['low', 'out'].includes(params.get('stock')) ? params.get('stock') : 'all'
+});
 
 export default function InventoryManagement() {
-    const [search, setSearch] = useState('');
-    const [filters, setFilters] = useState({ search: '', categoryId: '', statusId: '', stock: 'all' });
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlFilters = searchParams.toString();
+    const [search, setSearch] = useState(() => inventoryFilters(searchParams).search);
+    const [filters, setFilters] = useState(() => inventoryFilters(searchParams));
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -34,7 +47,16 @@ export default function InventoryManagement() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyError, setHistoryError] = useState('');
     const sequence = useRef(0), historySequence = useRef(0), pending = useRef(false), mounted = useRef(true);
-    useEffect(() => { mounted.current = true; return () => { mounted.current = false; sequence.current++; historySequence.current++; }; }, []);
+    const invalidateList = useCallback(() => { sequence.current += 1; }, []);
+    const invalidateHistory = useCallback(() => { historySequence.current += 1; }, []);
+    const unmount = useCallback(() => { mounted.current = false; invalidateList(); invalidateHistory(); }, [invalidateList, invalidateHistory]);
+    useEffect(() => { mounted.current = true; return unmount; }, [unmount]);
+    useEffect(() => {
+        const next = inventoryFilters(new URLSearchParams(urlFilters));
+        setSearch(next.search);
+        setFilters(previous => Object.keys(next).every(key => next[key] === previous[key]) ? previous : next);
+        setPage(0);
+    }, [urlFilters]);
     const load = useCallback(async () => {
         const ticket = ++sequence.current;
         setLoading(true); setError('');
@@ -45,7 +67,7 @@ export default function InventoryManagement() {
         } catch (failure) { if (ticket === sequence.current && mounted.current) setError(failure.message); }
         finally { if (ticket === sequence.current && mounted.current) setLoading(false); }
     }, [filters, page]);
-    useEffect(() => { load(); return () => { sequence.current++; }; }, [load]);
+    useEffect(() => { load(); return invalidateList; }, [load, invalidateList]);
     useEffect(() => {
         if (!history) return undefined;
         const ticket = ++historySequence.current;
@@ -54,9 +76,13 @@ export default function InventoryManagement() {
             if (ticket === historySequence.current && mounted.current) { setHistoryRows(response.data || []); setHistoryCount(Number(response.count) || 0); }
         }).catch(failure => { if (ticket === historySequence.current && mounted.current) setHistoryError(failure.message); })
             .finally(() => { if (ticket === historySequence.current && mounted.current) setHistoryLoading(false); });
-        return () => { historySequence.current++; };
-    }, [history, historyPage]);
-    const filter = (field, value) => { setFilters(previous => ({ ...previous, [field]: value })); setPage(0); };
+        return invalidateHistory;
+    }, [history, historyPage, invalidateHistory]);
+    const filter = (field, value) => {
+        const next = { ...filters, [field]: value }, params = new URLSearchParams();
+        Object.entries(next).forEach(([key, item]) => { if (item && item !== 'all') params.set(key === 'search' ? 'keyword' : key, item); });
+        setSearchParams(params); setFilters(next); setPage(0);
+    };
     const openCount = row => {
         setSelected({ ...row }); setTarget(String(Math.max(0, row.onHand))); setReason(''); setKey(requestKey()); setActionError(''); setNotice('');
     };
@@ -72,7 +98,21 @@ export default function InventoryManagement() {
             setSelected(null); setNotice(response.errMessage || 'Đã ghi nhận kiểm kê.');
             if (history?.variantId === selected.variantId) { setHistory({ ...history }); setHistoryPage(0); }
             await load();
-        } catch (failure) { if (mounted.current) setActionError(failure.message); }
+        } catch (failure) {
+            if (mounted.current) {
+                const current = failure.current;
+                if (current && Number.isSafeInteger(current.onHand) && Number.isSafeInteger(current.reserved) && current.reserved >= 0) {
+                    // A rejected stale count has not committed. Refresh its
+                    // snapshot and request key, keeping the proposed target for
+                    // the operator to review and explicitly confirm again.
+                    setSelected(previous => previous ? { ...previous, onHand: current.onHand, reserved: current.reserved,
+                        available: Math.max(0, current.onHand - current.reserved) } : previous);
+                    setKey(requestKey());
+                    setActionError(`${failure.message} Phiếu đã cập nhật tồn mới; hãy kiểm tra số lượng và xác nhận lại.`);
+                    await load();
+                } else setActionError(failure.message);
+            }
+        }
         finally { pending.current = false; if (mounted.current) setBusy(false); }
     };
     return <div className="container-fluid inventory-management">

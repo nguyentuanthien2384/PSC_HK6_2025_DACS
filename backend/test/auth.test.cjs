@@ -123,6 +123,34 @@ test('middleware derives identity and role from the database and strips secrets'
     assert.equal(calls, 2);
 });
 
+test('account changes revoke old credentials even after restoring the account and allow fresh owner credentials only', async () => {
+    let current = { ...actor, roleId: 'R1', password: passwordHash, authVersion: 0 };
+    const middleware = loadSource('middlewares/jwtVerify.js', { '../models/index': { User: { async findOne() { return current; } } }, '../utils/CommonUtils': utils });
+    const old = utils.encodeToken(actor.id, passwordHash);
+    current.authVersion = 2;
+    const denied = response();
+    await middleware.verifyTokenUser({ headers: { authorization: `Bearer ${old}` } }, denied, () => assert.fail('revoked token passed'));
+    assert.equal(denied.statusCode, 401);
+    const fresh = utils.encodeToken(actor.id, passwordHash, 2);
+    let passed = false;
+    await middleware.verifyTokenOwner({ headers: { authorization: `Bearer ${fresh}` } }, response(), () => { passed = true; });
+    assert.equal(passed, true);
+    current.roleId = 'R4';
+    const staff = response();
+    await middleware.verifyTokenOwner({ headers: { authorization: `Bearer ${fresh}` } }, staff, () => assert.fail('staff bypassed owner route'));
+    assert.equal(staff.statusCode, 403);
+});
+
+test('profile endpoint cannot bypass audited owner role changes', async () => {
+    let saved = false;
+    const user = { ...actor, async save() { saved = true; } };
+    const service = serviceWith({ User: { async findOne() { return user; } } });
+    const result = await service.updateUserData({ id: user.id, roleId: 'R1' }, { id: 1, roleId: 'R1' });
+    assert.notEqual(result.errCode, 0);
+    assert.equal(user.roleId, 'R2');
+    assert.equal(saved, false);
+});
+
 test('middleware sends database failures to Express instead of rejecting an async callback', async () => {
     const error = new Error('database unavailable');
     const middleware = loadSource('middlewares/jwtVerify.js', {

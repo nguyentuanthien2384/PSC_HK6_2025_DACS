@@ -10,7 +10,7 @@ function fixture() {
     const db = {
         Product: {
             findAndCountAll: async query => { queries.push(query); return { count: 21, rows: [{ id: 1, name: 'Product', statusId: 'S1', priceMin: '100', priceMax: '200', variantCount: '3' }] }; },
-            findOne: async query => { queries.push(query); const found = products.get(query.where.id); return found ? { ...found, save: async function (options) { assert.equal(options.transaction, tx); products.set(this.id, { id: this.id, statusId: this.statusId }); } } : null; },
+            findOne: async query => { assert.equal(query.raw, false); queries.push(query); const found = products.get(query.where.id); return found ? { ...found, save: async function (options) { assert.equal(options.transaction, tx); products.set(this.id, { id: this.id, statusId: this.statusId }); } } : null; },
         },
         ProductImage: { findAll: async query => { queries.push(query); return [{ id: 8, productId: 1, imageVersion: 'a'.repeat(64) }]; } },
         Allcode: { findAll: async query => { queries.push(query); return [{ type: 'CATEGORY', code: 'C1', value: 'Category' }, { type: 'BRAND', code: 'B1', value: 'Brand' }]; } },

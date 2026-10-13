@@ -43,7 +43,7 @@ function createAfterSalesService(db, dependencies = {}) {
     const locked = tx => ({ transaction: tx, lock: tx.LOCK.UPDATE });
     const now = dependencies.now || (() => new Date());
     const event = (order, actor, type, title, message, tx, metadata = {}) => recordOrderEvent(db,
-        { order, actorId: actor && actor.id, type, title, message, metadata }, tx);
+        { order, actor, actorId: actor && actor.id, type, title, message, metadata }, tx);
     const response = (request, message) => ({ errCode: 0, errMessage: message, data: plain(request) });
 
     async function loadOrder(orderId, tx) {

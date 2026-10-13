@@ -27,9 +27,11 @@ const createNewReceiptDetail = data => resultOf(async () => {
   const line = validateLine(data);
   if (!positiveInteger(data.receiptId)) fail('Phiếu nhập không hợp lệ.');
   return commerce.transaction(async tx => {
-    await commerce.lockVariants([{ productId: line.productDetailSizeId }], tx);
+    // Existing receipts are always locked before their variant rows, matching
+    // deletion. A line cannot be appended after deletion took its snapshot.
     const receipt = await db.Receipt.findByPk(data.receiptId, { ...commerce.lockOptions(tx), raw: true });
     if (!receipt) fail('Không tìm thấy phiếu nhập.', 2);
+    await commerce.lockVariants([{ productId: line.productDetailSizeId }], tx);
     await db.ReceiptDetail.create({ ...line, receiptId: receipt.id }, { transaction: tx });
     return { errCode: 0, errMessage: 'Nhập hàng thành công.' };
   });
@@ -70,13 +72,16 @@ const updateReceipt = data => resultOf(async () => {
 const deleteReceipt = data => resultOf(async () => {
   if (!positiveInteger(data.id)) fail('Phiếu nhập không hợp lệ.');
   return commerce.transaction(async tx => {
+    const receipt = await db.Receipt.findByPk(data.id, { ...commerce.lockOptions(tx), raw: false });
+    if (!receipt) fail('Không tìm thấy phiếu nhập.', 2);
     const lines = await db.ReceiptDetail.findAll({ where: { receiptId: data.id }, transaction: tx, raw: true });
     const amounts = new Map();
     lines.forEach(line => amounts.set(line.productDetailSizeId, (amounts.get(line.productDetailSizeId) || 0) + Number(line.quantity)));
     await commerce.lockVariants([...amounts.keys()].map(productId => ({ productId })), tx);
-    const receipt = await db.Receipt.findByPk(data.id, { ...commerce.lockOptions(tx), raw: false });
-    if (!receipt) fail('Không tìm thấy phiếu nhập.', 2);
     for (const [id, amount] of amounts) {
+      if (db.StockMovement && await db.StockMovement.count({ where: { productDetailSizeId: id }, transaction: tx })) {
+        fail('Không thể xóa phiếu nhập của hàng đã kiểm kê; cần giữ nguồn gốc tồn kho.', 2);
+      }
       const soldLines = await db.OrderDetail.findAll({ where: { productId: id }, attributes: ['orderId'], transaction: tx, raw: true });
       if (soldLines.length && await db.OrderProduct.count({ where: { id: { [Op.in]: soldLines.map(line => line.orderId) }, statusId: { [Op.ne]: 'S7' } }, transaction: tx })) {
         fail('Không thể xóa phiếu nhập đã liên quan tới hàng bán/hoàn trả; cần giữ nguồn gốc hàng và giá vốn.', 2);

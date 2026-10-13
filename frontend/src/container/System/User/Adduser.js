@@ -10,140 +10,63 @@ import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { useFetchAllcode } from "../../customize/fetch";
-import localization from "moment/locale/vi";
-import moment from "moment";
-const Adduser = (props) => {
-    const [birthday, setbirthday] = useState(new Date());
-
-    const [isActionADD, setisActionADD] = useState(true);
-    const [isChangeDate, setisChangeDate] = useState(false);
+const emptyUser = () => ({ email: '', password: '', firstName: '', lastName: '', address: '', phonenumber: '', genderId: '', roleId: '', id: '', dob: '' });
+const Adduser = () => {
     const { id } = useParams();
-
-    const [inputValues, setInputValues] = useState({
-        email: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-        address: "",
-        phonenumber: "",
-        genderId: "",
-        roleId: "",
-        id: "",
-        dob: "",
-    });
-
-    let setStateUser = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["firstName"]: data.firstName,
-            ["lastName"]: data.lastName,
-            ["address"]: data.address,
-            ["phonenumber"]: data.phonenumber,
-            ["genderId"]: data.genderId,
-            ["roleId"]: data.roleId,
-            ["email"]: data.email,
-            ["id"]: data.id,
-            ["dob"]: data.dob,
-        });
-        setbirthday(
-            moment
-                .unix(+data.dob / 1000)
-                .locale("vi")
-                .toDate()
-        );
-    };
+    const isActionADD = !id;
+    const [birthday, setbirthday] = useState(new Date());
+    const [isChangeDate, setisChangeDate] = useState(false);
+    const [inputValues, setInputValues] = useState(emptyUser);
+    const [loading, setLoading] = useState(Boolean(id));
+    const [loadError, setLoadError] = useState('');
+    const [revision, setRevision] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const pending = React.useRef(false);
+    const { data: dataGender } = useFetchAllcode('GENDER');
+    const { data: dataRole } = useFetchAllcode('ROLE');
+    const defaultGender = dataGender?.[0]?.code || '';
+    const defaultRole = dataRole?.find(role => role.code === 'R2')?.code || dataRole?.[0]?.code || '';
     useEffect(() => {
-        if (id) {
-            let fetchUser = async () => {
-                setisActionADD(false);
-                let user = await getDetailUserById(id);
-                if (user && user.errCode === 0) {
-                    setStateUser(user.data);
-                }
-            };
-            fetchUser();
-        }
-    }, []);
-    const handleOnChange = (event) => {
+        let active = true;
+        setInputValues(emptyUser()); setisChangeDate(false); setLoadError('');
+        if (!id) { setLoading(false); setbirthday(new Date()); return () => { active = false; }; }
+        setLoading(true);
+        getDetailUserById(id).then(response => {
+            if (!active) return;
+            if (response?.errCode !== 0 || !response.data || String(response.data.id) !== String(id)) throw new Error(response?.errMessage || 'Không thể tải tài khoản.');
+            const data = response.data;
+            setInputValues(previous => ({ ...previous, ...Object.fromEntries(Object.keys(emptyUser()).filter(key => key !== 'password').map(key => [key, data[key] ?? ''])) }));
+            const dob = Number(data.dob);
+            setbirthday(dob > 0 && Number.isFinite(dob) ? new Date(dob) : null);
+        }).catch(error => { if (active) setLoadError(error.message || 'Không thể tải tài khoản.'); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [id, revision]);
+    useEffect(() => {
+        if (id) return;
+        setInputValues(previous => previous.genderId && previous.roleId ? previous : { ...previous, genderId: previous.genderId || defaultGender, roleId: previous.roleId || defaultRole });
+    }, [id, defaultGender, defaultRole]);
+    const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        if (name === 'roleId' && !isActionADD) return;
+        setInputValues(previous => ({ ...previous, [name]: value }));
     };
-
-    const { data: dataGender } = useFetchAllcode("GENDER");
-    const { data: dataRole } = useFetchAllcode("ROLE");
-
-    if (
-        dataGender &&
-        dataGender.length > 0 &&
-        inputValues.genderId === "" &&
-        dataRole &&
-        dataRole.length > 0 &&
-        inputValues.roleId === ""
-    ) {
-        console.log(dataRole);
-        setInputValues({
-            ...inputValues,
-            ["genderId"]: dataGender[0].code,
-            ["roleId"]: dataRole[0].code,
-        });
-    }
-
-    let handleOnChangeDatePicker = (date) => {
-        setbirthday(date);
-        setisChangeDate(true);
+    const handleOnChangeDatePicker = date => { setbirthday(date); setisChangeDate(true); };
+    const handleSaveUser = async () => {
+        if (pending.current || loading || loadError || (id && String(inputValues.id) !== String(id))) return;
+        pending.current = true; setSaving(true);
+        try {
+            const profile = { firstName: inputValues.firstName, lastName: inputValues.lastName, address: inputValues.address,
+                genderId: inputValues.genderId, phonenumber: inputValues.phonenumber,
+                dob: isChangeDate || isActionADD ? birthday ? birthday.getTime() : null : inputValues.dob };
+            const response = isActionADD ? await createNewUser({ ...profile, email: inputValues.email, password: inputValues.password, roleId: inputValues.roleId })
+                : await UpdateUserService({ ...profile, id: inputValues.id });
+            if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể lưu tài khoản.');
+            toast.success(isActionADD ? 'Thêm mới người dùng thành công' : 'Cập nhật người dùng thành công');
+            if (isActionADD) { setInputValues({ ...emptyUser(), genderId: defaultGender, roleId: defaultRole }); setbirthday(null); setisChangeDate(false); }
+        } catch (error) { toast.error(error.message || 'Không thể lưu tài khoản.'); }
+        finally { pending.current = false; setSaving(false); }
     };
-    let handleSaveUser = async () => {
-        if (isActionADD === true) {
-            let res = await createNewUser({
-                email: inputValues.email,
-                password: inputValues.password,
-                firstName: inputValues.firstName,
-                lastName: inputValues.lastName,
-                address: inputValues.address,
-                roleId: inputValues.roleId,
-                genderId: inputValues.genderId,
-                phonenumber: inputValues.phonenumber,
-
-                dob: new Date(birthday).getTime(),
-            });
-            if (res && res.errCode === 0) {
-                toast.success("Thêm mới người dùng thành công");
-                setInputValues({
-                    ...inputValues,
-                    ["firstName"]: "",
-                    ["lastName"]: "",
-                    ["address"]: "",
-                    ["phonenumber"]: "",
-                    ["genderId"]: "",
-                    ["roleId"]: "",
-                    ["email"]: "",
-                });
-                setbirthday("");
-            } else {
-                toast.error(res.errMessage);
-            }
-        } else {
-            let res = await UpdateUserService({
-                id: inputValues.id,
-                firstName: inputValues.firstName,
-                lastName: inputValues.lastName,
-                address: inputValues.address,
-                roleId: inputValues.roleId,
-                genderId: inputValues.genderId,
-                phonenumber: inputValues.phonenumber,
-                dob:
-                    isChangeDate === false
-                        ? inputValues.dob
-                        : new Date(birthday).getTime(),
-            });
-            if (res && res.errCode === 0) {
-                toast.success("Cập nhật người dùng thành công");
-            } else {
-                toast.error(res.errMessage);
-            }
-        }
-    };
-
     return (
         <div className="container-fluid px-4">
             <h1 className="mt-4">Quản lý người dùng</h1>
@@ -155,7 +78,7 @@ const Adduser = (props) => {
                         ? "Thêm mới người dùng"
                         : "Cập nhật thông tin người dùng"}
                 </div>
-                <div className="card-body">
+                <div className="card-body">{loading && <p role="status">Đang tải tài khoản…</p>}{loadError && <p role="alert">{loadError} <button type="button" onClick={() => setRevision(value => value + 1)}>Thử lại</button></p>}
                     <form>
                         <div className="form-row">
                             <div className="form-group col-md-6">
@@ -176,6 +99,7 @@ const Adduser = (props) => {
                                 <label htmlFor="inputPassword4">Password</label>
                                 <input
                                     type="password"
+                                    value={inputValues.password}
                                     disabled={
                                         isActionADD === true ? false : true
                                     }
@@ -269,12 +193,13 @@ const Adduser = (props) => {
                                 </select>
                             </div>
                             <div className="form-group col-md-4">
-                                <label htmlFor="inputZip">Quyền</label>
+                                <label htmlFor="inputUserRole">Quyền</label>
                                 <select
                                     value={inputValues.roleId}
                                     name="roleId"
+                                    disabled={!isActionADD}
                                     onChange={(event) => handleOnChange(event)}
-                                    id="inputState"
+                                    id="inputUserRole"
                                     className="form-control"
                                 >
                                     {dataRole &&
@@ -290,11 +215,13 @@ const Adduser = (props) => {
                                             );
                                         })}
                                 </select>
+                                {!isActionADD && <small className="text-muted">Đổi vai trò tại trang quản lý tài khoản để ghi nhận lý do và thu hồi phiên đăng nhập cũ.</small>}
                             </div>
                         </div>
 
                         <button
                             type="button"
+                            disabled={loading || saving || !!loadError || (Boolean(id) && String(inputValues.id) !== String(id))}
                             onClick={() => handleSaveUser()}
                             className="btn btn-primary"
                         >

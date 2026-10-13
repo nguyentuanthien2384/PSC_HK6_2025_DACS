@@ -19,9 +19,25 @@ const notificationController = require('../controllers/notificationController');
 const shippingProviderController = require('../controllers/shippingProviderController');
 const afterSalesController = require('../controllers/afterSalesController');
 const paymentController = require('../controllers/paymentController');
+const adminOperationsController = require('../controllers/adminOperationsController');
+const adminInventoryController = require('../controllers/adminInventoryController');
+const adminCatalogController = require('../controllers/adminCatalogController');
+const adminAccountController = require('../controllers/adminAccountController');
 let router = express.Router();
 
 let initwebRoutes = (app) => {
+    router.get('/api/admin/operations/dashboard', middlewareControllers.verifyTokenAdmin, adminOperationsController.dashboard);
+    router.get('/api/admin/operations/orders', middlewareControllers.verifyTokenAdmin, adminOperationsController.orders);
+    router.get('/api/admin/operations/returns', middlewareControllers.verifyTokenAdmin, adminOperationsController.returns);
+    router.post('/api/admin/operations/bulk', middlewareControllers.verifyTokenAdmin, adminOperationsController.bulk);
+    router.get('/api/admin/inventory', middlewareControllers.verifyTokenAdmin, adminInventoryController.list);
+    router.get('/api/admin/inventory/:variantId/history', middlewareControllers.verifyTokenAdmin, adminInventoryController.history);
+    router.post('/api/admin/inventory/count', middlewareControllers.verifyTokenAdmin, adminInventoryController.countStock);
+    router.get('/api/admin/catalog', middlewareControllers.verifyTokenOwner, adminCatalogController.list);
+    router.post('/api/admin/catalog/status', middlewareControllers.verifyTokenOwner, adminCatalogController.updateStatus);
+    router.get('/api/admin/accounts', middlewareControllers.verifyTokenOwner, adminAccountController.list);
+    router.post('/api/admin/accounts/change', middlewareControllers.verifyTokenOwner, adminAccountController.change);
+    router.get('/api/admin/audit', middlewareControllers.verifyTokenOwner, adminAccountController.audit);
     router.get('/api/notifications', middlewareControllers.verifyTokenUser, notificationController.list);
     router.post('/api/notifications/read', middlewareControllers.verifyTokenUser, notificationController.read);
     router.post('/api/notifications/read-all', middlewareControllers.verifyTokenUser, notificationController.readAll);
@@ -54,10 +70,10 @@ let initwebRoutes = (app) => {
     //=====================API USER==========================//
     router.post('/api/create-new-user', middlewareControllers.optionalTokenUser, userController.handleCreateNewUser)
     router.put('/api/update-user', middlewareControllers.verifyTokenUser, userController.handleUpdateUser)
-    router.delete('/api/delete-user', middlewareControllers.verifyTokenAdmin, userController.handleDeleteUser)
+    router.delete('/api/delete-user', middlewareControllers.verifyTokenOwner, userController.handleDeleteUser)
     router.post('/api/login', userController.handleLogin)
     router.post('/api/changepassword', middlewareControllers.verifyTokenUser, userController.handleChangePassword)
-    router.get('/api/get-all-user', middlewareControllers.verifyTokenAdmin, userController.getAllUser)
+    router.get('/api/get-all-user', middlewareControllers.verifyTokenOwner, userController.getAllUser)
     router.get('/api/get-detail-user-by-id', middlewareControllers.verifyTokenUser, userController.getDetailUserById)
     router.post('/api/send-verify-email', middlewareControllers.verifyTokenUser, userController.handleSendVerifyEmailUser)
     router.post('/api/verify-email', userController.handleVerifyEmailUser)
@@ -66,44 +82,44 @@ let initwebRoutes = (app) => {
     router.get('/api/check-phonenumber-email', userController.checkPhonenumberEmail)
     router.get('/api/get-detail-user-by-email', middlewareControllers.verifyTokenUser, userController.getDetailUserByEmail)
     //===================API ALLCODE========================//
-    router.post('/api/create-new-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleCreateNewAllCode)
-    router.put('/api/update-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleUpdateAllCode)
-    router.delete('/api/delete-all-code', middlewareControllers.verifyTokenAdmin, allcodeController.handleDeleteAllCode)
+    router.post('/api/create-new-all-code', middlewareControllers.verifyTokenOwner, allcodeController.handleCreateNewAllCode)
+    router.put('/api/update-all-code', middlewareControllers.verifyTokenOwner, allcodeController.handleUpdateAllCode)
+    router.delete('/api/delete-all-code', middlewareControllers.verifyTokenOwner, allcodeController.handleDeleteAllCode)
     router.get('/api/get-all-code', allcodeController.getAllCodeService)
     router.get('/api/get-all-category-blog', allcodeController.getAllCategoryBlog)
     router.get('/api/get-list-allcode', allcodeController.getListAllCodeService)
     router.get('/api/get-detail-all-code-by-id', allcodeController.getDetailAllCodeById)
 
     //==================API BANNER=============================//
-    router.post('/api/create-new-banner', middlewareControllers.verifyTokenAdmin, bannerController.createNewBanner)
+    router.post('/api/create-new-banner', middlewareControllers.verifyTokenOwner, bannerController.createNewBanner)
     router.get('/api/get-detail-banner', bannerController.getDetailBanner)
     router.get('/api/get-all-banner', bannerController.getAllBanner)
-    router.put('/api/update-banner', middlewareControllers.verifyTokenAdmin, bannerController.updateBanner)
-    router.delete('/api/delete-banner', middlewareControllers.verifyTokenAdmin, bannerController.deleteBanner)
+    router.put('/api/update-banner', middlewareControllers.verifyTokenOwner, bannerController.updateBanner)
+    router.delete('/api/delete-banner', middlewareControllers.verifyTokenOwner, bannerController.deleteBanner)
 
     //==================API PRODUCT=========================//
-    router.post('/api/create-new-product', middlewareControllers.verifyTokenAdmin, productController.createNewProduct)
-    router.put('/api/update-product', middlewareControllers.verifyTokenAdmin, productController.updateProduct)
+    router.post('/api/create-new-product', middlewareControllers.verifyTokenOwner, productController.createNewProduct)
+    router.put('/api/update-product', middlewareControllers.verifyTokenOwner, productController.updateProduct)
     router.get('/api/get-all-product-admin', middlewareControllers.verifyTokenAdmin, productController.getAllProductAdmin)
     router.get('/api/get-all-product-user', productController.getAllProductUser)
-    router.post('/api/unactive-product', middlewareControllers.verifyTokenAdmin, productController.UnactiveProduct)
-    router.post('/api/active-product', middlewareControllers.verifyTokenAdmin, productController.ActiveProduct)
+    router.post('/api/unactive-product', middlewareControllers.verifyTokenOwner, productController.UnactiveProduct)
+    router.post('/api/active-product', middlewareControllers.verifyTokenOwner, productController.ActiveProduct)
     router.get('/api/get-detail-product-by-id', middlewareControllers.optionalTokenUser, productController.getDetailProductById)
     router.get('/api/get-all-product-detail-by-id', productController.getAllProductDetailById)
     router.get('/api/get-all-product-detail-image-by-id', productController.getAllProductDetailImageById)
-    router.post('/api/create-new-product-detail', middlewareControllers.verifyTokenAdmin, productController.createNewProductDetail)
-    router.put('/api/update-product-detail', middlewareControllers.verifyTokenAdmin, productController.updateProductDetail)
+    router.post('/api/create-new-product-detail', middlewareControllers.verifyTokenOwner, productController.createNewProductDetail)
+    router.put('/api/update-product-detail', middlewareControllers.verifyTokenOwner, productController.updateProductDetail)
     router.get('/api/get-product-detail-by-id', productController.getDetailProductDetailById)
-    router.post('/api/create-product-detail-image', middlewareControllers.verifyTokenAdmin, productController.createNewProductDetailImage)
+    router.post('/api/create-product-detail-image', middlewareControllers.verifyTokenOwner, productController.createNewProductDetailImage)
     router.get('/api/get-product-detail-image-by-id', productController.getDetailProductImageById)
-    router.put('/api/update-product-detail-image', middlewareControllers.verifyTokenAdmin, productController.updateProductDetailImage)
-    router.delete('/api/delete-product-detail-image', middlewareControllers.verifyTokenAdmin, productController.deleteProductDetailImage)
-    router.delete('/api/delete-product-detail', middlewareControllers.verifyTokenAdmin, productController.deleteProductDetail)
+    router.put('/api/update-product-detail-image', middlewareControllers.verifyTokenOwner, productController.updateProductDetailImage)
+    router.delete('/api/delete-product-detail-image', middlewareControllers.verifyTokenOwner, productController.deleteProductDetailImage)
+    router.delete('/api/delete-product-detail', middlewareControllers.verifyTokenOwner, productController.deleteProductDetail)
     router.get('/api/get-all-product-detail-size-by-id', productController.getAllProductDetailSizeById)
-    router.post('/api/create-product-detail-size', middlewareControllers.verifyTokenAdmin, productController.createNewProductDetailSize)
+    router.post('/api/create-product-detail-size', middlewareControllers.verifyTokenOwner, productController.createNewProductDetailSize)
     router.get('/api/get-detail-product-detail-size-by-id', productController.getDetailProductDetailSizeById)
-    router.put('/api/update-product-detail-size', middlewareControllers.verifyTokenAdmin, productController.updateProductDetailSize)
-    router.delete('/api/delete-product-detail-size', middlewareControllers.verifyTokenAdmin, productController.deleteProductDetailSize)
+    router.put('/api/update-product-detail-size', middlewareControllers.verifyTokenOwner, productController.updateProductDetailSize)
+    router.delete('/api/delete-product-detail-size', middlewareControllers.verifyTokenOwner, productController.deleteProductDetailSize)
     router.get('/api/get-product-feature', productController.getProductFeature)
     router.get('/api/get-product-new', productController.getProductNew)
     router.get('/api/get-product-shopcart', middlewareControllers.verifyTokenUser, productController.getProductShopCart)
@@ -141,34 +157,34 @@ let initwebRoutes = (app) => {
     router.get('/api/get-detail-address-user-by-id', middlewareControllers.verifyTokenUser, addressUserController.getDetailAddressUserById)
 
     //====================API TYPE SHIP==========================//
-    router.post('/api/create-new-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.createNewTypeShip)
+    router.post('/api/create-new-typeship', middlewareControllers.verifyTokenOwner, typeshipController.createNewTypeShip)
     router.get('/api/get-detail-typeship', typeshipController.getDetailTypeshipById)
     router.get('/api/get-all-typeship', typeshipController.getAllTypeship)
-    router.put('/api/update-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.updateTypeship)
-    router.delete('/api/delete-typeship', middlewareControllers.verifyTokenAdmin, typeshipController.deleteTypeship)
+    router.put('/api/update-typeship', middlewareControllers.verifyTokenOwner, typeshipController.updateTypeship)
+    router.delete('/api/delete-typeship', middlewareControllers.verifyTokenOwner, typeshipController.deleteTypeship)
 
     //===================API TYPE VOUCHER====================//
-    router.post('/api/create-new-typevoucher', middlewareControllers.verifyTokenAdmin, voucherController.createNewTypeVoucher)
+    router.post('/api/create-new-typevoucher', middlewareControllers.verifyTokenOwner, voucherController.createNewTypeVoucher)
     router.get('/api/get-detail-typevoucher', voucherController.getDetailTypeVoucherById)
     router.get('/api/get-all-typevoucher', voucherController.getAllTypeVoucher)
-    router.put('/api/update-typevoucher', middlewareControllers.verifyTokenAdmin, voucherController.updateTypeVoucher)
-    router.delete('/api/delete-typevoucher', middlewareControllers.verifyTokenAdmin, voucherController.deleteTypeVoucher)
+    router.put('/api/update-typevoucher', middlewareControllers.verifyTokenOwner, voucherController.updateTypeVoucher)
+    router.delete('/api/delete-typevoucher', middlewareControllers.verifyTokenOwner, voucherController.deleteTypeVoucher)
     router.get('/api/get-select-typevoucher', voucherController.getSelectTypeVoucher)
     //=====================API VOUCHER======================//
-    router.post('/api/create-new-voucher', middlewareControllers.verifyTokenAdmin, voucherController.createNewVoucher)
+    router.post('/api/create-new-voucher', middlewareControllers.verifyTokenOwner, voucherController.createNewVoucher)
     router.get('/api/get-detail-voucher', voucherController.getDetailVoucherById)
     router.get('/api/get-all-voucher', voucherController.getAllVoucher)
-    router.put('/api/update-voucher', middlewareControllers.verifyTokenAdmin, voucherController.updateVoucher)
-    router.delete('/api/delete-voucher', middlewareControllers.verifyTokenAdmin, voucherController.deleteVoucher)
+    router.put('/api/update-voucher', middlewareControllers.verifyTokenOwner, voucherController.updateVoucher)
+    router.delete('/api/delete-voucher', middlewareControllers.verifyTokenOwner, voucherController.deleteVoucher)
     router.post('/api/save-user-voucher', middlewareControllers.verifyTokenUser, voucherController.saveUserVoucher)
     router.get('/api/get-all-voucher-by-userid', middlewareControllers.verifyTokenUser, voucherController.getAllVoucherByUserId)
 
     //=====================API BLOG=========================//
-    router.post('/api/create-new-blog', middlewareControllers.verifyTokenAdmin, blogController.createNewBlog)
+    router.post('/api/create-new-blog', middlewareControllers.verifyTokenOwner, blogController.createNewBlog)
     router.get('/api/get-detail-blog', middlewareControllers.optionalTokenUser, blogController.getDetailBlogById)
     router.get('/api/get-all-blog', blogController.getAllBlog)
-    router.put('/api/update-blog', middlewareControllers.verifyTokenAdmin, blogController.updateBlog)
-    router.delete('/api/delete-blog', middlewareControllers.verifyTokenAdmin, blogController.deleteBlog)
+    router.put('/api/update-blog', middlewareControllers.verifyTokenOwner, blogController.updateBlog)
+    router.delete('/api/delete-blog', middlewareControllers.verifyTokenOwner, blogController.deleteBlog)
     router.get('/api/get-feature-blog', blogController.getFeatureBlog)
     router.get('/api/get-new-blog', blogController.getNewBlog)
     //=======================API REVIEW======================//
@@ -211,13 +227,13 @@ let initwebRoutes = (app) => {
     router.get('/api/listRoomOfAdmin', middlewareControllers.verifyTokenAdmin, messageController.listRoomOfAdmin)
 
     //=================API STATISTIC==============================//
-    router.get('/api/get-count-card-statistic', middlewareControllers.verifyTokenAdmin, statisticController.getCountCardStatistic)
-    router.get('/api/get-count-status-order', middlewareControllers.verifyTokenAdmin, statisticController.getCountStatusOrder)
-    router.get('/api/get-statistic-by-month', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticByMonth)
-    router.get('/api/get-statistic-by-day', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticByDay)
-    router.get('/api/get-statistic-overturn', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticOverturn)
-    router.get('/api/get-statistic-revenue', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticOverturn)
-    router.get('/api/get-statistic-profit', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticProfit)
+    router.get('/api/get-count-card-statistic', middlewareControllers.verifyTokenOwner, statisticController.getCountCardStatistic)
+    router.get('/api/get-count-status-order', middlewareControllers.verifyTokenOwner, statisticController.getCountStatusOrder)
+    router.get('/api/get-statistic-by-month', middlewareControllers.verifyTokenOwner, statisticController.getStatisticByMonth)
+    router.get('/api/get-statistic-by-day', middlewareControllers.verifyTokenOwner, statisticController.getStatisticByDay)
+    router.get('/api/get-statistic-overturn', middlewareControllers.verifyTokenOwner, statisticController.getStatisticOverturn)
+    router.get('/api/get-statistic-revenue', middlewareControllers.verifyTokenOwner, statisticController.getStatisticOverturn)
+    router.get('/api/get-statistic-profit', middlewareControllers.verifyTokenOwner, statisticController.getStatisticProfit)
     router.get('/api/get-statistic-stock-product', middlewareControllers.verifyTokenAdmin, statisticController.getStatisticStockProduct)
 
     return app.use("/", router);

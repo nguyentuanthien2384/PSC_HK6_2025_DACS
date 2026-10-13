@@ -1,6 +1,7 @@
 const { Op, Transaction } = require('sequelize');
 const { fail, resultOf } = require('../utils/commerce');
 const { recordAdminAudit } = require('./adminAuditService');
+const { revokeSessionsAfterCommit } = require('./authSessionService');
 const idOf = value => ['number', 'string'].includes(typeof value) && /^\d+$/.test(String(value)) && Number.isSafeInteger(+value) && +value > 0;
 function createAdminAccountService(db) {
     const requireOwner = actor => { if (actor?.roleId !== 'R1') fail('Chỉ quản trị viên được quản lý tài khoản.', 403); };
@@ -35,7 +36,7 @@ function createAdminAccountService(db) {
             // Lock all owners in the same order so two concurrent requests cannot remove the last owner.
             const owners = await db.User.findAll({ where: { roleId: 'R1', statusId: 'S1' }, attributes: ['id'], order: [['id', 'ASC']], transaction: tx, lock: tx.LOCK.UPDATE, raw: true });
             if (!owners.some(user => Number(user.id) === Number(actor.id))) fail('Tài khoản quản trị không còn đủ quyền.', 403);
-            const user = await db.User.findByPk(Number(data.id), { transaction: tx, lock: tx.LOCK.UPDATE });
+            const user = await db.User.findByPk(Number(data.id), { transaction: tx, lock: tx.LOCK.UPDATE, raw: false });
             if (!user) fail('Không tìm thấy tài khoản.', 2);
             const before = { roleId: user.roleId, statusId: user.statusId };
             const after = { roleId: data.roleId || user.roleId, statusId: data.statusId || user.statusId };
@@ -47,6 +48,7 @@ function createAdminAccountService(db) {
             Object.assign(user, after); user.authVersion = Number(user.authVersion || 0) + 1; user.usertoken = '';
             await user.save({ transaction: tx });
             await recordAdminAudit(db, { actor, entityType: 'USER', entityId: user.id, action: data.roleId ? 'USER_ROLE_CHANGED' : after.statusId === 'S2' ? 'USER_DISABLED' : 'USER_RESTORED', summary: data.reason.trim(), before, after }, tx);
+            revokeSessionsAfterCommit(user.id, tx);
             return { errCode: 0, errMessage: 'Đã cập nhật tài khoản và thu hồi các phiên đăng nhập cũ.' };
         });
     });

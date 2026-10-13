@@ -14,6 +14,7 @@ function notifyRoom(io, room) {
     .emit('sendDataServer', { roomId: room.id });
 }
 function configureSocket(io) {
+  require('./services/authSessionService').setSessionServer(io);
   io.use(async (socket, next) => {
     try { socket.data.user = await socketIdentity(socket); next(); }
     catch (error) { next(error); }

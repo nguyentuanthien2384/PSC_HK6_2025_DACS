@@ -1,4 +1,10 @@
 import productService from '../services/productService';
+const catalog = require('../services/adminCatalogService').createAdminCatalogService(require('../models'));
+const setLegacyStatus = async (req, res, statusId) => {
+    const result = await catalog.updateStatus({ ids: [req.body.id], statusId, reason: req.body.reason || 'Đổi trạng thái sản phẩm từ quản trị' }, req.user);
+    if (result.errCode === 0 && result.failed) return res.status(200).json({ errCode: 2, errMessage: result.data[0]?.errMessage || 'Không thể cập nhật sản phẩm.' });
+    return res.status(result.errCode === 403 ? 403 : 200).json(result);
+};
 
 
 let createNewProduct = async (req, res) => {
@@ -39,8 +45,7 @@ let getAllProductUser = async (req, res) => {
 }
 let UnactiveProduct = async (req, res) => {
     try {
-        let data = await productService.UnactiveProduct(req.body);
-        return res.status(200).json(data);
+        return await setLegacyStatus(req, res, 'S2');
     } catch (error) {
         console.log(error)
         return res.status(200).json({
@@ -51,8 +56,7 @@ let UnactiveProduct = async (req, res) => {
 }
 let ActiveProduct = async (req, res) => {
     try {
-        let data = await productService.ActiveProduct(req.body);
-        return res.status(200).json(data);
+        return await setLegacyStatus(req, res, 'S1');
     } catch (error) {
         console.log(error)
         return res.status(200).json({

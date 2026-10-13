@@ -170,7 +170,7 @@ function createShippingProviderService(db, { env = process.env, fetchImpl = glob
                 const expected = snapshot.expected_delivery_time || snapshot.leadtime;
                 if (expected && Number.isFinite(new Date(expected).getTime())) shipment.expectedDeliveryAt = new Date(expected);
                 await shipment.save({ transaction: tx });
-                await recordOrderEvent(db, { order, type: 'SHIPMENT_BOOKED', title: 'Đã tạo vận đơn', message: `Đơn #${order.id} được chuyển qua ${config.provider.toUpperCase()}, mã ${trackingCode}${config.environment === 'sandbox' ? ' (sandbox)' : ''}.`, actorId: actor.id, metadata: { provider: config.provider, trackingCode, environment: config.environment } }, tx);
+                await recordOrderEvent(db, { order, type: 'SHIPMENT_BOOKED', title: 'Đã tạo vận đơn', message: `Đơn #${order.id} được chuyển qua ${config.provider.toUpperCase()}, mã ${trackingCode}${config.environment === 'sandbox' ? ' (sandbox)' : ''}.`, actor, actorId: actor.id, metadata: { provider: config.provider, trackingCode, environment: config.environment } }, tx);
                 return { errCode: 0, data: safeShipment(shipment) };
             });
         } catch (error) {

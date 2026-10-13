@@ -23,7 +23,7 @@ function createDeliveryService(db) {
     const locked = tx => ({ transaction: tx, lock: tx.LOCK.UPDATE });
     const internalDelivery = order => !order.deliveryProvider || order.deliveryProvider === 'internal';
     const event = (order, actor, type, title, message, tx, metadata = {}) => recordOrderEvent(db,
-        { order, actorId: actor && actor.id, type, title, message, metadata }, tx);
+        { order, actor, actorId: actor && actor.id, type, title, message, metadata }, tx);
     const canOperateDelivery = (order, actor) => isAdmin(actor) || (actor && actor.roleId === 'R3' && sameId(order.shipperId, actor.id));
     const requireInternalCourier = (order, actor) => {
         if (!canOperateDelivery(order, actor)) fail('Bạn không có quyền xử lý giao hàng cho đơn này.', 403);

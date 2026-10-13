@@ -138,17 +138,18 @@ function createAdminOperationsService(db, dependencies = {}) {
         const inventory = dependencies.inventory || require('./adminInventoryService').createAdminInventoryService(db);
         const [sales, groups, returnGroups, refunds, recent, trend, stock] = await Promise.all([
             query(`/* admin-dashboard-sales */ SELECT COUNT(*) AS deliveredOrders, SUM(o.totalPrice) AS grossRevenue,
-                SUM(COALESCE(r.refundAmount,0)) AS refundsAgainstDeliveredOrders, SUM(o.totalPrice IS NULL) AS missingRecordedTotals
+                SUM(COALESCE(r.refundAmount,0)) AS refundsAgainstDeliveredOrders, SUM(o.totalPrice IS NULL) AS missingRecordedTotals,
+                SUM(o.deliveredAt IS NULL) AS legacyDeliveryDates
                 FROM Orderproducts o LEFT JOIN (SELECT orderId,SUM(amount) AS refundAmount FROM ReturnRequests WHERE status='REFUNDED' GROUP BY orderId) r ON r.orderId=o.id
-                WHERE o.statusId='S6' AND o.deliveredAt >= :fromDate AND o.deliveredAt < :untilDate`, replacements),
+                WHERE o.statusId='S6' AND COALESCE(o.deliveredAt,o.updatedAt) >= :fromDate AND COALESCE(o.deliveredAt,o.updatedAt) < :untilDate`, replacements),
             query("/* admin-dashboard-queues */ SELECT statusId, COUNT(*) AS count FROM Orderproducts GROUP BY statusId"),
             query("/* admin-dashboard-returns */ SELECT status, COUNT(*) AS count FROM ReturnRequests GROUP BY status"),
             query("/* admin-dashboard-refunds */ SELECT COUNT(*) AS count,SUM(amount) AS amount FROM ReturnRequests WHERE status='REFUNDED' AND refundedAt >= :fromDate AND refundedAt < :untilDate", replacements),
             query(`/* admin-dashboard-recent */ SELECT ${orderProjection} FROM Orderproducts o ${orderJoins} ORDER BY o.createdAt DESC,o.id DESC LIMIT 8`),
-            query(`/* admin-dashboard-trend */ SELECT DATE(o.deliveredAt) AS day, COUNT(*) AS orders,
+            query(`/* admin-dashboard-trend */ SELECT DATE(COALESCE(o.deliveredAt,o.updatedAt)) AS day, COUNT(*) AS orders,
                 SUM(o.totalPrice) AS grossRevenue, SUM(COALESCE(r.refundAmount,0)) AS refunds
                 FROM Orderproducts o LEFT JOIN (SELECT orderId,SUM(amount) AS refundAmount FROM ReturnRequests WHERE status='REFUNDED' GROUP BY orderId) r ON r.orderId=o.id
-                WHERE o.statusId='S6' AND o.deliveredAt >= :fromDate AND o.deliveredAt < :untilDate GROUP BY DATE(o.deliveredAt) ORDER BY day`, replacements),
+                WHERE o.statusId='S6' AND COALESCE(o.deliveredAt,o.updatedAt) >= :fromDate AND COALESCE(o.deliveredAt,o.updatedAt) < :untilDate GROUP BY DATE(COALESCE(o.deliveredAt,o.updatedAt)) ORDER BY day`, replacements),
             inventory.summary(actor),
         ]);
         const salesRow = sales[0] || {}; const refundRow = refunds[0] || {};
@@ -168,7 +169,7 @@ function createAdminOperationsService(db, dependencies = {}) {
         if (stock.errCode !== 0) fail(stock.errMessage || 'Không thể tải tồn kho vận hành.');
         const financialAccess = actor.roleId === 'R1';
         return { errCode: 0, data: { range: { from: range.from, to: range.to, utcOffset: '+07:00' }, financialAccess,
-            metrics: { deliveredOrders: Number(salesRow.deliveredOrders) || 0,
+            metrics: { deliveredOrders: Number(salesRow.deliveredOrders) || 0, legacyDeliveryDates: Number(salesRow.legacyDeliveryDates) || 0,
                 ...(financialAccess ? { grossRevenue, refundsAgainstDeliveredOrders, netRevenue: grossRevenue - refundsAgainstDeliveredOrders,
                     missingRecordedTotals: Number(salesRow.missingRecordedTotals) || 0,
                     refundedInPeriod: Number(refundRow.amount) || 0, refundCountInPeriod: Number(refundRow.count) || 0 } : {}) },
