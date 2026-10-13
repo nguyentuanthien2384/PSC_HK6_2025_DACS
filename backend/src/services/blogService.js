@@ -1,6 +1,6 @@
-import db from "../models/index";
-require('dotenv').config();
+const db = require('../models');
 const { Op } = require("sequelize");
+const { contentImageUrl } = require('../utils/productImage');
 let createNewBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -31,90 +31,84 @@ let createNewBlog = (data) => {
         }
     })
 }
-let getDetailBlogById = (id) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!id) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter !'
-                })
-            } else {
-                let blog = await db.Blog.findOne({
-                    where:{id:id},
-                    raw:false
-                })
-                if (!blog) return resolve({errCode: 2, errMessage: 'Bài viết không tồn tại'});
-                blog.view = (blog.view || 0) +1;
-                await blog.save()
-                let res = await db.Blog.findOne({
-                    where: { id: id },
-                    include: [
-                        { model: db.Allcode, as: 'subjectData', attributes: ['value', 'code'] },
-
-                    ],
-                    raw: true,
-                    nest: true
-                })
-                res.userData = await db.User.findOne({where:{id:res.userId}, attributes: ['id', 'firstName', 'lastName']})
-              
-                if (res && res.image) {
-                    res.image = Buffer.from(res.image, 'base64').toString('binary');
-                }
-                resolve({
-                    errCode: 0,
-                    data: res
-                })
-            }
-        } catch (error) {
-            reject(error)
+const blogCardAttributes = ['id', 'shortdescription', 'title', 'subjectId', 'statusId', 'imageVersion', 'userId', 'view', 'createdAt', 'updatedAt'];
+const boundedLimit = value => Math.min(100, Math.max(1, Math.floor(Number(value) || 20)));
+function createBlogReadService(models) {
+    const include = [{ model: models.Allcode, as: 'subjectData', attributes: ['value', 'code'] }];
+    async function hydrateCards(rows) {
+        if (!rows.length) return [];
+        const ids = rows.map(row => row.id);
+        const authorIds = [...new Set(rows.map(row => row.userId).filter(id => id !== null && id !== undefined))];
+        const [authors, comments] = await Promise.all([
+            authorIds.length ? models.User.findAll({ where: { id: { [Op.in]: authorIds } }, attributes: ['id', 'firstName', 'lastName'], raw: true }) : [],
+            models.Comment.findAll({ where: { blogId: { [Op.in]: ids } }, attributes: ['id', 'blogId'], raw: true }),
+        ]);
+        const authorMap = new Map(authors.map(author => [String(author.id), author]));
+        const commentMap = new Map();
+        for (const comment of comments) {
+            const key = String(comment.blogId);
+            if (!commentMap.has(key)) commentMap.set(key, []);
+            commentMap.get(key).push(comment);
         }
-    })
-}
-let getAllBlog = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let objectFilter = {
-                where: { statusId: 'S1' },
-                include: [
-                    { model: db.Allcode, as: 'subjectData', attributes: ['value', 'code'] },
-
-                ],
+        return rows.map(row => ({
+            ...row,
+            image: contentImageUrl(row, 'blog', 'card'),
+            userData: authorMap.get(String(row.userId)) || { id: row.userId, firstName: '', lastName: '' },
+            commentData: commentMap.get(String(row.id)) || [],
+        }));
+    }
+    async function collection(data = {}, order) {
+        const rows = await models.Blog.findAll({
+            attributes: blogCardAttributes,
+            where: { statusId: 'S1' },
+            include,
+            order,
+            limit: boundedLimit(data.limit),
+            raw: true,
+            nest: true,
+        });
+        return { errCode: 0, data: await hydrateCards(rows) };
+    }
+    return {
+        async getDetailBlogById(id, actor) {
+            if (!id) return { errCode: 1, errMessage: 'Missing required parameter !' };
+            const editor = ['R1', 'R4'].includes(actor?.roleId);
+            const row = await models.Blog.findOne({
+                where: editor ? { id } : { id, statusId: 'S1' },
+                ...(editor ? {} : { attributes: [...blogCardAttributes, 'contentHTML'] }),
+                include,
                 raw: true,
-                nest: true
-            }
-            if (Number(data.limit) > 0) {
-                objectFilter.limit = Math.min(100, Math.max(1, Number(data.limit) || 20))
-                objectFilter.offset = Math.max(0, Number(data.offset) || 0)
-            }
-            if(data.subjectId && data.subjectId !== ''){
-            
-                objectFilter.where = {...objectFilter.where, subjectId: data.subjectId}
-            }
-            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where = {...objectFilter.where, title: {[Op.substring]: data.keyword  } }
-            let res = await db.Blog.findAndCountAll(objectFilter)
-            if (res.rows && res.rows.length > 0) {
-                for(let i=0; i< res.rows.length; i++){
-                    res.rows[i].image = Buffer.from(res.rows[i].image, 'base64').toString('binary')
-                    res.rows[i].userData = await db.User.findOne({where:{id:res.rows[i].userId }, attributes: ['id', 'firstName', 'lastName']})
-                    res.rows[i].commentData = await db.Comment.findAll({where:{blogId:res.rows[i].id }})
-                }
-               
-            }
-            
-            resolve({
+                nest: true,
+            });
+            if (!row) return { errCode: 2, errMessage: 'Bài viết không tồn tại' };
+            const author = await models.User.findOne({ where: { id: row.userId }, attributes: ['id', 'firstName', 'lastName'], raw: true });
+            if (!editor) await models.Blog.increment('view', { where: { id: row.id } });
+            return {
                 errCode: 0,
-                data: res.rows,
-                count: res.count
-            })
-
-
-
-        } catch (error) {
-            reject(error)
-        }
-    })
+                data: {
+                    ...row,
+                    view: Number(row.view || 0) + (editor ? 0 : 1),
+                    userData: author || { id: row.userId, firstName: '', lastName: '' },
+                    image: editor ? (Buffer.isBuffer(row.image) ? row.image.toString('utf8') : row.image || '') : contentImageUrl(row, 'blog', 'detail'),
+                },
+            };
+        },
+        async getAllBlog(data = {}) {
+            const filter = { attributes: blogCardAttributes, where: { statusId: 'S1' }, include, raw: true, nest: true, order: [['id', 'ASC']] };
+            if (Number(data.limit) > 0) {
+                filter.limit = boundedLimit(data.limit);
+                filter.offset = Math.max(0, Math.floor(Number(data.offset) || 0));
+            }
+            if (data.subjectId && data.subjectId !== 'ALL') filter.where.subjectId = data.subjectId;
+            if (typeof data.keyword === 'string' && data.keyword.trim()) filter.where.title = { [Op.substring]: data.keyword.trim() };
+            const result = await models.Blog.findAndCountAll(filter);
+            return { errCode: 0, data: await hydrateCards(result.rows), count: result.count };
+        },
+        getFeatureBlog: (data = {}) => collection(data, [['view', 'DESC'], ['id', 'DESC']]),
+        getNewBlog: (data = {}) => collection(data, [['createdAt', 'DESC'], ['id', 'DESC']]),
+    };
 }
+const { getDetailBlogById, getAllBlog, getFeatureBlog, getNewBlog } = createBlogReadService(db);
 let updateBlog = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -177,81 +171,8 @@ let deleteBlog = (data) => {
         }
     })
 }
-let getFeatureBlog = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-        
-            let res = await db.Blog.findAll({
-                where: { statusId: 'S1' },
-                include: [
-                    { model: db.Allcode, as: 'subjectData', attributes: ['value', 'code'] },
-
-                ],
-                order: [['view', 'DESC']],
-                limit:+data.limit,
-                raw: true,
-                nest: true
-            })
-            if (res && res.length > 0) {
-                for(let i=0; i< res.length; i++){
-                    res[i].image = Buffer.from(res[i].image, 'base64').toString('binary')
-                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }, attributes: ['id', 'firstName', 'lastName']})
-                    res[i].commentData = await db.Comment.findAll({where:{blogId:res[i].id }})
-                }
-               
-            }
-            
-            resolve({
-                errCode: 0,
-                data: res
-               
-            })
-
-
-
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
-let getNewBlog = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-        
-            let res = await db.Blog.findAll({
-                where: { statusId: 'S1' },
-                include: [
-                    { model: db.Allcode, as: 'subjectData', attributes: ['value', 'code'] },
-
-                ],
-                order: [['createdAt', 'DESC']],
-                limit:+data.limit,
-                raw: true,
-                nest: true
-            })
-            if (res && res.length > 0) {
-                for(let i=0; i< res.length; i++){
-                    res[i].image = Buffer.from(res[i].image, 'base64').toString('binary')
-                    res[i].userData = await db.User.findOne({where:{id:res[i].userId }, attributes: ['id', 'firstName', 'lastName']})
-                    res[i].commentData = await db.Comment.findAll({where:{blogId:res[i].id }})
-                }
-               
-            }
-            
-            resolve({
-                errCode: 0,
-                data: res
-               
-            })
-
-
-
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
 module.exports = {
+    createBlogReadService,
     createNewBlog: createNewBlog,
     getDetailBlogById: getDetailBlogById,
     getAllBlog: getAllBlog,

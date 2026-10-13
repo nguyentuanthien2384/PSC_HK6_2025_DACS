@@ -1,5 +1,6 @@
 ﻿import axios from "axios";
 import { clearAuth, getToken } from "./utils/token";
+import { resolveMediaImages } from './utils/media';
 
 export const API_BASE_URL = (process.env.REACT_APP_BACKEND_URL || "http://localhost:6969").replace(/\/$/, "");
 
@@ -21,7 +22,7 @@ instance.interceptors.request.use((config) => {
 
 instance.interceptors.response.use(
   (response) => {
-    return response.data;
+    return resolveMediaImages(response.data, API_BASE_URL);
   },
   (error) => {
     // Phiên đăng nhập không hợp lệ (token cũ / user không còn tồn tại):

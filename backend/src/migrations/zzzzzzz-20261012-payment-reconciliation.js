@@ -5,6 +5,7 @@ module.exports = {
         const sessions = tables.find(name => String(name).toLowerCase() === 'paymentsessions') || 'PaymentSessions';
         const columns = await queryInterface.describeTable(sessions);
         const additions = {
+            gatewayApiVersion: { type: Sequelize.STRING(10), allowNull: false, defaultValue: 'v1' },
             gatewayTransactionDate: Sequelize.STRING(14), gatewaySaleId: Sequelize.STRING(100),
             gatewayOutcome: Sequelize.TEXT('long'), paidAt: Sequelize.DATE,
             reviewReason: Sequelize.STRING(1000), lastError: Sequelize.STRING(1000), lastCheckedAt: Sequelize.DATE,
@@ -24,7 +25,7 @@ module.exports = {
                 providerRefundId: { type: Sequelize.STRING(100), unique: true }, actorId: Sequelize.INTEGER, reason: Sequelize.STRING(1000),
                 gatewayOutcome: Sequelize.TEXT('long'), requestData: Sequelize.TEXT('long'),
                 attempts: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 0 }, lastError: Sequelize.STRING(1000),
-                lastCheckedAt: Sequelize.DATE, completedAt: Sequelize.DATE,
+                lastCheckedAt: Sequelize.DATE, completedAt: Sequelize.DATE, fulfillmentSyncedAt: Sequelize.DATE,
                 createdAt: { type: Sequelize.DATE, allowNull: false }, updatedAt: { type: Sequelize.DATE, allowNull: false }
             });
             await queryInterface.addIndex('PaymentRefunds', ['sessionId', 'status']);
@@ -37,6 +38,6 @@ module.exports = {
     async down(queryInterface) {
         await queryInterface.dropTable('PaymentRefunds');
         await queryInterface.removeIndex('PaymentSessions', 'payment_sessions_order_unique');
-        for (const name of ['gatewayTransactionDate', 'gatewaySaleId', 'gatewayOutcome', 'paidAt', 'reviewReason', 'lastError', 'lastCheckedAt', 'reconcileAttempts']) await queryInterface.removeColumn('PaymentSessions', name);
+        for (const name of ['gatewayApiVersion', 'gatewayTransactionDate', 'gatewaySaleId', 'gatewayOutcome', 'paidAt', 'reviewReason', 'lastError', 'lastCheckedAt', 'reconcileAttempts']) await queryInterface.removeColumn('PaymentSessions', name);
     }
 };

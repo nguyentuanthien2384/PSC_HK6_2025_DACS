@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createReturnRequest, reviewReturnRequest, markReturnShipped, receiveReturn, confirmManualRefund, requestOnlineRefund } from '../../services/orderOperationsService';
 import { formatOrderDate, formatOrderMoney, RETURN_STATUSES } from '../../utils/orders';
+import { isDemoPayment } from '../../utils/payments';
 import { EvidenceInput, ReasonForm, WarehouseReceiptForm } from './WorkflowForms';
 
 function ReturnTrackingForm({ busy, onSubmit, onClose }) {
@@ -26,27 +27,32 @@ function ManualRefundForm({ busy, onSubmit, onClose }) {
     </form>;
 }
 
-export default function ReturnWorkflow({ order, admin = false, onUpdated }) {
+export default function ReturnWorkflow(props) {
+    return <ReturnWorkflowForOrder key={`${props.order.id}-${props.admin ? 'admin' : 'customer'}`} {...props} />;
+}
+
+function ReturnWorkflowForOrder({ order, admin = false, onUpdated }) {
     const [action, setAction] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const currentOrder = useRef(order.id);
-    currentOrder.current = order.id;
+    const mounted = useRef(true);
+    const pending = useRef(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
     const request = order.returnRequest;
     const eligibility = order.returnEligibility;
     const perform = async (operation, message) => {
-        if (busy) return;
-        const orderId = order.id;
+        if (pending.current) return;
+        pending.current = true;
         setBusy(true); setError(''); setSuccess('');
         try {
             const response = await operation();
             if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể xử lý yêu cầu trả hàng.');
-            if (currentOrder.current !== orderId) return;
+            if (!mounted.current) return;
             setAction(''); setSuccess(typeof message === 'function' ? message(response) : message);
             await onUpdated?.();
-        } catch (failure) { if (currentOrder.current === orderId) setError(failure.message); }
-        finally { if (currentOrder.current === orderId) setBusy(false); }
+        } catch (failure) { if (mounted.current) setError(failure.message); }
+        finally { pending.current = false; if (mounted.current) setBusy(false); }
     };
     if (!request && !eligibility && order.statusId !== 'S6') return null;
     return <section className="order-section return-workflow" aria-label="Trả hàng và hoàn tiền">
@@ -65,12 +71,13 @@ export default function ReturnWorkflow({ order, admin = false, onUpdated }) {
             {request.refundedAt && <p>Hoàn tiền lúc: {formatOrderDate(request.refundedAt)}</p>}
         </div>}
         {error && <p role="alert" className="text-danger">{error}</p>}{success && <p role="status">{success}</p>}
+        {admin && Number(order.isPaymentOnlien) === 1 && isDemoPayment(order.paymentSession) && <p role="note">Đơn dùng dữ liệu thanh toán demo / mô phỏng. Không thể yêu cầu hoàn tiền qua cổng thanh toán.</p>}
         <div className="order-actions">
             {!admin && eligibility?.canRequest === true && (!request || request.status === 'REJECTED') && <button className="btn btn-outline-danger" type="button" disabled={busy} onClick={() => setAction('request')}>Yêu cầu trả hàng</button>}
             {!admin && request?.status === 'APPROVED' && <button className="btn btn-outline-success" type="button" disabled={busy} onClick={() => setAction('ship')}>Nhập vận đơn gửi trả</button>}
             {admin && request?.status === 'REQUESTED' && <><button type="button" className="btn btn-success" disabled={busy} onClick={() => setAction('approve')}>Duyệt trả hàng</button><button type="button" className="btn btn-outline-danger" disabled={busy} onClick={() => setAction('reject')}>Từ chối trả hàng</button></>}
             {admin && request?.status === 'SHIPPED' && <button type="button" className="btn btn-success" disabled={busy} onClick={() => setAction('receive')}>Kiểm nhận hàng trả tại kho</button>}
-            {admin && request?.status === 'REFUND_PENDING' && (Number(order.isPaymentOnlien) === 1 ? <button type="button" className="btn btn-success" disabled={busy} onClick={() => perform(() => requestOnlineRefund(order.id), response => response.data?.status === 'REFUNDED' ? 'Cổng thanh toán đã xác nhận hoàn tiền thành công.' : response.refund?.errMessage || response.errMessage || 'Khoản hoàn vẫn chờ cổng thanh toán xác minh. Chưa có xác nhận tiền đã hoàn.')}>{busy ? 'Đang xử lý…' : 'Yêu cầu hoàn tiền trực tuyến'}</button> : <button type="button" className="btn btn-success" disabled={busy} onClick={() => setAction('refund')}>Ghi nhận hoàn tiền COD</button>)}
+            {admin && request?.status === 'REFUND_PENDING' && !isDemoPayment(order.paymentSession) && (Number(order.isPaymentOnlien) === 1 ? <button type="button" className="btn btn-success" disabled={busy || !request.id} onClick={() => perform(() => requestOnlineRefund(request.id), response => response.data?.status === 'REFUNDED' ? 'Cổng thanh toán đã xác nhận hoàn tiền thành công.' : 'Khoản hoàn vẫn chờ cổng thanh toán xác minh. Chưa có xác nhận tiền đã hoàn.')}>{busy ? 'Đang xử lý…' : 'Yêu cầu hoàn tiền trực tuyến'}</button> : <button type="button" className="btn btn-success" disabled={busy} onClick={() => setAction('refund')}>Ghi nhận hoàn tiền COD</button>)}
         </div>
         {action === 'request' && <ReasonForm title={`Trả toàn bộ đơn #${order.id}`} label="Lý do trả hàng" submitLabel="Gửi yêu cầu trả hàng" evidence busy={busy} onClose={() => setAction('')} onSubmit={data => perform(() => createReturnRequest({ orderId: order.id, ...data }), 'Đã gửi yêu cầu. Vui lòng chờ cửa hàng duyệt trước khi gửi hàng trả.')} />}
         {action === 'ship' && <ReturnTrackingForm busy={busy} onClose={() => setAction('')} onSubmit={data => perform(() => markReturnShipped({ orderId: order.id, ...data }), 'Đã ghi nhận vận đơn gửi trả.')} />}

@@ -181,3 +181,19 @@ test('an anonymous shopper receives a login prompt without dispatching a cart ac
     expect(addItemCartStart).not.toHaveBeenCalled();
     expect(dispatch).not.toHaveBeenCalled();
 });
+
+test('the zoom image is mounted only while the shopper opens the preview', () => {
+    const product = makeProduct();
+    product.productDetail[0].productImage = [{ id: 1, image: 'http://localhost:6969/api/media/product-images/1/version/detail', caption: 'Ảnh sản phẩm' }];
+    render(<InfoDetailProduct dataProduct={product} />);
+    const dialog = screen.getByRole('dialog', { hidden: true });
+    dialog.showModal = jest.fn();
+    dialog.close = jest.fn();
+    expect(dialog.querySelector('img')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Phóng to ảnh sản phẩm' }));
+    expect(dialog.showModal).toHaveBeenCalledTimes(1);
+    expect(dialog.querySelector('img')).toHaveAttribute('decoding', 'async');
+    fireEvent.click(screen.getByRole('button', { name: 'Đóng ảnh phóng to', hidden: true }));
+    expect(dialog.close).toHaveBeenCalledTimes(1);
+    expect(dialog.querySelector('img')).toBeNull();
+});

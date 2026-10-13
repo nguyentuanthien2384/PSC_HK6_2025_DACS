@@ -84,4 +84,4 @@ function ItemProduct({ id, type, name, brand, img, discountPrice, price, badge }
     );
 }
 
-export default ItemProduct;
+export default React.memo(ItemProduct);

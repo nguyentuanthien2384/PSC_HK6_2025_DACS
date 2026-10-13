@@ -1,5 +1,6 @@
-import db from "../models/index";
+const db = require('../models');
 const { Op } = require("sequelize");
+const { contentImageUrl } = require('../utils/productImage');
 let createNewBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -49,35 +50,30 @@ let getDetailBanner = (id) => {
         }
     })
 }
-let getAllBanner = (data = {}) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let objectFilter = {
+function createBannerReadService(models) {
+    return {
+        async getAllBanner(data = {}) {
+            const filter = {
+                attributes: ['id', 'description', 'name', 'statusId', 'imageVersion', 'createdAt', 'updatedAt'],
                 where: { statusId: 'S1' },
-             
-            }
+                order: [['id', 'ASC']],
+                raw: true,
+            };
             if (data.limit !== undefined) {
-                objectFilter.limit = Math.min(100, Math.max(1, parseInt(data.limit, 10) || 20));
-                objectFilter.offset = Math.max(0, parseInt(data.offset, 10) || 0);
+                filter.limit = Math.min(100, Math.max(1, parseInt(data.limit, 10) || 20));
+                filter.offset = Math.max(0, parseInt(data.offset, 10) || 0);
             }
-            if (typeof data.keyword === 'string' && data.keyword.trim()) objectFilter.where.name = { [Op.substring]: data.keyword.trim() };
-            let res = await db.Banner.findAndCountAll(objectFilter)
-                if (res.rows && res.rows.length > 0) {
-                    res.rows.forEach(item => { if (Buffer.isBuffer(item.image)) item.image = item.image.toString('utf8'); });
-                }
-                resolve({
-                    errCode: 0,
-                    data: res.rows,
-                    count: res.count
-                })
-            
-
-
-        } catch (error) {
-            reject(error)
-        }
-    })
+            if (typeof data.keyword === 'string' && data.keyword.trim()) filter.where.name = { [Op.substring]: data.keyword.trim() };
+            const result = await models.Banner.findAndCountAll(filter);
+            return {
+                errCode: 0,
+                data: result.rows.map(row => ({ ...row, image: contentImageUrl(row, 'banner', 'banner') })),
+                count: result.count,
+            };
+        },
+    };
 }
+const { getAllBanner } = createBannerReadService(db);
 let updateBanner = (data = {}) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -138,6 +134,7 @@ let deleteBanner = (data = {}) => {
     })
 }
 module.exports = {
+    createBannerReadService,
     createNewBanner: createNewBanner,
     getDetailBanner: getDetailBanner,
     getAllBanner: getAllBanner,

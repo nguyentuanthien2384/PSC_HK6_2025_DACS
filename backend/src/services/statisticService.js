@@ -39,6 +39,7 @@ async function deliveredOrders(range, withCost = false) {
     const typeIds = [...new Set(rows.filter(order => order.voucherData?.typeVoucherId).map(order => order.voucherData.typeVoucherId))];
     const types = typeIds.length ? await db.TypeVoucher.findAll({ where: { id: { [Op.in]: typeIds } }, raw: true }) : [];
     const variantIds = [...new Set(lines.map(line => line.productId))];
+    const refunds = db.ReturnRequest ? await db.ReturnRequest.findAll({ where: { orderId: { [Op.in]: rows.map(order => order.id) }, status: 'REFUNDED' }, attributes: ['orderId', 'amount', 'resellable'], raw: true }) : [];
     const receipts = withCost && variantIds.length ? await db.ReceiptDetail.findAll({ where: { productDetailSizeId: { [Op.in]: variantIds }, createdAt: { [Op.lte]: range.end.toDate() } }, raw: true }) : [];
     return rows.map(order => {
         const orderDetail = lines.filter(line => Number(line.orderId) === Number(order.id));
@@ -50,7 +51,10 @@ async function deliveredOrders(range, withCost = false) {
             if (Number(type.maxValue) > 0) discount = Math.min(discount, Number(type.maxValue));
         }
         const totalpriceProduct = Number(order.totalPrice ?? (Math.max(0, subtotal - discount) + Number(order.typeShipData?.price || 0)));
-        const result = { ...order, orderDetail, typeShipData: order.typeShipData || {}, voucherData: order.voucherData || {}, totalpriceProduct, deliveredAt: deliveryDate(order) };
+        const refund = refunds.find(item => Number(item.orderId) === Number(order.id));
+        const refundAmount = refund ? Number(refund.amount) : 0;
+        const netRevenue = Math.max(0, totalpriceProduct - refundAmount);
+        const result = { ...order, orderDetail, typeShipData: order.typeShipData || {}, voucherData: order.voucherData || {}, totalpriceProduct, refundAmount, netRevenue, deliveredAt: deliveryDate(order) };
         if (withCost) {
             // Cost is estimated from weighted receipts available when delivery completed.
             const importPrice = orderDetail.reduce((sum, line) => {
@@ -60,7 +64,7 @@ async function deliveredOrders(range, withCost = false) {
                 return sum + (quantity ? Math.round(cost / quantity) : 0) * Number(line.quantity);
             }, 0);
             result.importPrice = importPrice;
-            result.profitPrice = totalpriceProduct - importPrice;
+            result.profitPrice = netRevenue - importPrice + (refund?.resellable ? importPrice : 0);
         }
         return result;
     });
@@ -87,7 +91,7 @@ const getStatisticByMonth = (data = {}) => resultOf(async () => {
     const rows = await deliveredOrders({ start, end: start.clone().endOf('year') });
     return { errCode: 0, data: {
         arrayMonthLable: Array.from({ length: 12 }, (_, i) => `Th ${i + 1}`),
-        arrayMonthValue: Array.from({ length: 12 }, (_, i) => rows.filter(order => localDate(deliveryDate(order)).month() === i).reduce((sum, order) => sum + order.totalpriceProduct, 0)),
+        arrayMonthValue: Array.from({ length: 12 }, (_, i) => rows.filter(order => localDate(deliveryDate(order)).month() === i).reduce((sum, order) => sum + order.netRevenue, 0)),
     } };
 });
 const getStatisticByDay = (data = {}) => resultOf(async () => {
@@ -98,7 +102,7 @@ const getStatisticByDay = (data = {}) => resultOf(async () => {
     const today = localDate(new Date());
     return { errCode: 0, data: {
         arrayDayLable: Array.from({ length: start.daysInMonth() }, (_, i) => today.isSame(start, 'month') && today.date() === i + 1 ? 'Hôm nay' : i + 1),
-        arrayDayValue: Array.from({ length: start.daysInMonth() }, (_, i) => rows.filter(order => localDate(deliveryDate(order)).date() === i + 1).reduce((sum, order) => sum + order.totalpriceProduct, 0)),
+        arrayDayValue: Array.from({ length: start.daysInMonth() }, (_, i) => rows.filter(order => localDate(deliveryDate(order)).date() === i + 1).reduce((sum, order) => sum + order.netRevenue, 0)),
     } };
 });
 const getStatisticOverturn = (data = {}) => resultOf(async () => ({ errCode: 0, data: await deliveredOrders(period(data)) }));

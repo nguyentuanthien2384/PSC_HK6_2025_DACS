@@ -1,4 +1,4 @@
-import { getToken, getUser } from "../../utils/token";
+import { getUser } from "../../utils/token";
 import React from "react";
 import { useEffect, useState, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
@@ -6,38 +6,42 @@ import { useSelector, useDispatch } from "react-redux";
 import { getItemCartStart } from "../../action/ShopCartAction";
 import "./Header.scss";
 import TopMenu from "./TopMenu";
-import socketIOClient from "socket.io-client";
-import { API_BASE_URL } from "../../axios";
 import NotificationsBell from "../../component/Notifications/NotificationsBell";
 
 const Header = (props) => {
-    const [quantityMessage, setquantityMessage] = useState("");
     const [user, setUser] = useState({});
+    const [menuExpanded, setMenuExpanded] = useState(false);
     const dispatch = useDispatch();
     let dataCart = useSelector((state) => state.shopcart.listCartItem);
-    const host = API_BASE_URL;
-    const socketRef = useRef();
-    const [id, setId] = useState();
+    const menuRef = useRef(null);
 
     useEffect(() => {
         const userData = getUser();
         setUser(userData);
         if (userData) {
-            socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
             dispatch(getItemCartStart(userData.id));
-            socketRef.current.on("getId", (data) => {
-                setId(data);
-            }); // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
-            return () => {
-                socketRef.current.disconnect();
-            };
+            return;
         }
         dispatch(getItemCartStart(null));
-    }, []);
+    }, [dispatch]);
     useEffect(() => {
-        const onScroll = () => document.querySelector(".main_menu")?.classList.toggle("sticky", window.scrollY > 0);
-        window.addEventListener("scroll", onScroll);
-        return () => window.removeEventListener("scroll", onScroll);
+        let frame = null;
+        let scrolled;
+        const updateShadow = () => {
+            frame = null;
+            const next = window.scrollY > 0;
+            if (next !== scrolled) menuRef.current?.classList.toggle("sticky", next);
+            scrolled = next;
+        };
+        const onScroll = () => {
+            if (frame === null) frame = window.requestAnimationFrame(updateShadow);
+        };
+        updateShadow();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            if (frame !== null) window.cancelAnimationFrame(frame);
+        };
     }, []);
     const profileLink =
         user && user.id ? `/user/detail/${user.id}` : "/login";
@@ -45,7 +49,7 @@ const Header = (props) => {
     return (
         <header className="header_area">
             <TopMenu user={user && user} />
-            <div className="main_menu">
+            <div className="main_menu" ref={menuRef}>
                 <div className="container">
                     <nav className="navbar navbar-expand-lg navbar-light w-100">
                         {/* Brand and toggle get grouped for better mobile display */}
@@ -55,10 +59,9 @@ const Header = (props) => {
                         <button
                             className="navbar-toggler"
                             type="button"
-                            data-toggle="collapse"
-                            data-target="#navbarSupportedContent"
+                            onClick={() => setMenuExpanded((value) => !value)}
                             aria-controls="navbarSupportedContent"
-                            aria-expanded="false"
+                            aria-expanded={menuExpanded}
                             aria-label="Toggle navigation"
                         >
                             <span className="icon-bar" />
@@ -67,7 +70,7 @@ const Header = (props) => {
                         </button>
                         {/* Collect the nav links, forms, and other content for toggling */}
                         <div
-                            className="collapse navbar-collapse offset w-100"
+                            className={`collapse navbar-collapse offset w-100${menuExpanded ? ' show' : ''}`}
                             id="navbarSupportedContent"
                         >
                             <div className="row w-100 mr-0">
@@ -147,11 +150,6 @@ const Header = (props) => {
                                             >
                                                 <i className="fa-brands fa-facebook-messenger"></i>
                                             </Link>
-                                            {quantityMessage > 0 && (
-                                                <span className="box-message-quantity">
-                                                    {quantityMessage}
-                                                </span>
-                                            )}
                                         </li>
                                         <li className="nav-item">
                                             <Link

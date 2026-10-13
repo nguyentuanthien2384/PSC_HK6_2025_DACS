@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatOrderDate, formatOrderMoney, orderTotals, ORDER_STATUSES, paymentLabel, shipperName } from '../../utils/orders';
+import { isDemoPayment } from '../../utils/payments';
 import './OrderWorkflow.scss';
 
 export function OrderTimeline({ order }) {
@@ -53,7 +54,8 @@ export default function OrderDetails({ order, compact = false }) {
             <div><dt>Phí vận chuyển{order.typeShipData?.type && ` · ${order.typeShipData.type}`}</dt><dd>{formatOrderMoney(totals.shippingFee)}</dd></div>
             <div className="order-total"><dt>Tổng thanh toán</dt><dd>{formatOrderMoney(totals.totalPrice)}</dd></div>
         </dl>
-        <p>Thanh toán: {paymentLabel(order)}</p>
+        <p>Thanh toán: {isDemoPayment(order.paymentSession) ? 'Dữ liệu thanh toán demo / mô phỏng' : paymentLabel(order)}</p>
+        {isDemoPayment(order.paymentSession) && <p role="note" className="text-warning">Đơn dùng dữ liệu thanh toán demo / mô phỏng, không phải giao dịch đã xác minh tại cổng thanh toán. Không thể hoàn tiền qua cổng thanh toán cho dữ liệu này.</p>}
         {order.lastDeliveryFailureReason && <p role="status">Giao không thành công: {order.lastDeliveryFailureReason}</p>}
         {Number(order.deliveryAttempts) > 0 && <p>Số lần giao thất bại: {order.deliveryAttempts}</p>}
         {order.cancellationReason && <p className="order-cancellation">Lý do hủy: {order.cancellationReason}</p>}

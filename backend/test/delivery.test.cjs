@@ -273,6 +273,12 @@ test('courier previews include only ready unassigned orders and cannot read some
 
 test('order APIs expose available queue, authenticated history summary and rating eligibility', async () => {
     const f = fixture();
+    f.db.PaymentSession = { async findOne(options) {
+        assert.ok(options.attributes.includes('status'));
+        assert.equal(options.attributes.includes('checkoutData'), false);
+        assert.equal(options.attributes.includes('gatewayOutcome'), false);
+        return { id: 'demo-session', provider: 'paypal', status: 'COMPLETED', totalPrice: 100, providerPaymentId: 'DEMO-paypal-1' };
+    } };
     f.state().orders.push({ id: 3, addressUserId: 2, statusId: 'S3', shipperId: null, totalPrice: 100 });
     const service = loadSource('services/orderService.js', { '../models/index': f.db, '../utils/constants': { EXCHANGE_RATES: { USD: 25000 } } });
     assert.equal((await service.getAvailableOrdersForShipper({}, buyer)).errCode, 403);
@@ -299,6 +305,9 @@ test('order APIs expose available queue, authenticated history summary and ratin
     assert.equal(courierDetails.data.shipperData.dob, undefined);
     assert.equal(courierDetails.data.userData.email, undefined);
     assert.equal(courierDetails.data.userData.id, buyer.id);
+    assert.equal(courierDetails.data.paymentSession.isDemo, true);
+    assert.equal(courierDetails.data.paymentSession.providerPaymentId, undefined);
+    assert.equal(courierDetails.data.paymentSession.providerOutcome, undefined);
     const ownHistory = await service.getAllOrdersByShipper({ shipperId: anotherCourier.id, status: 'done' }, courier);
     assert.deepEqual(ownHistory.data.map(order => order.id), [1]);
     assert.deepEqual(ownHistory.summary, { working: 0, done: 1, ratingCount: 1, ratingAverage: 5 });

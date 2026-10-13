@@ -8,9 +8,10 @@ function Category(props) {
 
     useEffect(() => {
         let active = true;
+        const controller = new AbortController();
         const fetchCategory = async () => {
             try {
-                const response = await getAllCodeService("CATEGORY", { activeCatalog: true });
+                const response = await getAllCodeService("CATEGORY", { activeCatalog: true, signal: controller.signal });
                 if (active && response && response.errCode === 0 && Array.isArray(response.data)) {
                     setarrCategory([allCategories, ...response.data.filter((item) => item.code !== "ALL")]);
                 }
@@ -19,7 +20,7 @@ function Category(props) {
             }
         };
         fetchCategory();
-        return () => { active = false; };
+        return () => { active = false; controller.abort(); };
     }, []);
     let handleClickCategory = (code) => {
         props.handleRecevieDataCategory(code);

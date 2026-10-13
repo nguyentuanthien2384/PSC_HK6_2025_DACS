@@ -48,6 +48,14 @@ test('profit excludes receipts imported after actual delivery', async () => {
   const row = (await s.getStatisticProfit({ type: 'month', oneDate: '2026-10-01' })).data[0];
   assert.equal(row.importPrice, 300); assert.equal(row.profitPrice, 200);
 });
+test('revenue subtracts only settled refunds and reverses estimated cost for resellable whole returns', async () => {
+  const db = fixture([{ id: 1, deliveredAt: '2026-10-05T12:00:00+07:00', totalPrice: 500 }], [{ orderId: 1, productId: 8, quantity: 2, realPrice: 250 }], [{ productDetailSizeId: 8, quantity: 2, price: 100, createdAt: '2026-10-01' }]);
+  db.ReturnRequest = { findAll: async query => { assert.equal(query.where.status, 'REFUNDED'); return [{ orderId: 1, amount: 500, resellable: true }]; } };
+  const s = service(db);
+  const row = (await s.getStatisticProfit({ type: 'month', oneDate: '2026-10-01' })).data[0];
+  assert.equal(row.totalpriceProduct, 500); assert.equal(row.refundAmount, 500); assert.equal(row.netRevenue, 0); assert.equal(row.profitPrice, 0);
+  assert.equal((await s.getStatisticByDay({ year: 2026, month: 10 })).data.arrayDayValue[4], 0);
+});
 test('status chart filters by creation date instead of mutable last update', async () => {
   const s = service({ Allcode: { findAll: async () => [{ code: 'S3', value: 'Chờ xác nhận' }, { code: 'S6', value: 'Đã giao' }] }, OrderProduct: { findAll: async options => {
     assert.ok(options.where.createdAt[Op.between]); assert.equal(options.where.updatedAt, undefined);

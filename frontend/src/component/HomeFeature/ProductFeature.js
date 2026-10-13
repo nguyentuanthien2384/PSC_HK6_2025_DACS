@@ -12,19 +12,26 @@ function ProductFeature({ title, description, eyebrow = 'Được yêu thích', 
     useEffect(() => {
         const carousel = carouselRef.current;
         if (!carousel) return;
+        let frame = null;
         const updateNavigation = () => {
-            setNavigation({
+            frame = null;
+            const next = {
                 previous: carousel.scrollLeft > 2,
                 next: carousel.scrollLeft + carousel.clientWidth < carousel.scrollWidth - 2,
-            });
+            };
+            setNavigation((current) => current.previous === next.previous && current.next === next.next ? current : next);
+        };
+        const scheduleUpdate = () => {
+            if (frame === null) frame = window.requestAnimationFrame(updateNavigation);
         };
         updateNavigation();
-        const observer = new ResizeObserver(updateNavigation);
+        const observer = new ResizeObserver(scheduleUpdate);
         observer.observe(carousel);
-        carousel.addEventListener('scroll', updateNavigation, { passive: true });
+        carousel.addEventListener('scroll', scheduleUpdate, { passive: true });
         return () => {
             observer.disconnect();
-            carousel.removeEventListener('scroll', updateNavigation);
+            carousel.removeEventListener('scroll', scheduleUpdate);
+            if (frame !== null) window.cancelAnimationFrame(frame);
         };
     }, [data, loading, error]);
 
@@ -86,4 +93,4 @@ function ProductFeature({ title, description, eyebrow = 'Được yêu thích', 
     );
 }
 
-export default ProductFeature;
+export default React.memo(ProductFeature);

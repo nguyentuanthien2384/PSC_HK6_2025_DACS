@@ -77,6 +77,10 @@ const deleteReceipt = data => resultOf(async () => {
     const receipt = await db.Receipt.findByPk(data.id, { ...commerce.lockOptions(tx), raw: false });
     if (!receipt) fail('Không tìm thấy phiếu nhập.', 2);
     for (const [id, amount] of amounts) {
+      const soldLines = await db.OrderDetail.findAll({ where: { productId: id }, attributes: ['orderId'], transaction: tx, raw: true });
+      if (soldLines.length && await db.OrderProduct.count({ where: { id: { [Op.in]: soldLines.map(line => line.orderId) }, statusId: { [Op.ne]: 'S7' } }, transaction: tx })) {
+        fail('Không thể xóa phiếu nhập đã liên quan tới hàng bán/hoàn trả; cần giữ nguồn gốc hàng và giá vốn.', 2);
+      }
       if (await commerce.availableStock(id, tx) < amount) fail('Không thể xóa phiếu nhập: hàng đã bán hoặc đang được giữ cho thanh toán.', 2);
     }
     await db.ReceiptDetail.destroy({ where: { receiptId: receipt.id }, transaction: tx });

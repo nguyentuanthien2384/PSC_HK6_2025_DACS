@@ -18,13 +18,16 @@
     "catalog:restore": "node scripts/import-sourced-catalog.cjs --restore",
     "catalog:verify": "node scripts/verify-sourced-catalog.cjs",
     "db:check": "node scripts/check-db.cjs",
-    "test:integration": "node --test test/integration.test.cjs"
+    "test:integration": "node --test test/*.integration.test.cjs test/integration.test.cjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.5",
+    "@babel/register": "^7.29.3",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.2",
     "compression": "^1.8.1",
@@ -50,11 +53,9 @@
     "qs": "^6.15.2",
     "sequelize": "^6.37.8",
     "sha256": "^0.2.0",
+    "sharp": "^0.35.5",
     "socket.io": "^4.8.3",
-    "uuid": "^14.0.0",
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.5",
-    "@babel/register": "^7.29.3"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@babel/node": "^7.29.0",

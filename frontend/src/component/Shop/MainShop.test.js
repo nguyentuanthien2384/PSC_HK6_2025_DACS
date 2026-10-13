@@ -47,6 +47,7 @@ test('submitting or clearing a search resets the page while preserving category 
     await waitFor(() => expect(getAllProductUser).toHaveBeenLastCalledWith({
         categoryId: 'SHOES', brandId: 'BRAND1', keyword: 'sneaker',
         limit: 6, offset: 0, sortName: '', sortPrice: '',
+        signal: expect.any(AbortSignal),
     }));
     expect(await screen.findByTestId('active-page')).toHaveTextContent('1');
 
@@ -56,6 +57,18 @@ test('submitting or clearing a search resets the page while preserving category 
         expect.objectContaining({ keyword: '', offset: 0, categoryId: 'SHOES', brandId: 'BRAND1' }),
     ));
     expect(await screen.findByTestId('active-page')).toHaveTextContent('1');
+});
+
+test('filtering from page two starts only the first page request and cancels the previous filter transport', async () => {
+    const { rerender } = render(<MainShop {...defaultFilters} />);
+    await goToSecondPage();
+    const previousSignal = getAllProductUser.mock.calls.at(-1)[0].signal;
+    getAllProductUser.mockClear();
+    rerender(<MainShop {...defaultFilters} categoryId="NEW_CATEGORY" />);
+    await screen.findByText('Sản phẩm hiện tại');
+    expect(previousSignal.aborted).toBe(true);
+    expect(getAllProductUser).toHaveBeenCalledTimes(1);
+    expect(getAllProductUser).toHaveBeenCalledWith(expect.objectContaining({ categoryId: 'NEW_CATEGORY', offset: 0 }));
 });
 
 test('changing sort or page size restarts pagination and default sort clears previous sort arguments', async () => {

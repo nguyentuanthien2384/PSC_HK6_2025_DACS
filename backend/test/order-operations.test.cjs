@@ -17,7 +17,8 @@ function fixture(orderOverrides = {}, dependencies = {}) {
         addresses: [{ id: 20, userId: buyer.id }],
         variants: [{ id: 30 }, { id: 31 }],
         details: [{ id: 1, orderId: 10, productId: 31, quantity: 1 }, { id: 2, orderId: 10, productId: 30, quantity: 2 }],
-        requests: [], adjustments: [], events: []
+        requests: [], adjustments: [], events: [], notifications: [],
+        users: [{ ...admin, statusId: 'S1' }, { ...buyer, statusId: 'S1' }, { ...courier, statusId: 'S1' }]
     };
     let queue = Promise.resolve();
     const clone = value => structuredClone(value);
@@ -53,6 +54,13 @@ function fixture(orderOverrides = {}, dependencies = {}) {
                 return options.raw ? clone(result[0]) : model(key, result[0], options.transaction);
             },
             async findAll(options = {}) { return clone(rows(key, options).filter(row => matches(row, options.where))); },
+            async bulkCreate(data, options = {}) {
+                assert.ok(options.transaction, 'notification writes must share the order transaction');
+                const collection = rows(key, options);
+                const values = data.filter(row => !collection.some(existing => existing.dedupeKey === row.dedupeKey));
+                for (const value of values) collection.push({ id: collection.length + 1, ...clone(value) });
+                return values;
+            },
             async create(data, options = {}) {
                 assert.ok(options.transaction, 'writes must be transactional');
                 const collection = rows(key, options);
@@ -68,7 +76,8 @@ function fixture(orderOverrides = {}, dependencies = {}) {
         const tx = { LOCK: { UPDATE: 'UPDATE' }, state: clone(state) };
         try { const result = await work(tx); state = tx.state; return result; } finally { release(); }
     } }, OrderProduct: table('orders'), AddressUser: table('addresses'), ProductDetailSize: table('variants'),
-        OrderDetail: table('details'), ReturnRequest: table('requests'), InventoryAdjustment: table('adjustments'), OrderEvent: table('events') };
+        OrderDetail: table('details'), ReturnRequest: table('requests'), InventoryAdjustment: table('adjustments'), OrderEvent: table('events'),
+        User: table('users'), Notification: table('notifications') };
     const service = createAfterSalesService(db, { now: () => current, ...dependencies });
     return { db, service, delivery: createDeliveryService(db), state: () => state, lockLog };
 }
@@ -179,7 +188,7 @@ test('online returns reject manual payout, retain pending when provider missing,
     assert.equal(f.state().requests[0].refundedAt, undefined); assert.equal(f.state().requests[0].refundProviderStatus, 'NOT_CONFIGURED');
     providerResult = { errCode: 0, status: 'COMPLETED', refundId: 7, providerRefundId: 'PAYPAL-REFUND', provider: 'paypal' };
     const result = await f.service.refundOnlineReturn({ orderId: 10 }, admin);
-    assert.equal(result.data.status, 'REFUNDED'); assert.equal(result.data.refundReference, '7');
+    assert.equal(result.data.status, 'REFUNDED'); assert.equal(result.data.refundReference, 'PAYPAL-REFUND');
     assert.equal(calls[0].refundKey, calls[1].refundKey); assert.equal(calls[0].amountVnd, 220000);
     await f.service.refundOnlineReturn({ orderId: 10 }, admin); assert.equal(calls.length, 2);
 });
@@ -237,4 +246,48 @@ test('variant disappearance rolls back physical receipt rather than partially cr
     const result = await f.service.receiveReturn({ orderId: 10, resellable: true, inspectionNote: 'Hàng nguyên vẹn' }, admin);
     assert.notEqual(result.errCode, 0); assert.equal(f.state().adjustments.length, 0);
     assert.equal(f.state().requests[0].status, 'SHIPPED');
+});
+
+test('persistent notifications target buyer, assigned courier and active staff exactly once with each event', async () => {
+    const f = fixture();
+    f.state().users.push({ id: 4, roleId: 'R4', statusId: 'S1' }, { id: 5, roleId: 'R1', statusId: 'S2' });
+    const results = await Promise.all([1, 2].map(() => f.service.createReturnRequest({ orderId: 10, reason: 'Sai màu' }, buyer)));
+    assert.equal(results.filter(value => value.errCode === 0).length, 1);
+    assert.equal(f.state().events.length, 1);
+    assert.deepEqual(f.state().notifications.map(row => row.userId).sort((a, b) => a - b), [1, 2, 3, 4]);
+    assert.ok(f.state().notifications.every(row => row.orderId === 10 && row.type === 'RETURN_REQUESTED' && row.readAt === null));
+    assert.equal(new Set(f.state().notifications.map(row => row.dedupeKey)).size, 4);
+});
+
+test('notification failure rolls back event, physical receipt and inventory credits together', async () => {
+    const f = fixture(); await shipped(f); const before = structuredClone(f.state());
+    f.db.Notification.bulkCreate = async () => { throw new Error('notification write unavailable'); };
+    await assert.rejects(f.service.receiveReturn({ orderId: 10, resellable: true, inspectionNote: 'Hàng nguyên vẹn' }, admin), /notification write unavailable/);
+    assert.deepEqual(f.state(), before);
+});
+
+test('stale rejected return URL cannot refund a later approved request for the same order', async () => {
+    const calls = [];
+    const f = fixture({ isPaymentOnlien: 1 }, { paymentGateway: { async requestRefund(payload) { calls.push(payload); return { errCode: 0, status: 'COMPLETED' }; } } });
+    await request(f);
+    const staleId = f.state().requests[0].id;
+    assert.equal((await f.service.reviewReturnRequest({ orderId: 10, decision: 'REJECT', note: 'Cần gửi lại hình minh chứng' }, admin)).errCode, 0);
+    await received(f);
+    for (const returnRequestId of [staleId, true, 0, 'invalid', Number.MAX_SAFE_INTEGER + 1]) {
+        const result = await f.service.refundOnlineReturn({ orderId: 10, returnRequestId }, admin);
+        assert.notEqual(result.errCode, 0);
+    }
+    assert.equal(calls.length, 0);
+    assert.equal(f.state().requests[1].status, 'REFUND_PENDING');
+    const result = await f.service.refundOnlineReturn({ orderId: 10, returnRequestId: String(f.state().requests[1].id) }, admin);
+    assert.equal(result.data.status, 'REFUNDED');
+    assert.equal(calls.length, 1); assert.equal(calls[0].refundKey, `return-request:${f.state().requests[1].id}`);
+});
+
+test('provider errors carrying a completed label never falsely confirm a refund', async () => {
+    const f = fixture({ isPaymentOnlien: 1 }, { paymentGateway: { async requestRefund() { return { errCode: 3, status: 'COMPLETED' }; } } });
+    await received(f);
+    const result = await f.service.refundOnlineReturn({ orderId: 10, returnRequestId: 1 }, admin);
+    assert.equal(result.data.status, 'REFUND_PENDING'); assert.equal(result.data.refundedAt, undefined);
+    assert.equal(f.state().events.filter(row => row.type === 'REFUND_COMPLETED').length, 0);
 });

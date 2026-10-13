@@ -10,7 +10,7 @@ function HomeBlog(props) {
                     {props.data && props.data.length > 0 &&
                         props.data.map((item,index) =>{
                             return(
-                                <HomeBlogItem data={item}/>
+                                <HomeBlogItem key={item.id} data={item}/>
                             )
                         })
                     }

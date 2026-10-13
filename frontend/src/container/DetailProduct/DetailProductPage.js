@@ -23,6 +23,7 @@ function DetailProductPage() {
 
     useEffect(() => {
         let active = true;
+        const controller = new AbortController();
         const account = getUser();
         setUser(account);
         setProduct(null);
@@ -31,17 +32,17 @@ function DetailProductPage() {
         setActiveTab('description');
         setRecommendations([]);
         window.scrollTo(0, 0);
-        getDetailProductByIdService(id).then((response) => {
+        getDetailProductByIdService(id, { signal: controller.signal }).then((response) => {
             if (!active) return;
             if (response?.errCode !== 0 || !response.data) throw new Error(response?.errMessage || 'Không tìm thấy sản phẩm.');
             setProduct(response.data);
         }).catch((error) => { if (active) setLoadError(error.message); });
         if (account) {
-            getProductRecommendService({ limit: 12, userId: account.id })
+            getProductRecommendService({ limit: 12, userId: account.id, signal: controller.signal })
                 .then((response) => { if (active && response?.errCode === 0) setRecommendations((response.data || []).filter((item) => String(item.id) !== String(id))); })
                 .catch(() => {});
         }
-        return () => { active = false; };
+        return () => { active = false; controller.abort(); };
     }, [id, retry]);
 
     const moveTabFocus = (event, index) => {

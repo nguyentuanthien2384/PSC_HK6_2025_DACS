@@ -1,26 +1,31 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { reportDeliveryFailure, retryDelivery, startReturnToWarehouse, receiveUndeliveredReturn } from '../../services/orderOperationsService';
 import { ReasonForm, WarehouseReceiptForm } from './WorkflowForms';
 
-export default function DeliveryExceptions({ order, admin = false, onUpdated }) {
+export default function DeliveryExceptions(props) {
+    return <DeliveryExceptionsForOrder key={`${props.order.id}-${props.admin ? 'admin' : 'shipper'}`} {...props} />;
+}
+
+function DeliveryExceptionsForOrder({ order, admin = false, onUpdated }) {
     const [action, setAction] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
-    const orderId = useRef(order.id);
-    orderId.current = order.id;
+    const mounted = useRef(true);
+    const pending = useRef(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
     const internal = !order.shipment && (!order.deliveryProvider || order.deliveryProvider === 'internal');
     if (!internal || !['S5', 'S8', 'S9'].includes(order.statusId) || !order.shipperId) return null;
     const perform = async operation => {
-        if (busy) return;
-        const id = order.id;
+        if (pending.current) return;
+        pending.current = true;
         setBusy(true); setError('');
         try {
             const response = await operation();
             if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể cập nhật giao hàng.');
-            if (orderId.current !== id) return;
+            if (!mounted.current) return;
             setAction(''); await onUpdated?.();
-        } catch (failure) { if (orderId.current === id) setError(failure.message); }
-        finally { if (orderId.current === id) setBusy(false); }
+        } catch (failure) { if (mounted.current) setError(failure.message); }
+        finally { pending.current = false; if (mounted.current) setBusy(false); }
     };
     return <section className="order-section" aria-label="Xử lý giao hàng">
         {order.statusId === 'S8' && <p>Đơn giao không thành công. Cần giao lại hoặc đưa hàng về kho; tiền COD chưa được ghi nhận đã thu.</p>}

@@ -7,7 +7,7 @@ import '../../component/Order/OrderWorkflow.scss';
 
 export function notificationDestination(notification) {
     const link = notification.link;
-    return typeof link === 'string' && /^\/(?:user\/|shipper(?:\?|$)|system\/home\/)/.test(link) && !/[\\\r\n]/.test(link) ? link : null;
+    return typeof link === 'string' && /^\/(?:user\/order\/\d+|system\/home\/order-detail\/\d+|shipper)(?:\?[^\\\r\n#]*)?$/.test(link) ? link : null;
 }
 
 export default function NotificationsPage() {
@@ -20,6 +20,9 @@ export default function NotificationsPage() {
     const [error, setError] = useState('');
     const [actionError, setActionError] = useState('');
     const sequence = useRef(0);
+    const mounted = useRef(true);
+    const pending = useRef(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
     const load = useCallback(async (background = false) => {
         const ticket = ++sequence.current;
         if (!background) setLoading(true);
@@ -34,20 +37,22 @@ export default function NotificationsPage() {
     useEffect(() => {
         const requests = sequence;
         load();
-        const focus = () => load(true);
-        const interval = setInterval(() => { if (document.visibilityState !== 'hidden') load(true); }, 30000);
+        const focus = () => { if (!pending.current) load(true); };
+        const interval = setInterval(() => { if (!pending.current && document.visibilityState !== 'hidden') load(true); }, 30000);
         window.addEventListener('focus', focus);
         return () => { requests.current += 1; clearInterval(interval); window.removeEventListener('focus', focus); };
     }, [load]);
     const markRead = async id => {
-        if (busy) return;
+        if (pending.current) return;
+        pending.current = true;
+        sequence.current += 1;
         setBusy(true); setActionError('');
         try {
             const response = await (id == null ? readAllNotifications() : readNotification(id));
             if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể đánh dấu đã đọc.');
-            notifyNotificationsChanged(); await load(true);
-        } catch (failure) { setActionError(failure.message); }
-        finally { setBusy(false); }
+            notifyNotificationsChanged(); if (mounted.current) await load(true);
+        } catch (failure) { if (mounted.current) setActionError(failure.message); }
+        finally { pending.current = false; if (mounted.current) setBusy(false); }
     };
     return <main className="container order-workflow notifications-page">
         <div className="order-heading"><h1 className="h3">Thông báo của tôi</h1><button type="button" className="btn btn-outline-success" disabled={busy || loading || !unreadCount} onClick={() => markRead(null)}>{busy ? 'Đang cập nhật…' : 'Đánh dấu tất cả đã đọc'}</button></div>

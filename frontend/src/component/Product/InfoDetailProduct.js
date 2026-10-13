@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addItemCartStart } from '../../action/ShopCartAction';
+import { productThumbnail } from '../../utils/media';
 import './InfoDetailProduct.scss';
 
 const emptyDetails = [];
@@ -15,6 +16,7 @@ function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
     const [quantity, setQuantity] = useState(1);
     const [imageIndex, setImageIndex] = useState(0);
     const [imageFailed, setImageFailed] = useState(false);
+    const [previewOpen, setPreviewOpen] = useState(false);
     const previewRef = useRef(null);
     const dispatch = useDispatch();
     const detail = details.find((item) => item.id === detailId) || details[0];
@@ -65,9 +67,9 @@ function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
     return (
         <div className="product-buy">
             <div className="product-buy__gallery">
-                <button type="button" className="product-buy__main-image" disabled={!image?.image || imageFailed} aria-label="Phóng to ảnh sản phẩm" onClick={() => previewRef.current?.showModal()}>
+                <button type="button" className="product-buy__main-image" disabled={!image?.image || imageFailed} aria-label="Phóng to ảnh sản phẩm" onClick={() => { setPreviewOpen(true); previewRef.current?.showModal(); }}>
                     {image?.image && !imageFailed ? (
-                        <img src={image.image} alt={image.caption || dataProduct.name} onError={() => setImageFailed(true)} />
+                        <img src={image.image} alt={image.caption || dataProduct.name} decoding="async" fetchPriority="high" onError={() => setImageFailed(true)} />
                     ) : placeholder}
                     {image?.image && !imageFailed && <span className="product-buy__zoom"><i className="ti-zoom-in" aria-hidden="true" /></span>}
                 </button>
@@ -75,7 +77,7 @@ function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
                     <div className="product-buy__thumbnails" aria-label="Ảnh sản phẩm">
                         {images.map((item, index) => (
                             <button type="button" key={item.id || index} className={index === imageIndex ? 'is-selected' : ''} aria-pressed={index === imageIndex} aria-label={`Xem ảnh ${index + 1}`} onClick={() => setImageIndex(index)}>
-                                <img src={item.image} alt={item.caption || `${dataProduct.name} – ảnh ${index + 1}`} loading="lazy" />
+                                <img src={productThumbnail(item.image)} alt={item.caption || `${dataProduct.name} – ảnh ${index + 1}`} loading="lazy" decoding="async" width="66" height="66" />
                             </button>
                         ))}
                     </div>
@@ -128,9 +130,9 @@ function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
                 </div>
                 <a className="product-buy__more" href="#product-details">Xem mô tả và thông số đầy đủ <span aria-hidden="true">↓</span></a>
             </div>
-            <dialog ref={previewRef} className="product-buy__preview" aria-label="Ảnh phóng to của sản phẩm">
-                <button type="button" autoFocus aria-label="Đóng ảnh phóng to" onClick={() => previewRef.current?.close()}>×</button>
-                {image?.image && <img src={image.image} alt={image.caption || dataProduct.name} />}
+            <dialog ref={previewRef} className="product-buy__preview" aria-label="Ảnh phóng to của sản phẩm" onClose={() => setPreviewOpen(false)}>
+                <button type="button" autoFocus aria-label="Đóng ảnh phóng to" onClick={() => { previewRef.current?.close(); setPreviewOpen(false); }}>×</button>
+                {previewOpen && image?.image && <img src={image.image} alt={image.caption || dataProduct.name} decoding="async" />}
             </dialog>
         </div>
     );

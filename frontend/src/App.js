@@ -1,28 +1,37 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import "./css/App.css";
 import Header from "./container/Header/Header";
 import Footer from "./container/Footer/Footer";
-import HomePage from "./container/Home/HomePage";
-import ShopPage from "./container/Shop/ShopPage";
-import DetailProductPage from "./container/DetailProduct/DetailProductPage";
-import ShopCartPage from "./container/ShopCart/ShopCartPage";
-import LoginWebPage from "./container/Login/LoginWebPage";
-import OrderHomePage from "./container/Order/OrderHomePage";
-import VoucherHomePage from "./container/Voucher/VoucherHomePage";
-import BlogPage from "./container/Blog/BlogPage";
-import DetailBlog from "./container/Blog/DetailBlog";
-import VnpayPaymentPage from "./container/Order/VnpayPaymentPage";
-import VnpayPaymentSuccess from "./container/Order/VnpayPaymentSuccess";
-import PaymentSuccess from "./container/User/PaymentSuccess";
-import UserHomePage from "./container/User/UseHomePage";
 import TopMenu from "./container/Header/TopMenu";
-import HomePageAdmin from "./container/System/HomePageAdmin";
-import VerifyEmail from "./container/System/Email/VerifyEmail";
-import ForgotPasswordPage from "./container/Login/ForgotPasswordPage";
-import ShipperPage from "./container/Shipper/ShipperPage";
 import RequireAuth from "./component/RequireAuth";
-import NotificationsPage from "./container/User/NotificationsPage";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+
+function lazyPage(loader) {
+    const Page = lazy(loader);
+    return function DeferredPage(props) {
+        return <Suspense fallback={<main className="route-loading" role="status">Đang tải trang…</main>}><Page {...props} /></Suspense>;
+    };
+}
+
+const HomePage = lazyPage(() => import("./container/Home/HomePage"));
+const ShopPage = lazyPage(() => import("./container/Shop/ShopPage"));
+const DetailProductPage = lazyPage(() => import("./container/DetailProduct/DetailProductPage"));
+const ShopCartPage = lazyPage(() => import("./container/ShopCart/ShopCartPage"));
+const LoginWebPage = lazyPage(() => import("./container/Login/LoginWebPage"));
+const OrderHomePage = lazyPage(() => import("./container/Order/OrderHomePage"));
+const VoucherHomePage = lazyPage(() => import("./container/Voucher/VoucherHomePage"));
+const BlogPage = lazyPage(() => import("./container/Blog/BlogPage"));
+const DetailBlog = lazyPage(() => import("./container/Blog/DetailBlog"));
+const VnpayPaymentPage = lazyPage(() => import("./container/Order/VnpayPaymentPage"));
+const VnpayPaymentSuccess = lazyPage(() => import("./container/Order/VnpayPaymentSuccess"));
+const PaymentSuccess = lazyPage(() => import("./container/User/PaymentSuccess"));
+const UserHomePage = lazyPage(() => import("./container/User/UseHomePage"));
+const HomePageAdmin = lazyPage(() => import("./container/System/HomePageAdmin"));
+const VerifyEmail = lazyPage(() => import("./container/System/Email/VerifyEmail"));
+const ForgotPasswordPage = lazyPage(() => import("./container/Login/ForgotPasswordPage"));
+const ShipperPage = lazyPage(() => import("./container/Shipper/ShipperPage"));
+const NotificationsPage = lazyPage(() => import("./container/User/NotificationsPage"));
+const AboutPage = lazyPage(() => import("./container/About/AboutPage"));
 
 function App() {
     return (
@@ -100,7 +109,7 @@ function App() {
                     element={
                         <>
                             <Header />
-                            <HomePage />
+                            <AboutPage />
                             <Footer />
                         </>
                     }

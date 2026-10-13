@@ -1,0 +1,34 @@
+.about-page {
+    color: #536052;
+    line-height: 1.8;
+
+    .about-hero { padding: 36px 0 48px; background: #f6f9f3; border-bottom: 1px solid #e7ede4; }
+    .about-breadcrumb { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; font-size: 13px; }
+    .about-eyebrow { color: #49643d; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; margin-bottom: 10px; }
+    h1 { max-width: 740px; color: #222e21; font-size: 38px; font-weight: 700; line-height: 1.25; margin-bottom: 18px; }
+    .about-intro { max-width: 760px; margin-bottom: 24px; font-size: 16px; }
+    .about-actions, .about-links { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .about-content { padding-top: 32px; padding-bottom: 64px; }
+    .about-topics { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+    .about-topics a { padding: 8px 15px; border: 1px solid #dce5d7; border-radius: 6px; background: #fafcf8; }
+    .about-guide { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 22px; padding: 28px 0; border-top: 1px solid #e7ede4; scroll-margin-top: 105px; }
+    .about-step { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 10px; background: #eef5e8; color: #49643d; font-size: 16px; font-weight: 700; }
+    h2 { color: #263824; font-size: 22px; font-weight: 700; line-height: 1.4; margin: 0 0 15px; }
+    p { margin-bottom: 14px; }
+    ol { padding-left: 22px; margin-bottom: 16px; }
+    li { padding-left: 3px; margin-bottom: 8px; }
+    a:not(.btn) { color: #376320; }
+    a:not(.btn):hover { text-decoration: underline; }
+    a:focus-visible { outline: 2px solid #49643d; outline-offset: 4px; }
+    .about-links { margin-top: 18px; font-weight: 600; }
+
+    @media (max-width: 575px) {
+        .about-hero { padding: 24px 0 32px; }
+        h1 { font-size: 29px; }
+        .about-intro { font-size: 14px; }
+        .about-guide { grid-template-columns: 1fr; gap: 12px; }
+        .about-step { width: 38px; height: 38px; }
+        h2 { font-size: 20px; }
+        .about-actions .btn { width: 100%; }
+    }
+}

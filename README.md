@@ -116,7 +116,7 @@ PayPal dùng `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` và `USD_
 
 VNPay dùng `VNP_TMNCODE`, `VNP_HASHSECRET`, `VNP_URL`, `VNP_RETURNURL`. Thiếu cấu hình sẽ báo lỗi để khách có thể chọn COD. Chưa kiểm thử giao dịch thật với nhà cung cấp hoặc gửi email thật do chưa có tài khoản dịch vụ.
 
-Phiên thanh toán hết hạn có thể cần đối soát thủ công nếu khách đã bị trừ tiền. Hoàn tiền tự động và webhook/IPN đối soát nền chưa được triển khai; không coi callback trình duyệt là giải pháp đối soát đầy đủ để đưa thanh toán thật vào vận hành.
+Đã triển khai IPN VNPay, webhook PayPal có xác minh, đối soát nền và hoàn tiền qua cổng gốc. Phiên hết hạn nhưng đã thu tiền được giữ để đối soát, không tự tạo đơn vượt tồn. Cần tài khoản sandbox và callback HTTPS để xác nhận trực tiếp với nhà cung cấp; xem [hướng dẫn tích hợp](docs/integrations.md).
 
 ## Bổ sung sau rà soát ngày 12/10/2026
 
@@ -134,7 +134,19 @@ Hai migration mới là `zzzz-20261012-delivery-ratings.js` và `zzzzz-20261012-
 
 Đã kiểm tra trực tiếp giao diện shipper, đơn khách hàng/đánh giá, địa chỉ và thống kê bằng tài khoản demo. Cổng frontend lấy từ `frontend/.env` (môi trường hiện tại: `http://127.0.0.1:3001`), backend cổng 6969. Chạy `npm start` nếu tiến trình chưa hoạt động.
 
-Các phần cần triển khai tiếp để vận hành đầy đủ: webhook/IPN và đối soát nền, hoàn tiền/đổi trả, ghi nhận giao thất bại và giao lại, thông báo trạng thái đơn, cùng nội dung trang giới thiệu/footer hiện còn là mẫu. SMTP và thanh toán thật vẫn cần tài khoản dịch vụ để xác minh. Các kiểm thử hiện tại không thay thế kiểm thử giao dịch thật.
+## Hoàn thiện tích hợp vận hành
+
+- **Ba cách giao hàng:** shipper cửa hàng, GHN và GHTK. Hãng vận chuyển có booking, mã vận đơn lưu database, đồng bộ và webhook truy vấn lại API hãng. Khóa đồng thời và giữ mã sau timeout ngăn tạo vận đơn trùng; đơn hãng không thể bị shipper nội bộ thao tác.
+- **Giao thất bại/hoàn kho:** lưu lý do, giới hạn giao lại, nhận hàng hoàn thực tế và chỉ cộng tồn bán lại được một lần. Bảo vệ phiếu nhập gốc sau hàng bán/hoàn để giữ đúng lịch sử tồn và giá vốn.
+- **Trả hàng/hoàn tiền:** yêu cầu trả cả đơn trong hạn, duyệt/từ chối, mã gửi trả, kiểm tra hàng, hoàn COD có minh chứng chuyển khoản thủ công hoặc hoàn online qua cổng gốc. Thiếu merchant giữ chờ hoàn; hàng chưa thu tiền không sinh khoản hoàn.
+- **Thanh toán:** PayPal Orders v2 cho phiên mới, tương thích phiên v1 cũ; IPN VNPay và webhook PayPal xác minh chữ ký/giao dịch/số tiền. Ledger hoàn tiền, xử lý giao dịch đã thu nhưng chưa tạo đơn và trang đối soát `/system/home/payment-reconciliation` cho nhân viên/admin.
+- **Thông báo:** lưu theo tài khoản, chưa đọc/đã đọc, liên kết đơn và nhật ký bất biến; socket phát sau commit, frontend có polling dự phòng.
+- **Báo cáo:** tách tổng đơn, tiền đã hoàn và doanh thu sau hoàn; Excel dùng cùng dữ liệu. Hoàn được quy về kỳ giao của đơn gốc, chưa phải báo cáo dòng tiền theo ngày hoàn. Lợi nhuận vẫn là ước tính.
+- **Hướng dẫn mua hàng:** `/about` và footer dùng nội dung tiếng Việt, liên kết đúng tính năng đang hoạt động.
+
+Đã áp dụng 5 migration bổ sung vào `ecom`, giữ nguyên 96 đơn, 240 dòng hàng, 39 tài khoản, 87 sản phẩm và 16 phiếu nhập hiện có. Không reset database. Xem [cấu hình và kiểm thử sandbox](docs/integrations.md) để điền khóa GHN/GHTK/PayPal/VNPay và đăng ký webhook HTTPS.
+
+Luồng nội bộ hoạt động với database thật. Kiểm thử provider dùng phản hồi API có kiểm soát; **chưa có giao dịch sandbox trực tiếp với nhà cung cấp** vì chưa có tài khoản/khóa merchant. SMTP cần cấu hình để xác nhận gửi email thật. Hiện trả cả đơn; chưa có đổi hàng tự động hoặc trả một phần từng sản phẩm.
 
 ## Kiểm thử
 
@@ -143,9 +155,9 @@ npm test
 npm run build
 ```
 
-Frontend có 94 kiểm thử; backend có 81 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua một mục integration opt-in.
+Frontend có 164 kiểm thử; backend có 170 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 4 bộ MySQL opt-in.
 
-Bộ tích hợp có 20 kịch bản dùng MySQL thật, gồm nhận đơn/đánh giá đồng thời, địa chỉ mặc định và checkout đồng thời với xóa địa chỉ. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; fixture thêm dữ liệu, không xóa dữ liệu hiện có. Migration database này trước khi chạy.
+Bộ tích hợp có 37 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền và vận đơn GHN/GHTK. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; fixture thêm dữ liệu, không xóa dữ liệu hiện có. Migration database này trước khi chạy.
 
 ```powershell
 $env:NODE_ENV='test'
@@ -159,7 +171,7 @@ npm --prefix backend run db:migrate
 npm --prefix backend run test:integration
 ```
 
-Đã kiểm thử migration và checkout đồng thời trên một MySQL riêng ở cổng 13306, không sửa database đang dùng. VNPay trong bộ test dùng chữ ký thử nghiệm do test tạo; kết quả này xác minh logic nội bộ, không thay thế việc thử tài khoản sandbox của VNPay.
+VNPay trong bộ test dùng chữ ký thử nghiệm do test tạo; PayPal/GHN/GHTK dùng phản hồi API kiểm soát. Kết quả xác minh nghiệp vụ, HTTP, transaction và chống lặp, không thay thế việc thử trực tiếp tài khoản sandbox của nhà cung cấp.
 
 Bản production build tạo bundle thành công, còn các cảnh báo ESLint từ giao diện cũ và dependency động của react-datepicker. Cần tiếp tục cải thiện các liên kết/biến không dùng, hook dependency và kích thước bundle. Đã kiểm tra giao diện trực tiếp bằng trình duyệt với backend/MySQL local; chưa kiểm thử email hoặc giao dịch thanh toán thật.
 

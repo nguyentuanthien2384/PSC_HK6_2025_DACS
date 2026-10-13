@@ -1,12 +1,21 @@
+.header_area {
+    position: sticky;
+    top: -30px;
+    transition: none;
+}
+.header_area .main_menu,
+.header_area.navbar_fixed .main_menu {
+    // Keep the menu in document flow so scrolling does not move the product grid.
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    transform: none;
+    transition: box-shadow 150ms ease;
+}
 .main_menu{
-    transition: width 2s, top 4s;
     &.sticky{
-        position: fixed;
-        width: 100%;
-        top: -70px;
-        transform: translateY(70px);
-        transition: transform 500ms ease;
-        left: 0;
         box-shadow: 0px 3px 16px 0px rgba(0,0,0, 0.1);
     }
 
@@ -40,4 +49,4 @@
         font-size: 12px;
     }
    
-} 
+}

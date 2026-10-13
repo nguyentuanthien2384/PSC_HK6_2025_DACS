@@ -12,7 +12,9 @@
     cursor: pointer;
     text-decoration: underline;
 }
-.carousel-inner{
-    width: 452px !important;
-    height: 450px !important;
+.route-loading {
+    min-height: 55vh;
+    display: grid;
+    place-items: center;
+    color: #667361;
 }

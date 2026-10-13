@@ -60,6 +60,12 @@ function createAfterSalesService(db, dependencies = {}) {
     }
     const requireAdmin = actor => { if (!isAdmin(actor)) fail('Chỉ quản trị viên hoặc nhân viên được xử lý yêu cầu này.', 403); };
     const requireRequest = request => { if (!request) fail('Không tìm thấy yêu cầu trả hàng.', 2); };
+    const requireSelectedRequest = (request, requestId) => {
+        requireRequest(request);
+        if (requestId !== undefined && (!validId(requestId) || !sameId(request.id, requestId))) {
+            fail('Yêu cầu trả hàng đã thay đổi. Vui lòng tải lại đơn hàng trước khi hoàn tiền.', 2);
+        }
+    };
     function amountFor(order) {
         if (order.totalPrice === null || order.totalPrice === undefined) fail('Đơn hàng cũ chưa có số tiền đối soát. Vui lòng liên hệ cửa hàng trước khi trả hàng.', 2);
         return money(order.totalPrice);
@@ -182,7 +188,7 @@ function createAfterSalesService(db, dependencies = {}) {
         const selected = await transaction(async tx => {
             const order = await loadOrder(data.orderId, tx);
             if (Number(order.isPaymentOnlien) !== 1) fail('Đơn COD sử dụng xác nhận hoàn tiền thủ công.', 2);
-            const request = await loadRequest(order.id, tx); requireRequest(request);
+            const request = await loadRequest(order.id, tx); requireSelectedRequest(request, data.returnRequestId);
             if (request.status === 'REFUNDED') return { completed: plain(request) };
             if (request.status !== 'REFUND_PENDING' || !request.receivedAt) fail('Phải xác nhận thực nhận hàng trả trước khi hoàn tiền.', 2);
             return { orderId: order.id, request: plain(request) };
@@ -198,8 +204,9 @@ function createAfterSalesService(db, dependencies = {}) {
             if (request.id !== selected.request.id) fail('Yêu cầu trả hàng đã thay đổi, cần đối soát kết quả hoàn tiền.', 2);
             if (request.status === 'REFUNDED') return response(request, 'Đơn hàng đã được hoàn tiền.');
             const previousProviderStatus = request.refundProviderStatus;
-            request.refundMethod = 'provider'; request.refundProviderStatus = result.status || 'REVIEW_REQUIRED';
-            if (result.refundId) request.refundReference = String(result.refundId);
+            request.refundMethod = 'provider';
+            request.refundProviderStatus = result.status === 'COMPLETED' && result.errCode !== 0 ? 'REVIEW_REQUIRED' : (result.status || 'REVIEW_REQUIRED');
+            if (result.providerRefundId || result.refundId) request.refundReference = String(result.providerRefundId || result.refundId);
             if (result.status === 'COMPLETED' && result.errCode === 0) {
                 request.status = 'REFUNDED'; request.refundedAt = now(); request.refundedById = actor.id;
             }

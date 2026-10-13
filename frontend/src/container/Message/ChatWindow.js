@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import { loadMessage } from "../../services/userService";
 import moment from "moment";
+import 'bootstrap/js/dist/dropdown';
 
 const host = API_BASE_URL;
 function ChatWindow(props) {
@@ -73,7 +74,7 @@ function ChatWindow(props) {
                             className="btn btn-primary-outline ks-light ks-no-text ks-no-arrow"
                             type="button"
                             id="dropdownMenuButton"
-                            data-toggle="dropdown"
+                            data-bs-toggle="dropdown"
                             aria-haspopup="true"
                             aria-expanded="false"
                         >

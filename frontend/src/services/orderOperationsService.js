@@ -5,7 +5,7 @@ export const reviewReturnRequest = data => axios.post('/api/returns/review', dat
 export const markReturnShipped = data => axios.post('/api/returns/ship', data);
 export const receiveReturn = data => axios.post('/api/returns/receive', data);
 export const confirmManualRefund = data => axios.post('/api/returns/refund/manual', data);
-export const requestOnlineRefund = orderId => axios.post(`/api/returns/${orderId}/refund-online`, {});
+export const requestOnlineRefund = returnRequestId => axios.post(`/api/returns/${returnRequestId}/refund-online`, {});
 export const reportDeliveryFailure = data => axios.post('/api/shipping/fail', data);
 export const retryDelivery = data => axios.post('/api/shipping/retry', data);
 export const startReturnToWarehouse = data => axios.post('/api/shipping/return', data);

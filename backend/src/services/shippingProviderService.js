@@ -4,6 +4,7 @@ const { fail, positiveInteger, resultOf } = require('../utils/commerce');
 const { recordOrderEvent } = require('./orderEventService');
 const admin = actor => actor && ['R1', 'R4'].includes(actor.roleId);
 const text = value => typeof value === 'string' ? value.trim() : '';
+const validId = value => ['number', 'string'].includes(typeof value) && positiveInteger(value);
 const environments = {
     ghn: { sandbox: 'https://dev-online-gateway.ghn.vn', production: 'https://online-gateway.ghn.vn' },
     ghtk: { sandbox: 'https://services-staging.ghtklab.com', production: 'https://services.giaohangtietkiem.vn' },
@@ -132,7 +133,7 @@ function createShippingProviderService(db, { env = process.env, fetchImpl = glob
     ] }));
     const book = (data = {}, actor) => resultOf(async () => {
         requireAdmin(actor);
-        if (!positiveInteger(data.orderId)) fail('Mã đơn hàng không hợp lệ.');
+        if (!validId(data.orderId)) fail('Mã đơn hàng không hợp lệ.');
         const config = configFor(data.provider);
         let recovery = false;
         const reserved = await transaction(async tx => {
@@ -177,8 +178,9 @@ function createShippingProviderService(db, { env = process.env, fetchImpl = glob
                 const order = await db.OrderProduct.findOne({ where: { id: data.orderId }, ...lock(tx) });
                 const shipment = await db.Shipment.findOne({ where: { id: reserved.shipment.id }, ...lock(tx) });
                 // Keep an ambiguous booking assigned to its carrier until verified reconciliation.
-                shipment.status = error.uncertain ? 'UNCERTAIN' : 'FAILED'; shipment.lastError = error.message.slice(0, 1000); shipment.leaseUntil = null;
-                if (!error.uncertain) { order.deliveryProvider = 'internal'; await order.save({ transaction: tx }); }
+                const uncertain = error.uncertain || recovery;
+                shipment.status = uncertain ? 'UNCERTAIN' : 'FAILED'; shipment.lastError = error.message.slice(0, 1000); shipment.leaseUntil = null;
+                if (!uncertain) { order.deliveryProvider = 'internal'; await order.save({ transaction: tx }); }
                 await shipment.save({ transaction: tx });
             });
             fail(error.message, 3);
@@ -212,13 +214,14 @@ function createShippingProviderService(db, { env = process.env, fetchImpl = glob
     }
     const sync = (data = {}, actor) => resultOf(async () => {
         requireAdmin(actor);
-        if (!positiveInteger(data.orderId)) fail('Mã đơn không hợp lệ.');
+        if (!validId(data.orderId)) fail('Mã đơn không hợp lệ.');
         const shipment = await db.Shipment.findOne({ where: { orderId: Number(data.orderId) }, raw: true });
         if (!shipment) fail('Đơn chưa có vận đơn hãng.', 2);
         return syncByShipment(shipment);
     });
     const cancel = (data = {}, actor) => resultOf(async () => {
         requireAdmin(actor);
+        if (!validId(data.orderId)) fail('Mã đơn hàng không hợp lệ.');
         const order = await db.OrderProduct.findOne({ where: { id: data.orderId }, raw: true });
         if (!order || order.statusId !== 'S4' || Number(order.isPaymentOnlien) === 1) fail('Chỉ hủy vận đơn COD trước khi hãng lấy hàng.', 2);
         const shipment = await db.Shipment.findOne({ where: { orderId: order.id }, raw: true });
@@ -226,7 +229,10 @@ function createShippingProviderService(db, { env = process.env, fetchImpl = glob
         const config = configFor(shipment.provider);
         if (shipment.environment !== config.environment) fail('Môi trường không khớp vận đơn.', 3);
         // Carrier acceptance is only a request; verified status sync decides stock release.
-        if (config.provider === 'ghn') await request(config, '/shiip/public-api/v2/switch-status/cancel', { order_codes: [shipment.trackingCode] });
+        if (config.provider === 'ghn') {
+            const result = await request(config, '/shiip/public-api/v2/switch-status/cancel', { order_codes: [shipment.trackingCode] });
+            if (!Array.isArray(result) || !result.some(item => item.order_code === shipment.trackingCode && item.result === true)) fail('Hãng vận chuyển chưa chấp nhận hủy vận đơn này.', 2);
+        }
         else await request(config, `/services/shipment/cancel/${encodeURIComponent(shipment.trackingCode)}`, {});
         await db.Shipment.update({ lastError: null }, { where: { id: shipment.id } });
         return syncByShipment(shipment);

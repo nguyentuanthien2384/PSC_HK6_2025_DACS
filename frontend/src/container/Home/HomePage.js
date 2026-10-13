@@ -19,9 +19,11 @@ function HomePage() {
     const [recommendations, setRecommendations] = useState({ data: [], loading: false, error: '' });
     const [blogs, setBlogs] = useState([]);
     const [banners, setBanners] = useState([]);
+    const [bannersLoading, setBannersLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
+        const controller = new AbortController();
         const loadCollection = async (request, update) => {
             try {
                 const response = await request;
@@ -33,27 +35,28 @@ function HomePage() {
                 if (!cancelled) update({ data: [], loading: false, error: 'load-failed' });
             }
         };
-        loadCollection(getProductFeatureService(6), setFeatured);
-        loadCollection(getProductNewService(8), setNewProducts);
+        loadCollection(getProductFeatureService(6, { signal: controller.signal }), setFeatured);
+        loadCollection(getProductNewService(8, { signal: controller.signal }), setNewProducts);
 
         const user = getUser();
         if (user) {
             setRecommendations(initialCollection);
-            loadCollection(getProductRecommendService({ limit: 20, userId: user.id }), setRecommendations);
+            loadCollection(getProductRecommendService({ limit: 20, userId: user.id, signal: controller.signal }), setRecommendations);
         }
 
-        getAllBanner({ limit: 6, offset: 0, keyword: '' })
+        getAllBanner({ limit: 6, offset: 0, keyword: '', signal: controller.signal })
             .then((response) => {
                 if (!cancelled && response?.errCode === 0) setBanners(response.data || []);
             })
-            .catch(() => {});
-        getNewBlog(3)
+            .catch(() => {})
+            .finally(() => { if (!cancelled) setBannersLoading(false); });
+        getNewBlog(3, { signal: controller.signal })
             .then((response) => {
                 if (!cancelled && response?.errCode === 0) setBlogs(response.data || []);
             })
             .catch(() => {});
         window.scrollTo(0, 0);
-        return () => { cancelled = true; };
+        return () => { cancelled = true; controller.abort(); };
     }, []);
 
     const bannerSettings = {
@@ -69,6 +72,7 @@ function HomePage() {
 
     return (
         <main className="store-home">
+            {bannersLoading && <div className="store-home__banner-loading" aria-hidden="true" />}
             {!!banners.length && (
                 <Slider {...bannerSettings}>
                     {banners.map((item) => <HomeBanner key={item.id} image={item.image} name={item.name} />)}

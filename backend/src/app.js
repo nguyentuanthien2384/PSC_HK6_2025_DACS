@@ -26,6 +26,7 @@ function createApp() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }));
   app.use(compression());
+  app.get('/api/media/:type/:id/:version/:variant', require('./controllers/productMediaController'));
   app.use(express.json({ limit: '15mb' }));
   app.use(express.urlencoded({ limit: '15mb', extended: true }));
   app.get('/api/health', async (req, res) => {

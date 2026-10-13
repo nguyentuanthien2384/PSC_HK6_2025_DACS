@@ -12,6 +12,8 @@ module.exports = (sequelize, DataTypes) => sequelize.define('PaymentSession', {
     checkoutData: { type: DataTypes.TEXT('long'), allowNull: false },
     expiresAt: { type: DataTypes.DATE, allowNull: false },
     gatewayTransactionDate: DataTypes.STRING(14),
+    // Old persisted PayPal payments remain readable; new checkouts use Orders v2.
+    gatewayApiVersion: { type: DataTypes.STRING(10), allowNull: false, defaultValue: 'v1' },
     gatewaySaleId: DataTypes.STRING(100),
     gatewayOutcome: DataTypes.TEXT('long'),
     paidAt: DataTypes.DATE,

@@ -8,7 +8,9 @@ import './MainShop.scss';
 function MainShop({ categoryId, brandId, myRef }) {
     const [dataProduct, setDataProduct] = useState([]);
     const [totalResults, setTotalResults] = useState(0);
-    const [numberPage, setNumberPage] = useState(0);
+    const [pagination, setPagination] = useState({ page: 0, categoryId, brandId });
+    const numberPage = pagination.categoryId === categoryId && pagination.brandId === brandId ? pagination.page : 0;
+    const setNumberPage = (page) => setPagination({ page, categoryId, brandId });
     const [limitPage, setLimitPage] = useState(PAGINATION.pagerow);
     const [sort, setSort] = useState('1');
     const [searchInput, setSearchInput] = useState('');
@@ -18,11 +20,12 @@ function MainShop({ categoryId, brandId, myRef }) {
     const [retry, setRetry] = useState(0);
 
     useEffect(() => {
-        setNumberPage(0);
+        setPagination({ page: 0, categoryId, brandId });
     }, [categoryId, brandId]);
 
     useEffect(() => {
         let active = true;
+        const controller = new AbortController();
         const fetchProducts = async () => {
             setLoading(true);
             setError(false);
@@ -35,6 +38,7 @@ function MainShop({ categoryId, brandId, myRef }) {
                     categoryId,
                     brandId,
                     keyword,
+                    signal: controller.signal,
                 });
                 if (!active) return;
                 if (!response || response.errCode !== 0) {
@@ -55,7 +59,7 @@ function MainShop({ categoryId, brandId, myRef }) {
             }
         };
         fetchProducts();
-        return () => { active = false; };
+        return () => { active = false; controller.abort(); };
     }, [limitPage, sort, numberPage, categoryId, brandId, keyword, retry]);
 
     const handleChangePage = ({ selected }) => {

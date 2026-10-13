@@ -165,7 +165,7 @@ let initwebRoutes = (app) => {
 
     //=====================API BLOG=========================//
     router.post('/api/create-new-blog', middlewareControllers.verifyTokenAdmin, blogController.createNewBlog)
-    router.get('/api/get-detail-blog', blogController.getDetailBlogById)
+    router.get('/api/get-detail-blog', middlewareControllers.optionalTokenUser, blogController.getDetailBlogById)
     router.get('/api/get-all-blog', blogController.getAllBlog)
     router.put('/api/update-blog', middlewareControllers.verifyTokenAdmin, blogController.updateBlog)
     router.delete('/api/delete-blog', middlewareControllers.verifyTokenAdmin, blogController.deleteBlog)

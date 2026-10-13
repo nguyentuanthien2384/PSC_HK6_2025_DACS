@@ -1,8 +1,8 @@
 import db from '../models/index';
-import paypal from 'paypal-rest-sdk';
 import moment from 'moment';
 import { EXCHANGE_RATES } from '../utils/constants';
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const { createCommerceService } = require('./commerceService');
 const { createDeliveryService } = require('./deliveryService');
 const { fail, positiveInteger, resultOf, canReadOrder, encodeVnpay, signVnpay, verifyVnpay } = require('../utils/commerce');
@@ -45,9 +45,9 @@ async function hydrateOrder(order, actor) {
     }
     order.returnEligibility = afterSales.returnEligibility(order, actor, order.returnRequest, order.addressUser);
     order.shipment = db.Shipment ? safeShipment(await db.Shipment.findOne({ where: { orderId: order.id }, raw: true })) : null;
-    const payment = await db.PaymentSession.findOne({ where: { orderId: order.id }, attributes: ['id', 'provider', 'status', 'totalPrice', 'currency', 'paidAt', 'reviewReason', 'gatewayOutcome'], raw: true });
-    order.paymentSession = payment ? { ...payment, providerOutcome: payment.gatewayOutcome ? JSON.parse(payment.gatewayOutcome) : null } : null;
-    if (order.paymentSession) delete order.paymentSession.gatewayOutcome;
+    const payment = await db.PaymentSession.findOne({ where: { orderId: order.id }, attributes: ['id', 'provider', 'status', 'totalPrice', 'currency', 'paidAt', 'reviewReason', 'providerPaymentId'], raw: true });
+    order.paymentSession = payment ? { ...payment, isDemo: /^DEMO-/i.test(payment.providerPaymentId || '') } : null;
+    if (order.paymentSession) delete order.paymentSession.providerPaymentId;
     order.voucherData = order.voucherData || { id: null };
     order.voucherData.typeVoucherOfVoucherData = order.voucherData.typeVoucherId ? await db.TypeVoucher.findOne({ where: { id: order.voucherData.typeVoucherId }, raw: true }) : null;
     const details = await db.OrderDetail.findAll({ where: { orderId: order.id }, raw: true });
@@ -111,7 +111,7 @@ const getAllOrdersByShipper = (data = {}, actor) => resultOf(async () => {
     if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền truy cập.', 403);
     const where = { shipperId: admin(actor) ? data.shipperId || actor.id : actor.id };
     if (!positiveInteger(where.shipperId)) fail('Người giao hàng không hợp lệ.');
-    if (data.status === 'working') where.statusId = { [db.Sequelize.Op.in]: ['S5', 'S8', 'S9'] };
+    if (data.status === 'working') where.statusId = { [Op.in]: ['S5', 'S8', 'S9'] };
     if (data.status === 'done') where.statusId = 'S6';
     const orders = await db.OrderProduct.findAll({ where, include: orderIncludes(), order: [['createdAt', 'DESC']], raw: true, nest: true });
     for (const order of orders) await hydrateOrder(order, actor);
@@ -136,10 +136,8 @@ const receiveUndeliveredReturn = delivery.receiveUndeliveredReturn;
 
 function configurePaypal() {
     if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) fail('Cổng PayPal chưa được cấu hình. Vui lòng chọn thanh toán khi nhận hàng.', 3);
-    paypal.configure({ mode: process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox', client_id: process.env.PAYPAL_CLIENT_ID, client_secret: process.env.PAYPAL_CLIENT_SECRET, request_timeout: 20000 });
 }
 const paymentGateway = require('./paymentGatewayService').gateway;
-const paypalCall = (method, ...args) => new Promise((resolve, reject) => paypal.payment[method](...args, (error, payment) => error ? reject(error) : resolve(payment)));
 const frontendUrl = () => process.env.URL_REACT || 'http://localhost:3000';
 
 async function newSession(data, provider) {
@@ -147,9 +145,12 @@ async function newSession(data, provider) {
         const checkout = await commerce.quote(data, tx);
         if (checkout.totalPrice <= 0) fail('Giá trị thanh toán trực tuyến phải lớn hơn 0.');
         const currency = provider === 'paypal' ? 'USD' : 'VND';
-        const providerAmount = provider === 'paypal' ? (checkout.totalPrice / (Number(process.env.USD_EXCHANGE_RATE) || EXCHANGE_RATES.USD)).toFixed(2) : String(checkout.totalPrice * 100);
+        const exchangeRate = Number(process.env.USD_EXCHANGE_RATE || EXCHANGE_RATES.USD);
+        if (provider === 'paypal' && (!Number.isFinite(exchangeRate) || exchangeRate <= 0)) fail('Tỷ giá thanh toán PayPal chưa hợp lệ.', 3);
+        if (provider === 'vnpay' && checkout.totalPrice > 9999999999) fail('Giá trị thanh toán vượt giới hạn của VNPay.', 3);
+        const providerAmount = provider === 'paypal' ? (checkout.totalPrice / exchangeRate).toFixed(2) : (BigInt(checkout.totalPrice) * 100n).toString();
         if (Number(providerAmount) <= 0) fail('Giá trị thanh toán trực tuyến không hợp lệ.');
-        return db.PaymentSession.create({ id: crypto.randomUUID(), userId: checkout.userId, provider, status: 'PENDING', totalPrice: checkout.totalPrice, currency, providerAmount, checkoutData: JSON.stringify(checkout), expiresAt: new Date(Date.now() + 30 * 60 * 1000) }, { transaction: tx });
+        return db.PaymentSession.create({ id: crypto.randomUUID(), userId: checkout.userId, provider, gatewayApiVersion: provider === 'paypal' ? 'v2' : 'v1', status: 'PENDING', totalPrice: checkout.totalPrice, currency, providerAmount, checkoutData: JSON.stringify(checkout), expiresAt: new Date(Date.now() + 30 * 60 * 1000) }, { transaction: tx });
     });
 }
 
@@ -157,19 +158,11 @@ const paymentOrder = data => resultOf(async () => {
     configurePaypal();
     const session = await newSession(data, 'paypal');
     try {
-        const payment = await paypalCall('create', {
-            intent: 'sale', payer: { payment_method: 'paypal' },
-            redirect_urls: {
-                return_url: `${frontendUrl()}/payment/success?checkoutToken=${session.id}`,
-                cancel_url: `${frontendUrl()}/order/${data.userId}?paymentCancelled=1`
-            },
-            transactions: [{ amount: { currency: 'USD', total: session.providerAmount }, custom: session.id, description: 'Thanh toan don hang' }]
-        });
-        const approval = payment.links && payment.links.find(link => link.rel === 'approval_url');
-        if (!approval || !payment.id) throw new Error('PayPal did not return an approval URL');
+        const payment = await paymentGateway().createPaypalPayment(session,
+            `${frontendUrl()}/payment/success?checkoutToken=${session.id}`, `${frontendUrl()}/order/${data.userId}?paymentCancelled=1`);
         session.providerPaymentId = payment.id;
         await session.save();
-        return { errCode: 0, link: approval.href, checkoutToken: session.id, totalPrice: Number(session.totalPrice), currency: 'VND' };
+        return { errCode: 0, link: payment.approvalUrl, checkoutToken: session.id, totalPrice: Number(session.totalPrice), currency: 'VND', providerAmount: session.providerAmount, providerCurrency: session.currency };
     } catch (error) {
         session.status = 'FAILED';
         await session.save();

@@ -2,6 +2,7 @@
 const {
     Model
 } = require('sequelize');
+const { versionedImageHooks } = require('../utils/productImage');
 module.exports = (sequelize, DataTypes) => {
     class Banner extends Model {
         /**
@@ -17,10 +18,12 @@ module.exports = (sequelize, DataTypes) => {
         description: DataTypes.STRING,
         name: DataTypes.STRING,
         statusId: DataTypes.STRING,
-        image: DataTypes.BLOB('long')
+        image: DataTypes.BLOB('long'),
+        imageVersion: { type: DataTypes.STRING(64), allowNull: true },
     }, {
         sequelize,
         modelName: 'Banner',
+        hooks: versionedImageHooks(),
     });
     return Banner;
 };

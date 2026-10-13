@@ -9,12 +9,16 @@ const ID = 'b4736252-181b-446a-a739-792a46fcaf55';
 const env = { VNP_TMNCODE: 'TESTCODE', VNP_HASHSECRET: 'test-only-never-merchant-secret', PAYPAL_MODE: 'sandbox', PAYPAL_CLIENT_ID: 'test-client', PAYPAL_CLIENT_SECRET: 'test-secret', PAYPAL_WEBHOOK_ID: 'test-webhook' };
 const staff = { id: 1, roleId: 'R1' };
 function matches(row, where = {}) {
-    return Object.keys(where).every(key => {
+    return Reflect.ownKeys(where).every(key => {
         const expected = where[key];
+        if (key === Op.or) return expected.some(branch => matches(row, branch));
         if (expected && typeof expected === 'object') {
             if (expected[Op.in]) return expected[Op.in].includes(row[key]);
             if (expected[Op.ne] !== undefined) return row[key] !== expected[Op.ne];
+            if (expected[Op.lt]) return new Date(row[key]) < expected[Op.lt];
+            if (expected[Op.gt]) return new Date(row[key]) > expected[Op.gt];
         }
+        if (expected === null) return row[key] == null;
         return String(row[key]) === String(expected);
     });
 }
@@ -22,24 +26,25 @@ function fixture(overrides = {}, options = {}) {
     const sessions = [{ id: ID, provider: 'vnpay', userId: 2, currency: 'VND', providerAmount: '22000000', totalPrice: 220000,
         status: 'PENDING', providerPaymentId: null, orderId: null, expiresAt: new Date(clock.getTime() + 30 * 60000), createdAt: clock,
         checkoutData: JSON.stringify({ userId: 2, addressUserId: 3, totalPrice: 220000, subtotal: 200000, lines: [{ productId: 4, quantity: 2 }] }), ...overrides }];
-    const refunds = [], orders = [], calls = [];
+    const refunds = [], orders = [], calls = [], returns = [], events = [];
     let tail = Promise.resolve();
     const model = rows => ({
         async findOne({ where, raw }) { const row = rows.find(row => matches(row, where)); return row ? (raw ? { ...row } : row) : null; },
         async findAll({ where }) { return rows.filter(row => matches(row, where)).map(row => ({ ...row })); },
         async findAndCountAll({ where }) { const found = rows.filter(row => matches(row, where)); return { rows: found.map(row => ({ ...row })), count: found.length }; },
-        async create(data) { const row = { ...data, createdAt: clock, save: async () => {} }; rows.push(row); return row; },
+        async create(data) { const row = { fulfillmentSyncedAt: null, ...data, id: data.id || rows.length + 1, createdAt: clock, save: async () => {} }; rows.push(row); return row; },
         async update(data, { where }) { rows.filter(row => matches(row, where)).forEach(row => Object.assign(row, data)); }
     });
     sessions.forEach(row => row.save = async () => {});
     const db = { PaymentSession: model(sessions), PaymentRefund: model(refunds), OrderProduct: model(orders),
         AddressUser: { findOne: async () => options.noAddress ? null : { id: 3, userId: 2 } } };
+    if (options.afterSales) { db.ReturnRequest = model(returns); db.OrderEvent = model(events); }
     const commerce = {
         transaction: async work => { let release; const previous = tail; tail = new Promise(resolve => release = resolve); await previous; try { return await work({ LOCK: { UPDATE: 'UPDATE' } }); } finally { release(); } },
         lockOptions: tx => ({ transaction: tx, lock: tx.LOCK.UPDATE }),
         checkStock: async () => { if (options.noStock) throw new CommerceError('Hết tồn kho.', 2); },
         checkVoucher: async () => { if (options.noVoucher) throw new CommerceError('Voucher hết hiệu lực.', 2); },
-        persistOrder: async checkout => { const order = { id: orders.length + 1, isPaymentOnlien: 1, totalPrice: checkout.totalPrice }; orders.push(order); return { errCode: 0, orderId: order.id, data: order }; }
+        persistOrder: async checkout => { if (options.orderError) throw new Error('Order write temporarily unavailable'); const order = { id: orders.length + 1, isPaymentOnlien: 1, totalPrice: checkout.totalPrice }; orders.push(order); return { errCode: 0, orderId: order.id, data: order }; }
     };
     const queue = [];
     const fetch = async (url, request) => {
@@ -51,7 +56,7 @@ function fixture(overrides = {}, options = {}) {
         return { ok: true, status: 200, json: async () => body };
     };
     const service = createPaymentGatewayService(db, { commerce, env: { ...env, ...(options.env || {}) }, now: () => clock, fetch });
-    return { service, sessions, refunds, orders, queue, calls };
+    return { service, sessions, refunds, orders, queue, calls, db, returns, events };
 }
 function notice(data = {}) {
     const params = { vnp_TmnCode: env.VNP_TMNCODE, vnp_TxnRef: ID, vnp_Amount: '22000000', vnp_ResponseCode: '00', vnp_TransactionStatus: '00', vnp_TransactionNo: '123456789', ...data };
@@ -248,4 +253,230 @@ test('amount comparison cannot accept exponent notation, NaN or float rounding t
     assert.equal(sameAmount('8.801', '8.80', 'USD'), false);
     assert.equal(sameAmount('22e6', '22000000', 'VND'), false);
     assert.equal(sameAmount('NaN', '8.80', 'USD'), false);
+});
+
+const paypalV2Session = { ...paypalSession, providerPaymentId: 'ORDER-TEST', gatewayApiVersion: 'v2' };
+function paypalOrder(status = 'COMPLETED', overrides = {}) {
+    return { id: 'ORDER-TEST', status, purchase_units: [{ custom_id: ID, amount: { currency_code: 'USD', value: '8.80' },
+        ...(status === 'COMPLETED' ? { payments: { captures: [{ id: 'CAPTURE-TEST', status: 'COMPLETED', amount: { currency_code: 'USD', value: '8.80' } }] } } : {}) }], ...overrides };
+}
+function capture(overrides = {}) {
+    return { id: 'CAPTURE-TEST', status: 'COMPLETED', amount: { currency_code: 'USD', value: '8.80' },
+        supplementary_data: { related_ids: { order_id: 'ORDER-TEST' } }, ...overrides };
+}
+function refundV2(status = 'COMPLETED', overrides = {}) {
+    return { id: 'REFUND-V2', status, amount: { currency_code: 'USD', value: '8.80' },
+        links: [{ rel: 'up', href: 'https://api.sandbox.paypal.com/v2/payments/captures/CAPTURE-TEST' }], ...overrides };
+}
+const v2Args = { checkoutToken: ID, userId: 2, paymentId: 'ORDER-TEST' };
+const paidPaypalV2 = { ...paypalV2Session, orderId: 7, status: 'COMPLETED', paidAt: clock, gatewaySaleId: 'CAPTURE-TEST' };
+
+test('new PayPal checkout uses Orders v2, a durable create key and fixed checkout amount', async () => {
+    const f = fixture(paypalV2Session);
+    f.queue.push(token, { id: 'ORDER-TEST', links: [{ rel: 'payer-action', href: 'https://www.sandbox.paypal.com/checkoutnow?token=ORDER-TEST' }] });
+    const result = await f.service.createPaypalPayment(f.sessions[0], 'http://localhost:3000/payment/success', 'http://localhost:3000/order/2');
+    assert.match(f.calls[1].url, /\/v2\/checkout\/orders$/);
+    const body = JSON.parse(f.calls[1].request.body);
+    assert.equal(body.intent, 'CAPTURE'); assert.equal(body.purchase_units[0].custom_id, ID);
+    assert.deepEqual(body.purchase_units[0].amount, { currency_code: 'USD', value: '8.80' });
+    assert.equal(f.calls[1].request.headers['PayPal-Request-Id'], ID);
+    assert.equal(f.calls[1].request.headers.Prefer, 'return=representation');
+    assert.match(result.approvalUrl, /^https:\/\/www.sandbox.paypal.com\//);
+});
+test('PayPal rejects approval links outside official HTTPS checkout hosts', async () => {
+    const f = fixture(paypalV2Session); f.queue.push(token, { id: 'ORDER-TEST', links: [{ rel: 'approve', href: 'https://paypal.com.evil.test/pay' }] });
+    await assert.rejects(f.service.createPaypalPayment(f.sessions[0], 'http://localhost/return', 'http://localhost/cancel'), error => error.errCode === 3);
+});
+test('PayPal Orders v2 captures server-side approval and replay creates exactly one local order', async () => {
+    const f = fixture(paypalV2Session); f.queue.push(token, paypalOrder('APPROVED'), paypalOrder(), paypalOrder());
+    assert.equal((await f.service.completePaypal(v2Args)).errCode, 0);
+    assert.equal((await f.service.completePaypal({ ...v2Args, paymentId: undefined, token: 'ORDER-TEST' })).orderId, 1);
+    assert.equal(f.orders.length, 1); assert.equal(f.sessions[0].gatewaySaleId, 'CAPTURE-TEST');
+    assert.match(f.calls[2].url, /\/v2\/checkout\/orders\/ORDER-TEST\/capture$/);
+    assert.notEqual(f.calls[2].request.headers['PayPal-Request-Id'], ID);
+    assert.equal(f.calls.filter(call => call.url.endsWith('/capture')).length, 1);
+});
+test('expired PayPal approval does not initiate a charge', async () => {
+    const f = fixture({ ...paypalV2Session, expiresAt: new Date(clock.getTime() - 1) }); f.queue.push(token, paypalOrder('APPROVED'));
+    assert.equal((await f.service.completePaypal(v2Args)).errCode, 2);
+    assert.equal(f.calls.length, 2); assert.equal(f.orders.length, 0);
+});
+test('PayPal v2 custom id/amount/currency are checked before capture', async () => {
+    for (const field of ['custom_id', 'value', 'currency_code']) {
+        const f = fixture(paypalV2Session); const payment = paypalOrder('APPROVED');
+        if (field === 'custom_id') payment.purchase_units[0][field] = 'other-session'; else payment.purchase_units[0].amount[field] = field === 'value' ? '1.00' : 'EUR';
+        f.queue.push(token, payment);
+        assert.equal((await f.service.completePaypal(v2Args)).errCode, 3, field); assert.equal(f.calls.length, 2, field); assert.equal(f.orders.length, 0);
+    }
+});
+test('PayPal v2 ambiguous capture response is recovered through authoritative order read', async () => {
+    const f = fixture(paypalV2Session); f.queue.push(token, paypalOrder('APPROVED'), new Error('timeout after capture'), paypalOrder());
+    assert.equal((await f.service.completePaypal(v2Args)).errCode, 0); assert.equal(f.orders.length, 1);
+    assert.match(f.calls[3].url, /\/v2\/checkout\/orders\/ORDER-TEST$/); assert.equal(f.calls[3].request.method, 'GET');
+});
+test('PayPal COMPLETED order with pending capture never becomes a paid local order', async () => {
+    const f = fixture(paypalV2Session); const p = paypalOrder(); p.purchase_units[0].payments.captures[0].status = 'PENDING';
+    f.queue.push(token, p);
+    assert.equal((await f.service.completePaypal(v2Args)).errCode, 3); assert.equal(f.orders.length, 0); assert.equal(f.sessions[0].paidAt, undefined);
+});
+test('PayPal v2 verified webhook reads capture/order from provider and ignores forged parent metadata', async () => {
+    const f = fixture(paypalV2Session); f.queue.push(token, { verification_status: 'SUCCESS' }, capture(), paypalOrder());
+    const result = await f.service.paypalWebhook(headers, { id: 'EVENT-V2', event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: { id: 'CAPTURE-TEST', supplementary_data: { related_ids: { order_id: 'ATTACKER' } } } });
+    assert.equal(result.errCode, 0); assert.equal(f.orders.length, 1); assert.equal(f.sessions[0].gatewaySaleId, 'CAPTURE-TEST');
+    assert.match(f.calls[2].url, /\/v2\/payments\/captures\/CAPTURE-TEST$/); assert.match(f.calls[3].url, /\/v2\/checkout\/orders\/ORDER-TEST$/);
+});
+test('PayPal webhook certificate URLs must use official HTTPS notification certificate paths', async () => {
+    for (const cert of ['http://api.paypal.com/v1/notifications/certs/test', 'https://127.0.0.1/cert', 'https://api.paypal.com.evil.test/v1/notifications/certs/test', 'https://api.paypal.com/other']) {
+        const f = fixture(paypalV2Session);
+        await assert.rejects(f.service.paypalWebhook({ ...headers, 'paypal-cert-url': cert }, event), error => error.errCode === 403);
+        assert.equal(f.calls.length, 0);
+    }
+});
+test('PayPal v2 pending refund is polled and settles only after verified provider completion', async () => {
+    const f = fixture(paidPaypalV2); f.queue.push(token, refundV2('PENDING'), refundV2());
+    const first = await f.service.requestRefund(refundArgs);
+    assert.equal(first.status, 'PENDING'); assert.equal(f.refunds[0].completedAt, undefined);
+    assert.match(f.calls[1].url, /\/v2\/payments\/captures\/CAPTURE-TEST\/refund$/);
+    assert.deepEqual(JSON.parse(f.calls[1].request.body).amount, { value: '8.80', currency_code: 'USD' });
+    assert.equal((await f.service.retryRefund(first.refundId, staff)).status, 'COMPLETED');
+    assert.match(f.calls[2].url, /\/v2\/payments\/refunds\/REFUND-V2$/); assert.equal(f.calls[2].request.method, 'GET');
+});
+test('PayPal v2 cannot settle a refund bound to another capture with matching amount', async () => {
+    const f = fixture(paidPaypalV2); f.queue.push(token, refundV2('COMPLETED', { links: [{ rel: 'up', href: 'https://api.paypal.com/v2/payments/captures/OTHER' }] }));
+    assert.equal((await f.service.requestRefund(refundArgs)).status, 'REVIEW_REQUIRED'); assert.equal(f.refunds[0].completedAt, undefined);
+});
+test('PayPal unknown refund result outside safe idempotency retention never submits another refund', async () => {
+    const f = fixture(paidPaypalV2); f.queue.push(token, new Error('timeout'));
+    const first = await f.service.requestRefund(refundArgs); f.refunds[0].createdAt = new Date(clock.getTime() - 6 * 3600000);
+    assert.equal((await f.service.retryRefund(first.refundId, staff)).status, 'REVIEW_REQUIRED'); assert.equal(f.calls.length, 2);
+});
+test('provider-confirmed failed refund cannot be blindly revived after its budget is released', async () => {
+    const f = fixture(paidPaypalV2); f.queue.push(token, refundV2('FAILED'));
+    const result = await f.service.requestRefund(refundArgs); assert.equal(result.status, 'FAILED');
+    assert.equal((await f.service.retryRefund(result.refundId, staff)).status, 'FAILED'); assert.equal(f.calls.length, 2);
+});
+test('concurrent identical refund requests share one ledger entry and one provider POST', async () => {
+    const f = fixture(paidPaypalV2); f.queue.push(token, refundV2());
+    const results = await Promise.all(Array.from({ length: 8 }, () => f.service.requestRefund(refundArgs)));
+    assert.equal(new Set(results.map(row => row.refundId)).size, 1); assert.equal(f.refunds.length, 1);
+    assert.equal(f.calls.filter(call => call.url.endsWith('/refund')).length, 1); assert.equal(f.refunds[0].status, 'COMPLETED');
+});
+test('partial PayPal refunds allocate cents cumulatively without over-refunding the capture', async () => {
+    const f = fixture({ ...paidPaypalV2, totalPrice: 3, providerAmount: '0.02' });
+    f.queue.push(token, refundV2('COMPLETED', { id: 'PARTIAL-1', amount: { currency_code: 'USD', value: '0.01' } }), refundV2('COMPLETED', { id: 'PARTIAL-2', amount: { currency_code: 'USD', value: '0.01' } }));
+    assert.equal((await f.service.requestRefund({ ...refundArgs, amountVnd: 1 })).errCode, 1); // less than one cent cannot be refunded.
+    assert.equal((await f.service.requestRefund({ ...refundArgs, amountVnd: 2 })).status, 'COMPLETED');
+    assert.equal((await f.service.requestRefund({ ...refundArgs, refundKey: 'return-request:10', amountVnd: 1 })).status, 'COMPLETED');
+    assert.deepEqual(f.refunds.map(row => row.providerAmount), ['0.01', '0.01']);
+});
+test('background settled refund synchronizes the exact received return and creates one order event', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000 });
+    f.queue.push(token, refundV2('PENDING'), refundV2());
+    const result = await f.service.requestRefund(refundArgs); assert.equal(request.status, 'REFUND_PENDING');
+    assert.equal((await f.service.retryRefund(result.refundId, staff)).status, 'COMPLETED');
+    assert.equal(request.status, 'REFUNDED'); assert.equal(request.refundMethod, 'paypal'); assert.equal(request.refundReference, 'REFUND-V2');
+    assert.equal(f.events.length, 1); assert.ok(f.refunds[0].fulfillmentSyncedAt);
+    await f.service.retryRefund(result.refundId, staff); assert.equal(f.events.length, 1);
+});
+test('missing credentials leave after-sales funds unsettled and never mark the return refunded', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true, env: { PAYPAL_CLIENT_SECRET: '' } }); f.orders.push({ id: 7 });
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000 });
+    assert.equal((await f.service.requestRefund(refundArgs)).status, 'NOT_CONFIGURED');
+    assert.equal(request.status, 'REFUND_PENDING'); assert.equal(f.calls.length, 0); assert.equal(f.events.length, 0);
+});
+test('completed ledger recovers after-sales synchronization on replay without refunding again', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+    f.queue.push(token, refundV2()); const first = await f.service.requestRefund(refundArgs);
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000 });
+    await f.service.retryRefund(first.refundId, staff);
+    assert.equal(request.status, 'REFUNDED'); assert.equal(f.calls.length, 2); assert.equal(f.events.length, 1);
+});
+test('refund sync requires exact request id, actual receipt and exact refund amount', async () => {
+    for (const overrides of [{ id: 10 }, { receivedAt: null }, { amount: 110000 }]) {
+        const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+        const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000, ...overrides });
+        f.queue.push(token, refundV2()); assert.equal((await f.service.requestRefund(refundArgs)).status, 'COMPLETED');
+        assert.equal(request.status, 'REFUND_PENDING'); assert.equal(f.events.length, 0);
+    }
+});
+test('refunded orphan callback replay preserves terminal refund status and cannot create an order', async () => {
+    const f = fixture({ expiresAt: new Date(clock.getTime() - 1) }); await f.service.vnpayIpn(notice());
+    f.queue.push(apiResponse('refund')); await f.service.refundSession({ sessionId: ID, reason: 'Phien het han' }, staff);
+    assert.equal((await f.service.vnpayIpn(notice())).RspCode, '02'); assert.equal(f.sessions[0].status, 'REFUNDED'); assert.equal(f.orders.length, 0);
+});
+test('successful gateway payment is retained if local order persistence has a transient error', async () => {
+    const f = fixture({}, { orderError: true }); assert.equal((await f.service.vnpayIpn(notice())).RspCode, '00');
+    assert.equal(f.sessions[0].status, 'REVIEW_REQUIRED'); assert.ok(f.sessions[0].paidAt); assert.equal(JSON.parse(f.sessions[0].gatewayOutcome).paid, true);
+});
+test('signed VNPay processing status keeps pending session for reconciliation; suspicious charge needs review', async () => {
+    const f = fixture(); await f.service.vnpayIpn(notice({ vnp_ResponseCode: '99', vnp_TransactionStatus: '01', vnp_TransactionNo: '0' }));
+    assert.equal(f.sessions[0].status, 'PENDING'); assert.equal(f.orders.length, 0);
+    await f.service.vnpayIpn(notice({ vnp_ResponseCode: '07', vnp_TransactionStatus: '07' }));
+    assert.equal(f.sessions[0].status, 'REVIEW_REQUIRED'); assert.equal(f.orders.length, 0);
+});
+test('VNPay refund transaction type must match the requested full or partial refund', async () => {
+    const f = fixture({ status: 'COMPLETED', orderId: 7, paidAt: clock, providerPaymentId: 'vnpay:123456789' });
+    f.queue.push(apiResponse('refund', { vnp_TransactionType: '03' }));
+    assert.equal((await f.service.requestRefund(refundArgs)).status, 'REVIEW_REQUIRED'); assert.equal(f.refunds[0].completedAt, undefined);
+});
+test('verified PayPal v2 refund webhook resolves a durable pending refund rather than submitting again', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000 });
+    f.queue.push(token, refundV2('PENDING'), { verification_status: 'SUCCESS' }, refundV2());
+    await f.service.requestRefund(refundArgs);
+    const result = await f.service.paypalWebhook(headers, { id: 'EVENT-REFUND', event_type: 'PAYMENT.CAPTURE.REFUNDED', resource: { id: 'REFUND-V2' } });
+    assert.equal(result.status, 'COMPLETED'); assert.equal(request.status, 'REFUNDED'); assert.equal(f.events.length, 1);
+    assert.equal(f.calls.filter(call => call.url.endsWith('/refund')).length, 1);
+});
+test('verified PayPal dashboard refund without a local ledger flags payment review instead of inventing return receipt', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REQUESTED', amount: 220000 });
+    f.queue.push(token, { verification_status: 'SUCCESS' }, refundV2());
+    await f.service.paypalWebhook(headers, { id: 'EVENT-EXTERNAL', event_type: 'PAYMENT.CAPTURE.REFUNDED', resource: { id: 'REFUND-V2' } });
+    assert.equal(f.sessions[0].status, 'REVIEW_REQUIRED'); assert.equal(request.status, 'REQUESTED'); assert.equal(f.refunds.length, 0);
+});
+test('batch reconciliation recovers a completed refund whose after-sales synchronization was interrupted', async () => {
+    const f = fixture(paidPaypalV2, { afterSales: true }); f.orders.push({ id: 7 });
+    f.queue.push(token, refundV2()); const first = await f.service.requestRefund(refundArgs);
+    const request = await f.db.ReturnRequest.create({ id: 9, orderId: 7, status: 'REFUND_PENDING', receivedAt: clock, amount: 220000 });
+    assert.equal(f.refunds[0].fulfillmentSyncedAt, null);
+    await f.service.runReconciliationBatch();
+    assert.equal(request.status, 'REFUNDED'); assert.equal(f.events.length, 1); assert.ok(f.refunds[0].fulfillmentSyncedAt);
+    await f.service.runReconciliationBatch(); assert.equal(f.calls.length, 2); assert.equal(f.events.length, 1);
+});
+test('seeded demo sessions are labelled by reads and reject staff reconcile/refund and PayPal confirmation before network or ledger writes', async () => {
+    for (const provider of ['paypal', 'vnpay']) {
+        const f = fixture({ ...(provider === 'paypal' ? paidPaypalV2 : {}), provider, providerPaymentId: `DEMO-${provider}-paid`,
+            status: 'COMPLETED', paidAt: clock, orderId: 7 });
+        const before = { ...f.sessions[0] };
+        const listing = await f.service.getReconciliation({}, staff); assert.equal(listing.data[0].isDemo, true);
+        assert.equal((await f.service.reconcileSession(ID, staff)).errCode, 2);
+        assert.equal((await f.service.requestRefund(refundArgs)).errCode, 2);
+        if (provider === 'paypal') assert.equal((await f.service.completePaypal({ ...v2Args, paymentId: f.sessions[0].providerPaymentId })).errCode, 2);
+        assert.equal(f.calls.length, 0); assert.equal(f.refunds.length, 0); assert.deepEqual(f.sessions[0], before);
+    }
+});
+test('refund read API derives isDemo from associated session using only id/providerPaymentId projection', async () => {
+    const f = fixture({ ...paidPaypalV2, providerPaymentId: 'DEMO-paypal-history' });
+    const realId = '37267c3e-0a54-4d7f-9c17-8b9a52e07cd5'; f.sessions.push({ id: realId, providerPaymentId: 'ORDER-REAL' });
+    await f.db.PaymentRefund.create({ id: 'e3df9c80-a571-4ef0-b358-a3f012a55d09', sessionId: ID, status: 'COMPLETED' });
+    await f.db.PaymentRefund.create({ id: '2485f8f7-4f8a-4d49-ac9c-ff7f419cf16f', sessionId: realId, status: 'PENDING' });
+    let lookup; const original = f.db.PaymentSession.findAll;
+    f.db.PaymentSession.findAll = input => { lookup = input; return original(input); };
+    const result = await f.service.getRefunds({}, staff);
+    assert.deepEqual(result.data.map(row => row.isDemo), [true, false]); assert.deepEqual(lookup.attributes, ['id', 'providerPaymentId']);
+    assert.equal(f.calls.length, 0);
+});
+test('cron and refund retries keep mutated demo sessions and historical demo ledgers completely inert', async () => {
+    const f = fixture({ ...paidPaypalV2, providerPaymentId: 'DEMO-paypal-history', status: 'PENDING', lastCheckedAt: null });
+    const refund = await f.db.PaymentRefund.create({ id: 'e3df9c80-a571-4ef0-b358-a3f012a55d09', sessionId: ID, orderId: 7,
+        refundKey: 'return-request:9', provider: 'paypal', status: 'PENDING', attempts: 0, lastCheckedAt: null });
+    const completed = await f.db.PaymentRefund.create({ id: '2485f8f7-4f8a-4d49-ac9c-ff7f419cf16f', sessionId: ID, orderId: 7,
+        refundKey: 'return-request:10', provider: 'paypal', status: 'COMPLETED', attempts: 0, lastCheckedAt: null });
+    const beforeSession = { ...f.sessions[0] }, beforeRefunds = f.refunds.map(row => ({ ...row }));
+    assert.equal((await f.service.retryRefund(refund.id, staff)).isDemo, true);
+    assert.equal((await f.service.retryRefund(completed.id, staff)).isDemo, true);
+    await f.service.runReconciliationBatch();
+    assert.equal(f.calls.length, 0); assert.deepEqual(f.sessions[0], beforeSession); assert.deepEqual(f.refunds, beforeRefunds);
 });

@@ -1,4 +1,5 @@
 import axios from "../axios";
+import { readCatalog } from './catalogRequest';
 const deleteConfig = (payload) => payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload : { data: payload };
 
 //==================USER==========================//
@@ -48,8 +49,9 @@ const checkPhonenumberEmail = (data) => {
 
 }
 //===============ALL CODE========================//
-const getAllCodeService = (type, { activeCatalog = false } = {}) => {
-    return axios.get(`/api/get-all-code`, { params: { type, ...(activeCatalog === true ? { activeCatalog: true } : {}) } })
+const getAllCodeService = (type, { activeCatalog = false, signal } = {}) => {
+    const params = { type, ...(activeCatalog === true ? { activeCatalog: true } : {}) };
+    return activeCatalog ? readCatalog('/api/get-all-code', { params, signal }) : axios.get('/api/get-all-code', { params, signal });
 
 }
 const getAllCategoryBlogService = (type) => {
@@ -85,7 +87,7 @@ const CreateNewProduct = (data) => {
     return axios.post(`/api/create-new-product`, data)
 }
 const getAllProductUser = (data) => {
-    return axios.get(`/api/get-all-product-user`, { params: { limit: data.limit, offset: data.offset, sortPrice: data.sortPrice, sortName: data.sortName, categoryId: data.categoryId, brandId: data.brandId, keyword: data.keyword } })
+    return readCatalog(`/api/get-all-product-user`, { signal: data.signal, params: { limit: data.limit, offset: data.offset, sortPrice: data.sortPrice, sortName: data.sortName, categoryId: data.categoryId, brandId: data.brandId, keyword: data.keyword } })
 
 }
 const getAllProductAdmin = (data) => {
@@ -98,8 +100,8 @@ const handleBanProductService = (data) => {
 const handleActiveProductService = (data) => {
     return axios.post(`/api/active-product`, data)
 }
-const getDetailProductByIdService = (id) => {
-    return axios.get(`/api/get-detail-product-by-id`, { params: { id: id } })
+const getDetailProductByIdService = (id, { signal } = {}) => {
+    return readCatalog(`/api/get-detail-product-by-id`, { signal, params: { id: id } })
 }
 const UpdateProductService = (data) => {
     return axios.put(`/api/update-product`, data)
@@ -149,17 +151,17 @@ const UpdateProductDetailSizeService = (data) => {
 const DeleteProductDetailSizeService = (data) => {
     return axios.delete(`/api/delete-product-detail-size`, deleteConfig(data))
 }
-const getProductFeatureService = (limit) => {
-    return axios.get(`/api/get-product-feature`, { params: { limit: limit } })
+const getProductFeatureService = (limit, { signal } = {}) => {
+    return readCatalog(`/api/get-product-feature`, { signal, params: { limit: limit } })
 }
-const getProductNewService = (limit) => {
-    return axios.get(`/api/get-product-new`, { params: { limit: limit } })
+const getProductNewService = (limit, { signal } = {}) => {
+    return readCatalog(`/api/get-product-new`, { signal, params: { limit: limit } })
 }
 const getProductShopcartService = (data) => {
     return axios.get(`/api/get-product-shopcart`, { params: { userId: data.userId, limit: data.limit } })
 }
 const getProductRecommendService = (data) => {
-    return axios.get(`/api/get-product-recommend`, { params: { userId: data.userId, limit: data.limit } })
+    return readCatalog(`/api/get-product-recommend`, { signal: data.signal, params: { userId: data.userId, limit: data.limit } })
 }
 //===============BANNER======================//
 const createNewBannerService = (data) => {
@@ -175,7 +177,7 @@ const getDetailBannerByIdService = (id) => {
     return axios.get(`/api/get-detail-banner`, { params: { id: id } })
 }
 const getAllBanner = (data) => {
-    return axios.get(`/api/get-all-banner`, { params: { limit: data.limit, offset: data.offset, keyword: data.keyword } })
+    return readCatalog(`/api/get-all-banner`, { signal: data.signal, params: { limit: data.limit, offset: data.offset, keyword: data.keyword } })
 }
 //=================BLOG=========================//
 const createNewBlogrService = (data) => {
@@ -196,8 +198,8 @@ const getAllBlog = (data) => {
 const getFeatureBlog = (limit) => {
     return axios.get(`/api/get-feature-blog`, { params: { limit: limit } })
 }
-const getNewBlog = (limit) => {
-    return axios.get(`/api/get-new-blog`, { params: { limit: limit } })
+const getNewBlog = (limit, { signal } = {}) => {
+    return readCatalog(`/api/get-new-blog`, { signal, params: { limit: limit } })
 }
 //===================TYPESHIP=====================//
 const createNewTypeShipService = (data) => {

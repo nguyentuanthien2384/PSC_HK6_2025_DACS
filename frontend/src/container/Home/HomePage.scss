@@ -1,4 +1,5 @@
 .store-home {
+    &__banner-loading { height: 600px; margin-bottom: 40px; background: #edf0ed; }
     // Keep the banner carousel controls inside the viewport.
     > .slick-slider {
         .slick-prev { left: 16px; z-index: 1; }

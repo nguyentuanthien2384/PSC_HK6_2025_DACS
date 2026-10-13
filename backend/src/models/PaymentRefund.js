@@ -18,5 +18,6 @@ module.exports = (sequelize, DataTypes) => sequelize.define('PaymentRefund', {
     attempts: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     lastError: DataTypes.STRING(1000),
     lastCheckedAt: DataTypes.DATE,
+    fulfillmentSyncedAt: DataTypes.DATE,
     completedAt: DataTypes.DATE
 });

@@ -1,4 +1,6 @@
 import React from "react";
+import 'bootstrap/js/dist/collapse';
+import 'bootstrap/js/dist/dropdown';
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Footer from "./Footer";

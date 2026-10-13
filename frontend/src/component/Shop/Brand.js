@@ -14,9 +14,10 @@ function Brand(props) {
     }
     useEffect(() => {
         let active = true;
+        const controller = new AbortController();
         const fetchBrand = async () => {
             try {
-                const response = await getAllCodeService('BRAND', { activeCatalog: true });
+                const response = await getAllCodeService('BRAND', { activeCatalog: true, signal: controller.signal });
                 if (active && response && response.errCode === 0 && Array.isArray(response.data)) {
                     setarrBrand([allBrands, ...response.data.filter((item) => item.code !== 'ALL')]);
                 }
@@ -25,7 +26,7 @@ function Brand(props) {
             }
         };
         fetchBrand();
-        return () => { active = false; };
+        return () => { active = false; controller.abort(); };
     }, [])
     return (
 
