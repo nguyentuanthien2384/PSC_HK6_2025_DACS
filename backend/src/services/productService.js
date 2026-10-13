@@ -152,48 +152,31 @@ let updateProduct = (data) => {
         }
     })
 }
-let getAllProductDetailById = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.id) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter!'
-                })
-            } else {
-                let productdetail = await db.ProductDetail.findAndCountAll({
-                    where: { productId: data.id },
-                    limit: Math.min(100, Math.max(1, Number(data.limit) || 20)),
-                    offset: Math.max(0, Number(data.offset) || 0),
-                })
-                if (productdetail.rows && productdetail.rows.length > 0) {
-                    for (let i = 0; i < productdetail.rows.length; i++) {
-                        productdetail.rows[i].productImageData = await db.ProductImage.findAll({
-                            where: { productdetailId: productdetail.rows[i].id }
-                        })
-                        productdetail.rows[i].productsize = await db.ProductDetailSize.findAll({
-                            where: { productdetailId: productdetail.rows[i].id }
-                        })
-                        if (productdetail.rows[i].productImageData && productdetail.rows[i].productImageData.length > 0) {
-                            for (let j = 0; j < productdetail.rows[i].productImageData.length > 0; j++) {
-                                productdetail.rows[i].productImageData[j].image = decodeImage(productdetail.rows[i].productImageData[j].image)
-                            }
-                        }
-
-                    }
-                }
-                resolve({
-                    errCode: 0,
-                    data: productdetail.rows,
-                    count: productdetail.count
-                })
-            }
-
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
+const getAllProductDetailById = async (data = {}) => {
+    if (!['number', 'string'].includes(typeof data.id) || !positiveInteger(data.id)) {
+        return { errCode: 1, errMessage: 'Missing required parameter!' };
+    }
+    const requestedLimit = Number(data.limit), requestedOffset = Number(data.offset);
+    const productdetail = await db.ProductDetail.findAndCountAll({
+        where: { productId: data.id },
+        limit: Number.isFinite(requestedLimit) ? Math.min(100, Math.max(1, Math.trunc(requestedLimit || 20))) : 20,
+        offset: Number.isFinite(requestedOffset) ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.trunc(requestedOffset))) : 0,
+        order: [['id', 'ASC']], raw: true
+    });
+    if (!productdetail.rows.length) return { errCode: 0, data: [], count: productdetail.count };
+    const detailIds = productdetail.rows.map(detail => detail.id);
+    const [images, sizes] = await Promise.all([
+        db.ProductImage.findAll({ where: { productdetailId: { [Op.in]: detailIds } },
+            attributes: ['id', 'productdetailId', 'caption', 'imageVersion', 'updatedAt'], order: [['id', 'ASC']], raw: true }),
+        db.ProductDetailSize.findAll({ where: { productdetailId: { [Op.in]: detailIds } }, order: [['id', 'ASC']], raw: true })
+    ]);
+    const byDetail = new Map(productdetail.rows.map(detail => [Number(detail.id), { ...detail, productImageData: [], productsize: [] }]));
+    // This list is used for prices and variant names. Image editors fetch the
+    // original upload through their separate detail/image endpoints.
+    for (const image of images) byDetail.get(Number(image.productdetailId))?.productImageData.push({ ...image, image: productImageUrl(image, 'card') });
+    for (const size of sizes) byDetail.get(Number(size.productdetailId))?.productsize.push(size);
+    return { errCode: 0, data: productdetail.rows.map(detail => byDetail.get(Number(detail.id))), count: productdetail.count };
+};
 let getAllProductDetailImageById = (data) => {
     return new Promise(async (resolve, reject) => {
         try {

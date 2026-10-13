@@ -1,5 +1,5 @@
 import { getUser } from "../../utils/token";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CommentBlog from '../../component/Blog/CommentBlog';
 import CommentFormBlog from '../../component/Blog/CommentFormBlog';
 import RightBlog from '../../component/Blog/RightBlog';
@@ -13,82 +13,93 @@ import moment from 'moment';
 function DetailBlog(props) {
   const [dataSubject, setdataSubject] = useState([])
   const [dataComment, setdataComment] = useState([])
-  const [dataBlog, setdataBlog] = useState({})
+  const [dataBlog, setdataBlog] = useState(null)
   const { id } = useParams();
-  const [user, setUser] = useState({})
+  const [user] = useState(() => getUser())
   const [dataFeatureBlog, setdataFeatureBlog] = useState([])
+  const [loadError, setLoadError] = useState('')
+  const [commentError, setCommentError] = useState('')
+  const [retry, setRetry] = useState(0)
+  const [commentRevision, setCommentRevision] = useState(0)
+  const commentBlogId = useRef(null)
+  const scope = useRef(null)
+  const sending = useRef(false)
   useEffect(() => {
-    try {
-      window.scrollTo(0, 0);
-      loadCategoryBlog()
-      loadFeatureBlog()
-      if (id) {
-        loadDataBlog(id)
-        loadComment(id)
-      }
-      const userData = getUser();
-      if (userData) {
-        setUser(userData)
-      }
+    let active = true;
+    const controller = new AbortController();
+    getAllCategoryBlogService('SUBJECT', { signal: controller.signal })
+      .then(response => { if (active && response?.errCode === 0) setdataSubject(response.data || []); })
+      .catch(() => {});
+    getFeatureBlog(6, { signal: controller.signal })
+      .then(response => { if (active && response?.errCode === 0) setdataFeatureBlog(response.data || []); })
+      .catch(() => {});
+    return () => { active = false; controller.abort(); };
+  }, []);
 
-    } catch (error) {
-      console.log(error)
-    }
-
-  }, [id])
-  let loadComment = async (id) => {
-    let res = await getAllcommentByBlogIdService(id)
-    if (res && res.errCode === 0) {
-
-      setdataComment(res.data)
-    }
-  }
-  let loadFeatureBlog = async () => {
-    let res = await getFeatureBlog(6)
-    if (res && res.errCode == 0) {
-      setdataFeatureBlog(res.data)
-    }
-  }
-  let loadCategoryBlog = async () => {
-    let res = await getAllCategoryBlogService('SUBJECT')
-    if (res && res.errCode == 0) {
-      setdataSubject(res.data)
-    }
-  }
-  let loadDataBlog = async (id) => {
-    let res = await getDetailBlogByIdService(id)
-    if (res && res.errCode == 0) {
-      setdataBlog(res.data)
-    }
-  }
-  let handleAddComment = async (content) => {
-    if (user && user.id) {
-      let res = await createNewcommentService({
-        content: content,
-        blogId: id,
-        userId: user.id,
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    const currentScope = {};
+    scope.current = currentScope;
+    setdataBlog(null);
+    setLoadError('');
+    getDetailBlogByIdService(id, { signal: controller.signal })
+      .then(response => {
+        if (!active) return;
+        if (response?.errCode !== 0 || !response.data) throw new Error(response?.errMessage || 'Không thể tải bài viết.');
+        setdataBlog(response.data);
       })
-      if (res && res.errCode == 0) {
-        toast.success('Đăng bình luận thành công')
-        loadComment(id)
-      } else {
-        toast.error(res.errMessage)
-      }
+      .catch(error => { if (active) setLoadError(error.message); });
+    return () => { active = false; controller.abort(); if (scope.current === currentScope) scope.current = null; };
+  }, [id, retry]);
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    if (commentBlogId.current !== id) {
+      commentBlogId.current = id;
+      setdataComment([]);
+    }
+    setCommentError('');
+    getAllcommentByBlogIdService(id, { signal: controller.signal, fresh: commentRevision > 0 })
+      .then(response => {
+        if (!active) return;
+        if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể tải bình luận.');
+        setdataComment(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch(error => { if (active) setCommentError(error.message); });
+    return () => { active = false; controller.abort(); };
+  }, [id, commentRevision]);
+
+  let handleAddComment = async (content) => {
+    if (sending.current) return;
+    if (user && user.id) {
+      const currentScope = scope.current;
+      sending.current = true;
+      try {
+        const res = await createNewcommentService({ content, blogId: id, userId: user.id });
+        if (scope.current !== currentScope) return;
+        if (res?.errCode !== 0) throw new Error(res?.errMessage || 'Không thể đăng bình luận.');
+        toast.success('Đăng bình luận thành công');
+        setCommentRevision(value => value + 1);
+      } catch (error) {
+        if (scope.current === currentScope) toast.error(error.message);
+      } finally { sending.current = false; }
     } else {
       toast.error("Hãy đăng nhập để bình luận")
     }
   }
   return (
     <>
-      <section class="banner_area">
-        <div class="banner_inner d-flex align-items-center">
-          <div class="container">
-            <div class="banner_content d-md-flex justify-content-between align-items-center">
-              <div class="mb-3 mb-md-0">
+      <section className="banner_area">
+        <div className="banner_inner d-flex align-items-center">
+          <div className="container">
+            <div className="banner_content d-md-flex justify-content-between align-items-center">
+              <div className="mb-3 mb-md-0">
                 <h2>Chi tiết bài đăng</h2>
                 <p>Theo dõi bài đăng để nhận thông tin mới nhất</p>
               </div>
-              <div class="page_link">
+              <div className="page_link">
                 <Link to={"/"}>Trang chủ</Link>
                 <Link to={"/blog"}>Tin tức</Link>
               </div>
@@ -100,6 +111,8 @@ function DetailBlog(props) {
         <div className="container">
           <div className="row">
             <div className="col-lg-8 posts-list">
+              {loadError ? <p role="alert">{loadError} <button type="button" onClick={() => setRetry(value => value + 1)}>Thử lại</button></p> :
+                !dataBlog ? <p role="status">Đang tải bài viết…</p> : <>
               <div className="single-post">
                 <div className="feature-img">
                   <img style={{ width: '100%', height: '514px', objectFit: 'cover' }} className="img-fluid" src={dataBlog.image} alt="" />
@@ -123,6 +136,7 @@ function DetailBlog(props) {
               </div>
 
               <div className="comments-area">
+                {commentError && <p role="alert">{commentError} <button type="button" onClick={() => setCommentRevision(value => value + 1)}>Thử lại bình luận</button></p>}
                 <h4>{dataComment.length} Bình luận</h4>
                 {dataComment && dataComment.length > 0 &&
                   dataComment.map((item, index) => {
@@ -141,6 +155,7 @@ function DetailBlog(props) {
 
               </div>
               <CommentFormBlog handleAddComment={handleAddComment} />
+              </>}
             </div>
             <RightBlog dataFeatureBlog={dataFeatureBlog} isPage={false} data={dataSubject}></RightBlog>
           </div>

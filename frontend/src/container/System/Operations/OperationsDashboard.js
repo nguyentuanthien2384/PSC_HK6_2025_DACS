@@ -21,9 +21,9 @@ export default function OperationsDashboard() {
     return <main className="admin-operations admin-workspace-page">
         <div className="operations-page-heading"><div><p className="operations-eyebrow">Tổng quan cửa hàng</p><h1>Trung tâm vận hành</h1><p>Đơn hàng, hàng hoàn và tồn kho cần xử lý trong hôm nay.</p></div><button type="button" className="btn btn-outline-secondary" disabled={loading} onClick={reload}>Làm mới dữ liệu</button></div>
         <form className="operations-range" onSubmit={event => { event.preventDefault(); setRange({ ...draft }); }}><label>Từ ngày<input type="date" value={draft.from} required onChange={event => setDraft(old => ({ ...old, from: event.target.value }))} /></label><label>Đến ngày<input type="date" min={draft.from} value={draft.to} required onChange={event => setDraft(old => ({ ...old, to: event.target.value }))} /></label><button type="submit" className="btn btn-primary">Xem kỳ báo cáo</button><small>Ngày giao và ngày hoàn theo UTC+7 · Tối đa 366 ngày</small></form>
-        {loading && <p role="status" className="operations-loading">Đang tải tổng quan vận hành…</p>}
+        <p role="status" className={data ? 'operations-refresh-status' : 'operations-loading'}>{loading ? data ? 'Đang cập nhật tổng quan vận hành…' : 'Đang tải tổng quan vận hành…' : ''}</p>
         {error && <div role="alert" className="operations-error"><p>{error}</p><button type="button" onClick={reload}>Thử lại</button></div>}
-        {!loading && !error && data && <>
+        {data && <>
             <div className="operations-kpi-grid">
                 {data.financialAccess && <article className="operations-kpi"><span>Doanh thu sau hoàn</span><strong>{orderMoney(data.metrics.netRevenue)}</strong><small>Đơn giao trong kỳ · đã trừ khoản hoàn xác nhận</small></article>}
                 <article className="operations-kpi"><span>Đơn giao trong kỳ</span><strong>{data.metrics.deliveredOrders}</strong><small>{data.range.from} → {data.range.to}</small></article>

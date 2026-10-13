@@ -4,6 +4,7 @@ import { getAllProductUser } from '../../services/userService';
 import { PAGINATION } from '../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import './MainShop.scss';
+import useRefreshOnReturn from '../../hooks/useRefreshOnReturn';
 
 function MainShop({ categoryId, brandId, myRef }) {
     const [dataProduct, setDataProduct] = useState([]);
@@ -18,6 +19,8 @@ function MainShop({ categoryId, brandId, myRef }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [retry, setRetry] = useState(0);
+    const [loaded, setLoaded] = useState(false);
+    useRefreshOnReturn(() => setRetry(value => value + 1), !loading);
 
     useEffect(() => {
         setPagination({ page: 0, categoryId, brandId });
@@ -47,12 +50,11 @@ function MainShop({ categoryId, brandId, myRef }) {
                 const products = Array.isArray(response.data) ? response.data : [];
                 const count = Number(response.count);
                 setDataProduct(products);
+                setLoaded(true);
                 setTotalResults(Number.isFinite(count) ? Math.max(0, count) : products.length);
             } catch (fetchError) {
                 if (active) {
                     setError(true);
-                    setDataProduct([]);
-                    setTotalResults(0);
                 }
             } finally {
                 if (active) setLoading(false);
@@ -138,7 +140,8 @@ function MainShop({ categoryId, brandId, myRef }) {
             </div>
 
             <div className="shop-catalog__results" aria-busy={loading}>
-                {loading ? (
+                {error && dataProduct.length > 0 && <div className="shop-refresh-error" role="alert">Chưa thể cập nhật sản phẩm. <button type="button" onClick={() => setRetry(value => value + 1)}>Thử lại</button></div>}
+                {loading && !loaded ? (
                     <div className="shop-product-grid" aria-hidden="true">
                         {Array.from({ length: limitPage }, (_, index) => (
                             <div className="shop-product-skeleton" key={index}>
@@ -149,7 +152,7 @@ function MainShop({ categoryId, brandId, myRef }) {
                             </div>
                         ))}
                     </div>
-                ) : error ? (
+                ) : error && !dataProduct.length ? (
                     <div className="shop-catalog__empty" role="alert">
                         <i className="ti-reload" aria-hidden="true" />
                         <h3>Chưa thể tải sản phẩm</h3>
@@ -184,8 +187,8 @@ function MainShop({ categoryId, brandId, myRef }) {
                 )}
             </div>
 
-            {!loading && !error && pageCount > 1 && (
-                <nav className="shop-pagination" aria-label="Phân trang sản phẩm">
+            {pageCount > 1 && (
+                <nav className="shop-pagination" aria-label="Phân trang sản phẩm" aria-busy={loading}>
                     <ReactPaginate
                         previousLabel={<i className="ti-angle-left" aria-hidden="true" />}
                         nextLabel={<i className="ti-angle-right" aria-hidden="true" />}
@@ -209,6 +212,7 @@ function MainShop({ categoryId, brandId, myRef }) {
                         activeClassName="is-active"
                         disabledClassName="is-disabled"
                         onPageChange={handleChangePage}
+                        onClick={() => loading ? false : undefined}
                     />
                 </nav>
             )}

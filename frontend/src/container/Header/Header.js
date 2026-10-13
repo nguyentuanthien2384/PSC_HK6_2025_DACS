@@ -1,19 +1,25 @@
 import { getUser } from "../../utils/token";
 import React from "react";
-import { useEffect, useState, useRef } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { getItemCartStart } from "../../action/ShopCartAction";
 import "./Header.scss";
 import TopMenu from "./TopMenu";
 import NotificationsBell from "../../component/Notifications/NotificationsBell";
 
+const navigationClassName = ({ isActive }) => `nav-link${isActive ? ' active selected' : ''}`;
+const navigationStyle = ({ isActive }) => isActive ? { color: '#71cd14' } : undefined;
+
 const Header = (props) => {
     const [user, setUser] = useState({});
     const [menuExpanded, setMenuExpanded] = useState(false);
+    const { pathname } = useLocation();
     const dispatch = useDispatch();
     let dataCart = useSelector((state) => state.shopcart.listCartItem);
     const menuRef = useRef(null);
+
+    useLayoutEffect(() => { setMenuExpanded(false); }, [pathname]);
 
     useEffect(() => {
         const userData = getUser();
@@ -78,13 +84,10 @@ const Header = (props) => {
                                     <ul className="nav navbar-nav center_nav pull-right">
                                         <li className="nav-item">
                                             <NavLink
-                                                exact
+                                                end
                                                 to="/"
-                                                className="nav-link"
-                                                activeClassName="selected"
-                                                activeStyle={{
-                                                    color: "#71cd14",
-                                                }}
+                                                className={navigationClassName}
+                                                style={navigationStyle}
                                             >
                                                 Trang chủ
                                             </NavLink>
@@ -92,11 +95,8 @@ const Header = (props) => {
                                         <li className="nav-item ">
                                             <NavLink
                                                 to="/shop"
-                                                className="nav-link"
-                                                activeClassName="selected"
-                                                activeStyle={{
-                                                    color: "#71cd14",
-                                                }}
+                                                className={navigationClassName}
+                                                style={navigationStyle}
                                             >
                                                 Cửa hàng
                                             </NavLink>
@@ -104,11 +104,8 @@ const Header = (props) => {
                                         <li className="nav-item ">
                                             <NavLink
                                                 to="/blog"
-                                                className="nav-link"
-                                                activeClassName="selected"
-                                                activeStyle={{
-                                                    color: "#71cd14",
-                                                }}
+                                                className={navigationClassName}
+                                                style={navigationStyle}
                                             >
                                                 Tin tức
                                             </NavLink>
@@ -116,11 +113,8 @@ const Header = (props) => {
                                         <li className="nav-item">
                                             <NavLink
                                                 to="/voucher"
-                                                className="nav-link"
-                                                activeClassName="selected"
-                                                activeStyle={{
-                                                    color: "#71cd14",
-                                                }}
+                                                className={navigationClassName}
+                                                style={navigationStyle}
                                             >
                                                 Giảm giá
                                             </NavLink>
@@ -128,16 +122,13 @@ const Header = (props) => {
                                         <li className="nav-item">
                                             <NavLink
                                                 to="/about"
-                                                className="nav-link"
-                                                activeClassName="selected"
-                                                activeStyle={{
-                                                    color: "#71cd14",
-                                                }}
+                                                className={navigationClassName}
+                                                style={navigationStyle}
                                             >
                                                 Giới thiệu
                                             </NavLink>
                                         </li>
-                                        {user?.roleId === "R3" && <li className="nav-item"><NavLink to="/shipper" className="nav-link">Giao hàng</NavLink></li>}
+                                        {user?.roleId === "R3" && <li className="nav-item"><NavLink to="/shipper" className={navigationClassName} style={navigationStyle}>Giao hàng</NavLink></li>}
                                     </ul>
                                 </div>
                                 <div className="col-lg-3 pr-0">

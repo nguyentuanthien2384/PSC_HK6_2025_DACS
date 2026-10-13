@@ -26,9 +26,14 @@ function fixture(overrides = {}) {
     const clone = value => structuredClone(value);
     const rowsFor = (key, query = {}) => (query.transaction ? query.transaction.state : state)[key];
     function matches(row, where = {}) {
-        return Object.keys(where).every(key => String(row[key]) === String(where[key])) &&
-            (!where[Op.or] || where[Op.or].some(clause => matches(row, clause)));
+        return Object.keys(where).every(key => where[key] && typeof where[key] === 'object' && where[key][Op.in]
+            ? where[key][Op.in].some(value => String(row[key]) === String(value)) : String(row[key] ?? null) === String(where[key] ?? null)) &&
+            (!where[Op.or] || where[Op.or].some(clause => matches(row, clause))) &&
+            (!where[Op.and] || where[Op.and].every(clause => matches(row, clause)));
     }
+    const project = (row, attributes) => Array.isArray(attributes)
+        ? Object.fromEntries(attributes.map(key => [key, row[key]]))
+        : Object.fromEntries(Object.entries(row).filter(([key]) => !attributes?.exclude?.includes(key)));
     const model = (key, row, tx) => ({ ...clone(row), async save(query) {
         assert.equal(query.transaction, tx);
         const values = Object.fromEntries(Object.entries(this).filter(([, value]) => typeof value !== 'function'));
@@ -46,10 +51,21 @@ function fixture(overrides = {}) {
                 }
                 const row = rowsFor(key, query).find(value => matches(value, query.where));
                 if (!row) return null;
-                const values = Array.isArray(query.attributes) ? Object.fromEntries(query.attributes.map(key => [key, row[key]])) : row;
+                const values = project(row, query.attributes);
                 return query.raw ? clone(values) : model(key, row, query.transaction);
             },
-            async findAll(query = {}) { return clone(rowsFor(key, query).filter(row => matches(row, query.where))); },
+            async findAll(query = {}) {
+                const rows = rowsFor(key, query).filter(row => matches(row, query.where));
+                if (key === 'ratings' && query.group) {
+                    assert.deepEqual(query.group, ['shipperId']);
+                    assert.deepEqual(query.attributes.slice(1).map(attribute => attribute[1]), ['ratingCount', 'ratingAverage']);
+                    return [...new Set(rows.map(row => row.shipperId))].map(shipperId => {
+                        const reviews = rows.filter(row => row.shipperId === shipperId);
+                        return { shipperId, ratingCount: reviews.length, ratingAverage: reviews.reduce((sum, row) => sum + row.rating, 0) / reviews.length };
+                    });
+                }
+                return clone(rows.map(row => project(row, query.attributes)));
+            },
             async count(query = {}) { return rowsFor(key, query).filter(row => matches(row, query.where)).length; },
             async sum(field, query = {}) { return rowsFor(key, query).filter(row => matches(row, query.where)).reduce((sum, row) => sum + row[field], 0); },
             async create(data, query) {
@@ -273,11 +289,11 @@ test('courier previews include only ready unassigned orders and cannot read some
 
 test('order APIs expose available queue, authenticated history summary and rating eligibility', async () => {
     const f = fixture();
-    f.db.PaymentSession = { async findOne(options) {
+    f.db.PaymentSession = { async findAll(options) {
         assert.ok(options.attributes.includes('status'));
         assert.equal(options.attributes.includes('checkoutData'), false);
         assert.equal(options.attributes.includes('gatewayOutcome'), false);
-        return { id: 'demo-session', provider: 'paypal', status: 'COMPLETED', totalPrice: 100, providerPaymentId: 'DEMO-paypal-1' };
+        return options.where.orderId[Op.in].map(orderId => ({ id: 'demo-session', orderId, provider: 'paypal', status: 'COMPLETED', totalPrice: 100, providerPaymentId: 'DEMO-paypal-1' }));
     } };
     f.state().orders.push({ id: 3, addressUserId: 2, statusId: 'S3', shipperId: null, totalPrice: 100 });
     const service = loadSource('services/orderService.js', { '../models/index': f.db, '../utils/constants': { EXCHANGE_RATES: { USD: 25000 } } });

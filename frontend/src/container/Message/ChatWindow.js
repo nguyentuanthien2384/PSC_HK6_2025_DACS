@@ -2,7 +2,6 @@ import { getToken, getUser } from "../../utils/token";
 import { API_BASE_URL } from "../../axios";
 import { toast } from "react-toastify";
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import { loadMessage } from "../../services/userService";
 import moment from "moment";
@@ -13,53 +12,72 @@ function ChatWindow(props) {
     const [mess, setMess] = useState([]);
     const [sending, setSending] = useState(false);
     const [message, setMessage] = useState("");
-    const [id, setId] = useState();
     const [user, setUser] = useState({});
     const socketRef = useRef();
+    const roomScope = useRef(null);
+    const chatList = useRef(null);
 
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host, { auth: { token: getToken() } });
-        socketRef.current.on("connect_error", () => toast.error("Không thể kết nối hỗ trợ trực tuyến"));
+        let active = true;
+        let sequence = 0;
+        const socket = socketIOClient.connect(host, { auth: { token: getToken() } });
+        socketRef.current = socket;
+        setMess([]);
+        setMessage('');
+        setSending(false);
         const userData = getUser();
         setUser(userData);
 
-        socketRef.current.on("getId", (data) => {
-            setId(data);
-        }); // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
-
-        if (props.roomId) {
-            fetchMessage().catch((error) => toast.error(error.message));
-        }
-
-        socketRef.current.on("sendDataServer", (dataGot) => {
-            fetchMessage().catch((error) => toast.error(error.message));
-            let elem = document.getElementById("box-chat");
-            if (elem) elem.scrollTop = elem.scrollHeight;
-        }); // mỗi khi có tin nhắn thì mess sẽ được render thêm
+        const refresh = async () => {
+            if (!active || !props.roomId) return;
+            const ticket = ++sequence;
+            try {
+                const response = await loadMessage(props.roomId, props.userId);
+                if (!active || ticket !== sequence) return;
+                if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể tải tin nhắn.');
+                setMess(Array.isArray(response.data) ? response.data : []);
+            } catch (error) {
+                if (active && ticket === sequence) toast.error(error.message);
+            }
+        };
+        const currentScope = { refresh, sending: false };
+        roomScope.current = currentScope;
+        socket.on("connect_error", () => { if (active) toast.error("Không thể kết nối hỗ trợ trực tuyến"); });
+        socket.on("sendDataServer", (data) => {
+            if (data?.roomId != null && String(data.roomId) !== String(props.roomId)) return;
+            refresh();
+        });
+        refresh();
 
         return () => {
-            socketRef.current.disconnect();
+            active = false;
+            socket.disconnect();
+            if (roomScope.current === currentScope) roomScope.current = null;
         };
-    }, [props.roomId]);
-    let fetchMessage = async () => {
-        let res = await loadMessage(props.roomId, props.userId);
-        if (res?.errCode === 0) {
-            setMess(Array.isArray(res.data) ? res.data : []);
-        }
-    };
+    }, [props.roomId, props.userId]);
+
+    useEffect(() => {
+        const list = chatList.current;
+        if (list) list.scrollTop = list.scrollHeight;
+    }, [mess]);
+
     const sendMessage = () => {
         const text = message.trim();
-        if (!text || sending) return;
+        const currentScope = roomScope.current;
+        if (!text || sending || !currentScope || currentScope.sending) return;
         if (!socketRef.current?.connected) { toast.error("Chưa kết nối hỗ trợ trực tuyến"); return; }
+        currentScope.sending = true;
         setSending(true);
         socketRef.current.timeout(10000).emit("sendDataClient", { text, roomId: props.roomId }, (error, result) => {
+            if (roomScope.current !== currentScope) return;
+            currentScope.sending = false;
             setSending(false);
             if (error || result?.errCode !== 0) {
                 toast.error(result?.errMessage || "Chưa gửi được tin nhắn. Vui lòng thử lại.");
                 return;
             }
             setMessage((current) => current.trim() === text ? "" : current);
-            fetchMessage().catch((failure) => toast.error(failure.message));
+            currentScope.refresh();
         });
     };    return (
         <div className="ks-messages ks-messenger__messages">
@@ -136,6 +154,7 @@ function ChatWindow(props) {
                         style={{ padding: "0px", top: "0px", width: "691px" }}
                     >
                         <ul
+                            ref={chatList}
                             id="box-chat"
                             className="ks-items"
                             style={{ overflowY: "scroll", maxHeight: "479px" }}
@@ -146,9 +165,9 @@ function ChatWindow(props) {
                                     if (item.userData) {
                                         return (
                                             <li
-                                                key={index}
+                                                key={item.id || index}
                                                 className={
-                                                    item.userData.id == user.id
+                                                    item.userData.id == user?.id
                                                         ? "ks-item ks-from"
                                                         : "ks-item ks-self"
                                                 }

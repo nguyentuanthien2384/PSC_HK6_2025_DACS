@@ -1,4 +1,4 @@
-import { readCatalog } from './catalogRequest';
+import { readCatalog, readRequest } from './catalogRequest';
 import axios from '../axios';
 import { setAuth } from '../utils/token';
 
@@ -82,4 +82,39 @@ test('failed requests can be retried and already cancelled reads never start tra
     controller.abort();
     await expect(readCatalog('/never', { signal: controller.signal })).rejects.toMatchObject({ code: 'ERR_CANCELED' });
     expect(axios.get).toHaveBeenCalledTimes(2);
+});
+
+test('a post-mutation fresh read does not reuse a pending response from before the change', async () => {
+    const old = deferred();
+    const current = deferred();
+    axios.get.mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise);
+    const previousRead = readRequest('/orders/fresh');
+    const freshRead = readRequest('/orders/fresh', { fresh: true });
+    const subscriber = readRequest('/orders/fresh');
+    await tick();
+    expect(axios.get).toHaveBeenCalledTimes(2);
+    old.resolve({ statusId: 'S5' });
+    await expect(previousRead).resolves.toEqual({ statusId: 'S5' });
+    current.resolve({ statusId: 'S6' });
+    await expect(freshRead).resolves.toEqual({ statusId: 'S6' });
+    await expect(subscriber).resolves.toEqual({ statusId: 'S6' });
+});
+
+test('cancelling an obsolete read aborts only its transport after a fresh read replaces it', async () => {
+    const old = deferred();
+    const current = deferred();
+    axios.get.mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise);
+    const controller = new AbortController();
+    const previousRead = readRequest('/orders/cancel-old', { signal: controller.signal });
+    const freshRead = readRequest('/orders/cancel-old', { fresh: true });
+    const cancelledRead = expect(previousRead).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+    await tick();
+    controller.abort();
+    await cancelledRead;
+    await tick();
+    expect(axios.get.mock.calls[0][1].signal.aborted).toBe(true);
+    expect(axios.get.mock.calls[1][1].signal.aborted).toBe(false);
+    old.reject(Object.assign(new Error('Cancelled'), { code: 'ERR_CANCELED' }));
+    current.resolve({ errCode: 0 });
+    await expect(freshRead).resolves.toEqual({ errCode: 0 });
 });

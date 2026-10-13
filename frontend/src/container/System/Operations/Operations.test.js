@@ -91,3 +91,27 @@ test('unsafe URL values fall back to bounded known filters', () => {
     const value = operationsFiltersFromSearch(new URLSearchParams('status=DROP&keyword=' + 'a'.repeat(110) + '&from=2026-02-31&to=2026-10-13&page=9999999'), { status: 'ALL', keyword: '', from: '', to: '' }, { status: ['ALL', 'S3'] });
     expect(value).toEqual({ page: 1, filters: { status: 'ALL', keyword: 'a'.repeat(100), from: '', to: '2026-10-13' } });
 });
+
+test('refresh keeps order rows mounted and blocks stale bulk selection until data is current', async () => {
+    let rejectRefresh;
+    api.getOperationsOrders.mockResolvedValueOnce(orders()).mockImplementationOnce(() => new Promise((resolve, reject) => { rejectRefresh = reject; }));
+    render(<OperationsOrders />);
+    const link = await screen.findByRole('link', { name: '#42' });
+    fireEvent.click(screen.getByRole('button', { name: 'Làm mới' }));
+    await waitFor(() => expect(api.getOperationsOrders).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole('link', { name: '#42' })).toBe(link);
+    expect(screen.getByLabelText('Chọn đơn 42')).toBeDisabled();
+    expect(screen.getByLabelText('Chọn tất cả đơn đủ điều kiện trên trang')).toBeDisabled();
+    await act(async () => rejectRefresh(new Error('Mất kết nối')));
+    expect(screen.getByRole('alert')).toHaveTextContent('Mất kết nối');
+    expect(screen.getByRole('link', { name: '#42' })).toBe(link);
+    expect(screen.getByLabelText('Chọn đơn 42')).toBeDisabled();
+});
+
+test('returning to the operations page coalesces focus and visibility events into one refresh', async () => {
+    render(<OperationsOrders />);
+    await screen.findByRole('link', { name: '#42' });
+    fireEvent.focus(window);
+    fireEvent(document, new Event('visibilitychange'));
+    await waitFor(() => expect(api.getOperationsOrders).toHaveBeenCalledTimes(2));
+});

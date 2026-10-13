@@ -44,6 +44,8 @@
 .delivery-form input { display: block; margin: 8px 0; max-width: 100%; }
 .delivery-form img { display: block; margin: 12px 0; }
 .order-status-message { padding: 20px; border-radius: 8px; background: #f3f5ef; margin: 16px 0; }
+.order-refresh-status { min-height: 1.5rem; margin: 8px 0; color: #636b58; font-size: 14px; }
+.order-workflow > [role="tabpanel"] { min-height: 180px; }
 .workflow-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 12px 0; }
 .order-action-form .form-control, .order-action-form .form-select { margin: 8px 0 14px; }
 .workflow-evidence input { display: block; margin: 8px 0; max-width: 100%; }

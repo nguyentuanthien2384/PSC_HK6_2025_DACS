@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ItemBlog from "../../component/Blog/ItemBlog";
-import Pagination from "../../component/Shop/Pagination";
-import SpecialItemBlog from "../../component/Blog/SpecialItemBlog";
 import RightBlog from "../../component/Blog/RightBlog";
 import { PAGINATION } from "../../utils/constant";
 import { getAllBlog } from "../../services/userService";
 import ReactPaginate from "react-paginate";
-import { useFetchAllcode } from "../customize/fetch";
 import {
     getAllCategoryBlogService,
     getFeatureBlog,
@@ -16,85 +13,73 @@ function BlogPage(props) {
     const [dataBlog, setdataBlog] = useState([]);
     const [dataFeatureBlog, setdataFeatureBlog] = useState([]);
     const [dataSubject, setdataSubject] = useState([]);
-    const [count, setCount] = useState("");
-    const [numberPage, setnumberPage] = useState("");
+    const [count, setCount] = useState(0);
+    const [numberPage, setnumberPage] = useState(0);
     const [subjectId, setsubjectId] = useState("");
     const [keyword, setkeyword] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [retry, setRetry] = useState(0);
     useEffect(() => {
-        try {
-            window.scrollTo(0, 0);
-            loadCategoryBlog();
-            fetchData("", keyword);
-            loadFeatureBlog();
-        } catch (error) {
-            console.log(error);
-        }
+        let active = true;
+        const controller = new AbortController();
+        getAllCategoryBlogService('SUBJECT', { signal: controller.signal })
+            .then(response => { if (active && response?.errCode === 0) setdataSubject(response.data || []); })
+            .catch(() => {});
+        getFeatureBlog(6, { signal: controller.signal })
+            .then(response => { if (active && response?.errCode === 0) setdataFeatureBlog(response.data || []); })
+            .catch(() => {});
+        return () => { active = false; controller.abort(); };
     }, []);
 
-    let fetchData = async (code, keyword) => {
-        let arrData = await getAllBlog({
-            subjectId: code,
-            limit: PAGINATION.pagerow,
-            offset: 0,
-            keyword: keyword,
-        });
-        if (arrData && arrData.errCode === 0) {
-            setdataBlog(arrData.data);
-            setCount(Math.ceil(arrData.count / PAGINATION.pagerow));
-        }
-    };
-    let loadFeatureBlog = async () => {
-        let res = await getFeatureBlog(6);
-        if (res && res.errCode == 0) {
-            setdataFeatureBlog(res.data);
-        }
-    };
-    let loadCategoryBlog = async () => {
-        let res = await getAllCategoryBlogService("SUBJECT");
-        if (res && res.errCode == 0) {
-            setdataSubject(res.data);
-        }
-    };
-    let handleChangePage = async (number) => {
-        setnumberPage(number.selected);
-        let arrData = await getAllBlog({
-            subjectId: subjectId,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            keyword: keyword,
-        });
-        if (arrData && arrData.errCode === 0) {
-            setdataBlog(arrData.data);
-        }
-    };
+    useEffect(() => {
+        let active = true;
+        const controller = new AbortController();
+        setLoading(true);
+        setError('');
+        getAllBlog({ subjectId, keyword, limit: PAGINATION.pagerow,
+            offset: numberPage * PAGINATION.pagerow, signal: controller.signal })
+            .then(response => {
+                if (!active) return;
+                if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể tải bài viết.');
+                setdataBlog(Array.isArray(response.data) ? response.data : []);
+                setCount(Math.ceil((Number(response.count) || 0) / PAGINATION.pagerow));
+            })
+            .catch(failure => { if (active) setError(failure.message); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; controller.abort(); };
+    }, [numberPage, subjectId, keyword, retry]);
+
+    const handleChangePage = ({ selected }) => setnumberPage(selected);
     let handleClickCategory = (code) => {
+        setnumberPage(0);
         setsubjectId(code);
-        fetchData(code, "");
+        setkeyword('');
     };
     let handleSearchBlog = (text) => {
-        fetchData("", text);
-        setkeyword(text);
+        setnumberPage(0);
+        setkeyword(text.trim());
     };
     let handleOnchangeSearch = (keyword) => {
         if (keyword === "") {
-            fetchData("", keyword);
-            setkeyword(keyword);
+            setnumberPage(0);
+            setkeyword('');
         }
     };
     return (
         <>
-            <section class="banner_area">
-                <div class="banner_inner d-flex align-items-center">
-                    <div class="container">
-                        <div class="banner_content d-md-flex justify-content-between align-items-center">
-                            <div class="mb-3 mb-md-0">
+            <section className="banner_area">
+                <div className="banner_inner d-flex align-items-center">
+                    <div className="container">
+                        <div className="banner_content d-md-flex justify-content-between align-items-center">
+                            <div className="mb-3 mb-md-0">
                                 <h2>Tin tức</h2>
                                 <p>
                                     Hãy theo dõi những bài viết để nhận được
                                     thông tin mới nhất
                                 </p>
                             </div>
-                            <div class="page_link">
+                            <div className="page_link">
                                 <Link to={"/"}>Trang chủ</Link>
                                 <Link to={"/blog"}>Tin tức</Link>
                             </div>
@@ -106,24 +91,29 @@ function BlogPage(props) {
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-8 mb-5 mb-lg-0">
-                            <div className="blog_left_sidebar">
+                            <div className="blog_left_sidebar" aria-busy={loading}>
+                                {loading && <p role="status">Đang tải bài viết…</p>}
+                                {error && <p role="alert">{error} <button type="button" onClick={() => setRetry(value => value + 1)}>Thử lại</button></p>}
+                                {!loading && !error && !dataBlog.length && <p>Không tìm thấy bài viết phù hợp.</p>}
                                 {dataBlog &&
                                     dataBlog.length > 0 &&
-                                    dataBlog.map((item, index) => {
+                                    dataBlog.map((item) => {
                                         return (
                                             <ItemBlog
-                                                key={index}
+                                                key={item.id}
                                                 data={item}
                                             ></ItemBlog>
                                         );
                                     })}
                             </div>
 
-                            <ReactPaginate
+                            {count > 1 && <ReactPaginate
                                 previousLabel={"Quay lại"}
                                 nextLabel={"Tiếp"}
                                 breakLabel={"..."}
                                 pageCount={count}
+                                forcePage={numberPage}
+                                disableInitialCallback
                                 marginPagesDisplayed={3}
                                 containerClassName={
                                     "pagination justify-content-center"
@@ -137,7 +127,7 @@ function BlogPage(props) {
                                 breakClassName={"page-item"}
                                 activeClassName={"active"}
                                 onPageChange={handleChangePage}
-                            />
+                            />}
                         </div>
                         <RightBlog
                             handleOnchangeSearch={handleOnchangeSearch}

@@ -4,6 +4,7 @@ import Header from "./container/Header/Header";
 import Footer from "./container/Footer/Footer";
 import TopMenu from "./container/Header/TopMenu";
 import RequireAuth from "./component/RequireAuth";
+import RouteScrollReset from "./component/RouteScrollReset";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 function lazyPage(loader) {
@@ -36,6 +37,7 @@ const AboutPage = lazyPage(() => import("./container/About/AboutPage"));
 function App() {
     return (
         <Router>
+            <RouteScrollReset />
             <Routes>
                 <Route path="/notifications" element={<RequireAuth><Header /><NotificationsPage /><Footer /></RequireAuth>} />
                 <Route path="/forgot-password" element={<><Header /><ForgotPasswordPage /><Footer /></>} />

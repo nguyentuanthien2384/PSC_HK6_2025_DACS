@@ -1,5 +1,5 @@
 import axios from "../axios";
-import { readCatalog } from './catalogRequest';
+import { readCatalog, readRequest } from './catalogRequest';
 const deleteConfig = (payload) => payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload : { data: payload };
 
 //==================USER==========================//
@@ -54,8 +54,8 @@ const getAllCodeService = (type, { activeCatalog = false, signal } = {}) => {
     return activeCatalog ? readCatalog('/api/get-all-code', { params, signal }) : axios.get('/api/get-all-code', { params, signal });
 
 }
-const getAllCategoryBlogService = (type) => {
-    return axios.get(`/api/get-all-category-blog`, { params: { type: type } })
+const getAllCategoryBlogService = (type, { signal } = {}) => {
+    return readRequest(`/api/get-all-category-blog`, { signal, params: { type } })
 
 }
 const getListAllCodeService = (data) => {
@@ -189,14 +189,14 @@ const updateBlogService = (data) => {
 const deleteBlogService = (data) => {
     return axios.delete(`/api/delete-blog`, deleteConfig(data))
 }
-const getDetailBlogByIdService = (id) => {
-    return axios.get(`/api/get-detail-blog`, { params: { id: id } })
+const getDetailBlogByIdService = (id, { signal } = {}) => {
+    return readRequest(`/api/get-detail-blog`, { signal, params: { id } })
 }
 const getAllBlog = (data) => {
-    return axios.get(`/api/get-all-blog`, { params: { limit: data.limit, offset: data.offset, subjectId: data.subjectId, keyword: data.keyword } })
+    return readRequest(`/api/get-all-blog`, { signal: data.signal, params: { limit: data.limit, offset: data.offset, subjectId: data.subjectId, keyword: data.keyword } })
 }
-const getFeatureBlog = (limit) => {
-    return axios.get(`/api/get-feature-blog`, { params: { limit: limit } })
+const getFeatureBlog = (limit, { signal } = {}) => {
+    return readRequest(`/api/get-feature-blog`, { signal, params: { limit } })
 }
 const getNewBlog = (limit, { signal } = {}) => {
     return readCatalog(`/api/get-new-blog`, { signal, params: { limit: limit } })
@@ -287,17 +287,17 @@ const createNewOrderService = (data) => {
 
 }
 const getAllOrder = (data) => {
-    return axios.get(`/api/get-all-order`, { params: { limit: data.limit, offset: data.offset, statusId: data.statusId } })
+    return readRequest(`/api/get-all-order`, { signal: data.signal, fresh: data.fresh, params: { limit: data.limit, offset: data.offset, statusId: data.statusId } })
 }
-const getDetailOrder = (id) => {
-    return axios.get(`/api/get-detail-order`, { params: { id: id } })
+const getDetailOrder = (id, { signal, fresh } = {}) => {
+    return readRequest(`/api/get-detail-order`, { signal, fresh, params: { id: id } })
 }
 const updateStatusOrderService = (data) => {
     return axios.put(`/api/update-status-order`, data)
 }
 
-const getAllOrdersByUser = (userId) => {
-    return axios.get(`/api/get-all-order-by-user`, { params: { userId: userId } })
+const getAllOrdersByUser = (userId, { signal, fresh } = {}) => {
+    return readRequest(`/api/get-all-order-by-user`, { signal, fresh, params: { userId: userId } })
 }
 const paymentOrderService = (data) => {
     return axios.post(`/api/payment-order`, data)
@@ -358,8 +358,8 @@ const listRoomOfAdmin = () => {
 const createNewcommentService = (data) => {
     return axios.post(`/api/create-new-comment`, data)
 }
-const getAllcommentByBlogIdService = (id) => {
-    return axios.get(`/api/get-all-comment-by-blogId`, { params: { id: id } })
+const getAllcommentByBlogIdService = (id, { signal, fresh = false } = {}) => {
+    return readRequest(`/api/get-all-comment-by-blogId`, { signal, fresh, params: { id } })
 }
 const ReplycommentService = (data) => {
     return axios.post(`/api/reply-comment`, data)

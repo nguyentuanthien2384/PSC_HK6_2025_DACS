@@ -157,8 +157,8 @@ section#formHolder {
   left: 60%;
   transform: translate(-50%, -50%);
 }
-.form form .form-group {
-  margin-bottom: 5px;
+.box-login .login-form .form-group {
+  margin-bottom: 16px;
   position: relative;
 }
 .form form .form-group.hasError input {
@@ -167,19 +167,16 @@ section#formHolder {
 .form form .form-group.hasError label {
   color: #f95959 !important;
 }
-.form form label {
+.box-login .login-form label {
+  display: block;
+  margin-bottom: 4px;
   font-size: 12px;
   font-weight: 400;
   text-transform: uppercase;
   font-family: "Montserrat", sans-serif;
-  transform: translateY(40px);
-  transition: all 0.4s;
+  transform: none;
   cursor: text;
-  z-index: -1;
-}
-.form form label.active {
-  transform: translateY(10px);
-  font-size: 10px;
+  z-index: auto;
 }
 .form form label.fontSwitch {
   font-family: "Raleway", sans-serif !important;

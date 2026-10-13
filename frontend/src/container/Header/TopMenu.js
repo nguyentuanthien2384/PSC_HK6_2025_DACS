@@ -32,7 +32,7 @@ const TopMenu = (props) => {
               <ul className="right_side">
                 <li>
                   {user && user.id ? (
-                    <NavLink exact to={profileLink}>
+                    <NavLink end to={profileLink}>
                       {name}
                     </NavLink>
                   ) : (

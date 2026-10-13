@@ -20,6 +20,9 @@ jest.mock('./container/System/HomePageAdmin', () => {
     return () => <div>Admin page</div>;
 });
 
+beforeEach(() => jest.spyOn(window, 'scrollTo').mockImplementation(() => {}));
+afterEach(() => jest.restoreAllMocks());
+
 test('the storefront shell stays visible while the selected page loads and unrelated admin code stays deferred', async () => {
     window.history.replaceState(null, '', '/');
     render(<App />);

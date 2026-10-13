@@ -162,6 +162,21 @@ function createDeliveryService(db) {
             ratingAverage: Math.round((Number(summary && summary.ratingAverage) || 0) * 100) / 100 };
     }
 
+    async function ratingSummaries(shipperIds) {
+        const keys = [...new Set(shipperIds.filter(validId).map(Number))];
+        const summaries = new Map(keys.map(id => [id, { ratingCount: 0, ratingAverage: 0 }]));
+        if (!keys.length) return summaries;
+        const rows = await db.ShipperRating.findAll({
+            where: { shipperId: { [Op.in]: keys } }, raw: true, group: ['shipperId'],
+            attributes: ['shipperId', [fn('COUNT', col('id')), 'ratingCount'], [fn('AVG', col('rating')), 'ratingAverage']]
+        });
+        for (const row of rows) summaries.set(Number(row.shipperId), {
+            ratingCount: Number(row.ratingCount) || 0,
+            ratingAverage: Math.round((Number(row.ratingAverage) || 0) * 100) / 100
+        });
+        return summaries;
+    }
+
     async function shipperSummary(shipperId) {
         const [working, done, ratings] = await Promise.all([
             db.OrderProduct.count({ where: { shipperId: Number(shipperId), statusId: 'S5' } }),
@@ -174,7 +189,8 @@ function createDeliveryService(db) {
     const getActiveShippers = (data, actor) => resultOf(async () => {
         if (!isAdmin(actor)) fail('Bạn không có quyền chọn người giao hàng.', 403);
         const rows = await db.User.findAll({ where: { roleId: 'R3', statusId: 'S1' }, attributes: safeShipperFields, order: [['firstName', 'ASC'], ['id', 'ASC']], raw: true });
-        for (const row of rows) Object.assign(row, await ratingSummary(row.id));
+        const summaries = await ratingSummaries(rows.map(row => row.id));
+        for (const row of rows) Object.assign(row, summaries.get(Number(row.id)));
         return { errCode: 0, data: rows };
     });
 
@@ -242,7 +258,7 @@ function createDeliveryService(db) {
 
     const availableWhere = () => ({ statusId: 'S4', [Op.or]: [{ shipperId: null }, { shipperId: 0 }],
         [Op.and]: [{ [Op.or]: [{ deliveryProvider: 'internal' }, { deliveryProvider: null }] }] });
-    return { confirmOrder, updateStatusOrder, updateImageOrder, rateShipper, ratingSummary, shipperSummary, getActiveShippers, availableWhere,
+    return { confirmOrder, updateStatusOrder, updateImageOrder, rateShipper, ratingSummary, ratingSummaries, shipperSummary, getActiveShippers, availableWhere,
         reportDeliveryFailure, retryDelivery, startReturnToWarehouse, receiveUndeliveredReturn };
 }
 

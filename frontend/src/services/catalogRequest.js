@@ -4,11 +4,12 @@ import { getToken } from '../utils/token';
 const pending = new Map();
 const cancelled = () => Object.assign(new Error('Request cancelled'), { name: 'AbortError', code: 'ERR_CANCELED' });
 
-// Share only requests that are still running. A later visit always refreshes prices and stock.
-export function readCatalog(url, { params = {}, signal } = {}) {
+// Share only requests that are still running, scoped to the current account.
+// A later visit always fetches current data; mutations can bypass older reads.
+export function readRequest(url, { params = {}, signal, fresh = false } = {}) {
     if (signal?.aborted) return Promise.reject(cancelled());
     const key = JSON.stringify([url, getToken(), Object.entries(params).filter(([, value]) => value !== undefined).sort(([a], [b]) => a.localeCompare(b))]);
-    let entry = pending.get(key);
+    let entry = fresh ? undefined : pending.get(key);
     if (!entry) {
         const controller = new AbortController();
         entry = { controller, subscribers: new Set() };
@@ -35,8 +36,8 @@ export function readCatalog(url, { params = {}, signal } = {}) {
             finish(reject, cancelled());
             // StrictMode remounts synchronously: let the new subscriber keep the request alive.
             Promise.resolve().then(() => {
-                if (!entry.subscribers.size && pending.get(key) === entry) {
-                    pending.delete(key);
+                if (!entry.subscribers.size) {
+                    if (pending.get(key) === entry) pending.delete(key);
                     entry.controller.abort();
                 }
             });
@@ -45,3 +46,5 @@ export function readCatalog(url, { params = {}, signal } = {}) {
         entry.request.then((value) => finish(resolve, value), (error) => finish(reject, error));
     });
 }
+
+export const readCatalog = readRequest;

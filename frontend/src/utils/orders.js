@@ -31,6 +31,23 @@ export const canCustomerCancel = (order) => ['S3', 'S4'].includes(order.statusId
 export const canCustomerConfirmReceipt = (order) => order.statusId === 'S5' && Boolean(order.shipperId);
 export const canCustomerRateShipper = (order) => order.statusId === 'S6' && Boolean(order.shipperId) && order.canRateShipper === true && !order.shipperRating;
 
+// Mutations return order columns, while GETs include products, address and media.
+// Apply confirmed scalar changes without replacing those loaded relations or
+// a displayable proof image with its JSON-serialized database Buffer.
+export function mergeOrderUpdate(order, updated) {
+    if (!order || String(updated?.id) !== String(order.id)) return order;
+    const next = { ...order, statusOrderData: undefined };
+    for (const [key, value] of Object.entries(updated)) {
+        if (key === 'image') {
+            if (value == null) next.image = '';
+            else if (typeof value === 'string' && /^(data:image\/|https?:\/\/|\/api\/media\/)/.test(value)) next.image = value;
+        } else if (value == null || ['string', 'number', 'boolean'].includes(typeof value)) {
+            next[key] = value;
+        }
+    }
+    return next;
+}
+
 export const RETURN_STATUSES = { REQUESTED: 'Chờ duyệt trả hàng', APPROVED: 'Đã duyệt, chờ gửi hàng', SHIPPED: 'Khách đã gửi hàng về', REFUND_PENDING: 'Đã nhận hàng, chờ hoàn tiền', REFUNDED: 'Đã hoàn tiền', REJECTED: 'Yêu cầu bị từ chối' };
 
 export function paymentLabel(order) {

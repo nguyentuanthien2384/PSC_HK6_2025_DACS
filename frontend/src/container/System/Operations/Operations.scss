@@ -21,6 +21,7 @@
     .operations-pagination { display: flex; justify-content: flex-end; gap: 10px; align-items: center; padding: 17px 20px; border-top: 1px solid #edf0f5; font-size: .8rem; span { margin-right: auto; color: #69778b; } button { background: #fff; border: 1px solid #d9dfe8; border-radius: 6px; padding: 7px 11px; } }
     button:disabled { opacity: .48; cursor: not-allowed; }
     .operations-empty, .operations-loading { padding: 28px !important; text-align: center; color: #7a8699; }
+    .operations-refresh-status { min-height: 24px; margin: 0; padding: 0 20px; color: #7a8699; font-size: .8rem; }
     .operations-error { background: #fff1f0; color: #a52d2d; padding: 16px 20px; }
     .operations-confirm, .operations-result { margin: 16px 20px; padding: 18px; border-radius: 8px; background: #f1f5ff; font-size: .85rem; button { margin-right: 8px; } p { margin: 8px 0; } }
     .operations-result { background: #f1f8f3; }

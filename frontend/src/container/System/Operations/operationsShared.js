@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import useRefreshOnReturn from '../../../hooks/useRefreshOnReturn';
 
 export const todayVietnam = () => new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10);
 export const recentRange = () => { const to = todayVietnam(); return { from: new Date(Date.parse(`${to}T00:00:00+07:00`) - 29 * 86400000 + 7 * 3600000).toISOString().slice(0, 10), to }; };
@@ -43,11 +44,12 @@ export function useOperationsFilters(defaults, options) {
     return { draft, setDraft, filters, page, apply };
 }
 
-export function useOperationsQuery(loader, params) {
+export function useOperationsQuery(loader, params, refreshEnabled = true) {
     const [state, setState] = useState({ loading: true, error: '', response: null });
     const [revision, setRevision] = useState(0);
     const serial = useRef(0);
     const reload = useCallback(() => setRevision(value => value + 1), []);
+    useRefreshOnReturn(reload, refreshEnabled && !state.loading);
     useEffect(() => {
         const controller = new AbortController(); const sequence = ++serial.current;
         setState(old => ({ ...old, loading: true, error: '' }));

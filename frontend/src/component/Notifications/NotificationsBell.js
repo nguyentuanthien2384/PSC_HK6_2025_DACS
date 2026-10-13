@@ -23,5 +23,13 @@ export default function NotificationsBell() {
         window.addEventListener('focus', refresh); window.addEventListener('notifications-changed', refresh);
         return () => { requests.current += 1; clearInterval(interval); window.removeEventListener('focus', refresh); window.removeEventListener('notifications-changed', refresh); };
     }, [load]);
-    return <span className="notifications-bell"><Link to="/notifications" className="icons" aria-label={`Thông báo${count ? `, ${count} chưa đọc` : ''}`}><i className="fas fa-bell" aria-hidden="true" />{count > 0 && <span className="notifications-count">{count > 99 ? '99+' : count}</span>}</Link>{error && <button type="button" className="notifications-retry" onClick={load} title="Không thể tải thông báo. Thử lại." aria-label="Thử tải lại số thông báo">!</button>}</span>;
+    return <span className="notifications-bell">
+        <Link to="/notifications" className="icons" aria-label={`Thông báo${count ? `, ${count} chưa đọc` : ''}`}>
+            <span className="notifications-icon" aria-hidden="true">
+                <i className="fas fa-bell" />
+                {count > 0 && <span className="notifications-count">{count > 99 ? '99+' : count}</span>}
+            </span>
+        </Link>
+        {error && <button type="button" className="notifications-retry" onClick={load} title="Không thể tải thông báo. Thử lại." aria-label="Thử tải lại số thông báo">!</button>}
+    </span>;
 }

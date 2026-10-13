@@ -1,8 +1,9 @@
 import axios from '../axios';
+import { readRequest } from './catalogRequest';
 
-export const getAvailableShippingOrders = () => axios.get('/api/get-available-order-for-shipper');
-export const getShipperOrders = (status) => axios.get('/api/get-all-order-by-shipper', { params: { status } });
-export const getActiveShippers = () => axios.get('/api/get-active-shipper');
+export const getAvailableShippingOrders = (options = {}) => readRequest('/api/get-available-order-for-shipper', options);
+export const getShipperOrders = (status, options = {}) => readRequest('/api/get-all-order-by-shipper', { ...options, params: { status } });
+export const getActiveShippers = (options = {}) => readRequest('/api/get-active-shipper', options);
 export const assignShippingOrder = (orderId, shipperId) => axios.put('/api/confirm-order', {
     orderId, statusId: 'S5', ...(shipperId ? { shipperId } : {}),
 });

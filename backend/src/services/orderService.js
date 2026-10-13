@@ -8,70 +8,18 @@ const { createDeliveryService } = require('./deliveryService');
 const { fail, positiveInteger, resultOf, canReadOrder, encodeVnpay, signVnpay, verifyVnpay } = require('../utils/commerce');
 const commerce = createCommerceService(db);
 const delivery = createDeliveryService(db);
-const afterSales = require('./afterSalesService').createAfterSalesService(db);
-const { safeShipment } = require('./shippingProviderService');
+const { hydrateOrders } = require('./orderReadService').createOrderReadService(db, delivery);
 const admin = actor => actor && ['R1', 'R4'].includes(actor.roleId);
-const safeUser = { exclude: ['password', 'usertoken', 'image'] };
-const shipperFields = ['id', 'firstName', 'lastName', 'phonenumber', 'roleId', 'statusId'];
-const deliveryCustomerFields = ['id', 'firstName', 'lastName', 'phonenumber'];
 const orderIncludes = () => [
     { model: db.TypeShip, as: 'typeShipData' },
     { model: db.Voucher, as: 'voucherData' },
     { model: db.Allcode, as: 'statusOrderData' }
 ];
-const decodeImage = value => value == null ? '' : Buffer.from(value, 'base64').toString('binary');
 
 const createNewOrder = data => resultOf(async () => {
     if (Number(data.isPaymentOnlien || 0) !== 0) fail('Thanh toán trực tuyến phải được xác nhận bởi cổng thanh toán.');
     return commerce.transaction(async tx => commerce.persistOrder(await commerce.quote(data, tx), tx));
 });
-
-async function hydrateOrder(order, actor) {
-    order.image = decodeImage(order.image);
-    order.addressUser = await db.AddressUser.findOne({ where: { id: order.addressUserId }, raw: true });
-    order.userData = order.addressUser ? await db.User.findOne({ where: { id: order.addressUser.userId },
-        attributes: actor && actor.roleId === 'R3' ? deliveryCustomerFields : safeUser, raw: true }) : null;
-    order.shipperData = order.shipperId ? await db.User.findOne({ where: { id: order.shipperId }, attributes: shipperFields, raw: true }) : null;
-    order.shipperRating = await db.ShipperRating.findOne({ where: { orderId: order.id }, raw: true });
-    if (order.shipperData) Object.assign(order.shipperData, await delivery.ratingSummary(order.shipperId));
-    order.canRateShipper = !!actor && order.statusId === 'S6' && Number(order.shipperId) > 0 &&
-        String(order.addressUser && order.addressUser.userId) === String(actor.id) &&
-        String(order.shipperId) !== String(actor.id) && !order.shipperRating;
-    order.events = db.OrderEvent ? await db.OrderEvent.findAll({ where: { orderId: order.id }, attributes: ['id', 'type', 'title', 'message', 'createdAt'], order: [['id', 'ASC']], raw: true }) : [];
-    order.returnRequest = db.ReturnRequest ? await db.ReturnRequest.findOne({ where: { orderId: order.id }, order: [['id', 'DESC']], raw: true }) : null;
-    if (order.returnRequest && actor?.roleId === 'R3') {
-        delete order.returnRequest.refundProof; delete order.returnRequest.refundReference;
-        delete order.returnRequest.payoutDetails;
-    }
-    order.returnEligibility = afterSales.returnEligibility(order, actor, order.returnRequest, order.addressUser);
-    order.shipment = db.Shipment ? safeShipment(await db.Shipment.findOne({ where: { orderId: order.id }, raw: true })) : null;
-    const payment = await db.PaymentSession.findOne({ where: { orderId: order.id }, attributes: ['id', 'provider', 'status', 'totalPrice', 'currency', 'paidAt', 'reviewReason', 'providerPaymentId'], raw: true });
-    order.paymentSession = payment ? { ...payment, isDemo: /^DEMO-/i.test(payment.providerPaymentId || '') } : null;
-    if (order.paymentSession) delete order.paymentSession.providerPaymentId;
-    order.voucherData = order.voucherData || { id: null };
-    order.voucherData.typeVoucherOfVoucherData = order.voucherData.typeVoucherId ? await db.TypeVoucher.findOne({ where: { id: order.voucherData.typeVoucherId }, raw: true }) : null;
-    const details = await db.OrderDetail.findAll({ where: { orderId: order.id }, raw: true });
-    for (const line of details) {
-        line.productDetailSize = await db.ProductDetailSize.findOne({ where: { id: line.productId }, include: [{ model: db.Allcode, as: 'sizeData' }], raw: true, nest: true });
-        line.productDetail = line.productDetailSize ? await db.ProductDetail.findOne({ where: { id: line.productDetailSize.productdetailId }, raw: true }) : null;
-        line.product = line.productDetail ? await db.Product.findOne({ where: { id: line.productDetail.productId }, raw: true }) : null;
-        line.productImage = line.productDetail ? await db.ProductImage.findAll({ where: { productdetailId: line.productDetail.id }, raw: true }) : [];
-        line.productImage.forEach(image => { image.image = decodeImage(image.image); });
-        if (!line.productImage.length) line.productImage.push({ image: '' });
-        line.productDetailSize = line.productDetailSize || { id: line.productId, sizeData: { value: '' } };
-        line.productDetail = line.productDetail || { nameDetail: 'Sản phẩm không còn trong danh mục', discountPrice: line.realPrice };
-        line.product = line.product || { name: 'Sản phẩm đã mua' };
-    }
-    order.orderDetail = details;
-    if (order.totalPrice == null) {
-        order.subtotal = details.reduce((sum, line) => sum + Number(line.realPrice) * Number(line.quantity), 0);
-        order.shippingFee = Number(order.typeShipData && order.typeShipData.price) || 0;
-        const type = order.voucherData.typeVoucherOfVoucherData;
-        order.discountAmount = type ? Math.min(order.subtotal, type.typeVoucher === 'percent' ? Math.min(Math.floor(order.subtotal * Number(type.value) / 100), Number(type.maxValue)) : Number(type.maxValue)) : 0;
-        order.totalPrice = order.subtotal + order.shippingFee - order.discountAmount;
-    }
-    return order;
-}
 
 const getAllOrders = (data = {}, actor) => resultOf(async () => {
     if (!admin(actor)) fail('Bạn không có quyền xem danh sách đơn hàng.', 403);
@@ -82,7 +30,7 @@ const getAllOrders = (data = {}, actor) => resultOf(async () => {
     }
     if (data.statusId && data.statusId !== 'ALL') filter.where = { statusId: data.statusId };
     const result = await db.OrderProduct.findAndCountAll(filter);
-    for (const order of result.rows) await hydrateOrder(order, actor);
+    await hydrateOrders(result.rows, actor);
     return { errCode: 0, data: result.rows, count: result.count };
 });
 
@@ -92,7 +40,8 @@ const getDetailOrderById = (id, actor) => resultOf(async () => {
     if (!order) fail('Không tìm thấy đơn hàng.', 2);
     const address = await db.AddressUser.findOne({ where: { id: order.addressUserId }, raw: true });
     if (!canReadOrder(order, address, actor)) fail('Bạn không có quyền truy cập đơn hàng này.', 403);
-    return { errCode: 0, data: await hydrateOrder(order, actor) };
+    await hydrateOrders([order], actor, { addresses: [address] });
+    return { errCode: 0, data: order };
 });
 
 const updateStatusOrder = delivery.updateStatusOrder;
@@ -100,9 +49,19 @@ const updateStatusOrder = delivery.updateStatusOrder;
 const getAllOrdersByUser = userId => resultOf(async () => {
     if (!positiveInteger(userId)) fail('Tài khoản không hợp lệ.');
     const addresses = await db.AddressUser.findAll({ where: { userId }, raw: true });
+    const orders = addresses.length ? await db.OrderProduct.findAll({ where: { addressUserId: { [Op.in]: addresses.map(address => address.id) } },
+        include: orderIncludes(), raw: true, nest: true, order: [['createdAt', 'DESC']] }) : [];
+    // Do not attach nested orders to the address objects used in hydration;
+    // otherwise order.addressUser would form a circular response structure.
+    await hydrateOrders(orders, { id: userId }, { addresses: addresses.map(address => ({ ...address })) });
+    const ordersByAddress = new Map();
+    for (const order of orders) {
+        const id = Number(order.addressUserId);
+        if (!ordersByAddress.has(id)) ordersByAddress.set(id, []);
+        ordersByAddress.get(id).push(order);
+    }
     for (const address of addresses) {
-        address.order = await db.OrderProduct.findAll({ where: { addressUserId: address.id }, include: orderIncludes(), raw: true, nest: true, order: [['createdAt', 'DESC']] });
-        for (const order of address.order) await hydrateOrder(order, { id: userId });
+        address.order = ordersByAddress.get(Number(address.id)) || [];
     }
     return { errCode: 0, data: addresses };
 });
@@ -114,14 +73,14 @@ const getAllOrdersByShipper = (data = {}, actor) => resultOf(async () => {
     if (data.status === 'working') where.statusId = { [Op.in]: ['S5', 'S8', 'S9'] };
     if (data.status === 'done') where.statusId = 'S6';
     const orders = await db.OrderProduct.findAll({ where, include: orderIncludes(), order: [['createdAt', 'DESC']], raw: true, nest: true });
-    for (const order of orders) await hydrateOrder(order, actor);
-    return { errCode: 0, data: orders, summary: await delivery.shipperSummary(where.shipperId) };
+    const [, summary] = await Promise.all([hydrateOrders(orders, actor), delivery.shipperSummary(where.shipperId)]);
+    return { errCode: 0, data: orders, summary };
 });
 
 const getAvailableOrdersForShipper = (data = {}, actor) => resultOf(async () => {
     if (!actor || (!admin(actor) && actor.roleId !== 'R3')) fail('Bạn không có quyền xem đơn chờ giao.', 403);
     const orders = await db.OrderProduct.findAll({ where: delivery.availableWhere(), include: orderIncludes(), order: [['createdAt', 'ASC']], raw: true, nest: true });
-    for (const order of orders) await hydrateOrder(order, actor);
+    await hydrateOrders(orders, actor);
     return { errCode: 0, data: orders, count: orders.length };
 });
 

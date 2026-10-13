@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import OrderUser from './OrderUser';
 import { getAllOrdersByUser, updateStatusOrderService } from '../../services/userService';
 import { rateShipper } from '../../services/shippingService';
@@ -72,4 +72,37 @@ test('delivered orders without an assigned shipper cannot be rated; detail handl
     fireEvent.click(await screen.findByRole('button', { name: 'Xem chi tiết' }));
     expect(screen.getByRole('heading', { name: 'Sản phẩm' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Gửi đánh giá' })).not.toBeInTheDocument();
+});
+
+test('returning to the page refreshes orders once and preserves expanded details on slow or failed refresh', async () => {
+    getAllOrdersByUser.mockResolvedValueOnce(response([order(1, 'S3')]));
+    let rejectRefresh;
+    getAllOrdersByUser.mockImplementationOnce(() => new Promise((resolve, reject) => { rejectRefresh = reject; }));
+    render(<OrderUser />);
+    const card = await screen.findByRole('article', { name: 'Đơn hàng 1' });
+    fireEvent.click(within(card).getByRole('button', { name: 'Xem chi tiết' }));
+    fireEvent.focus(window);
+    fireEvent(document, new Event('visibilitychange'));
+    await waitFor(() => expect(getAllOrdersByUser).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole('article', { name: 'Đơn hàng 1' })).toBe(card);
+    expect(within(card).getByRole('heading', { name: 'Sản phẩm' })).toBeInTheDocument();
+    expect(card).toHaveAttribute('aria-busy', 'true');
+    await act(async () => rejectRefresh(new Error('Không cập nhật được')));
+    expect(screen.getByRole('alert')).toHaveTextContent('Không cập nhật được');
+    expect(screen.getByRole('article', { name: 'Đơn hàng 1' })).toBe(card);
+});
+
+test('a committed status is shown immediately without removing products while a fresh reload is pending', async () => {
+    const pendingOrder = order(1, 'S3', { statusOrderData: { value: 'Chờ xác nhận' } });
+    getAllOrdersByUser.mockResolvedValueOnce(response([pendingOrder])).mockReturnValueOnce(new Promise(() => {}));
+    updateStatusOrderService.mockResolvedValueOnce({ errCode: 0, data: { id: 1, statusId: 'S7', cancellationReason: 'Đặt nhầm sản phẩm' } });
+    render(<OrderUser />);
+    const card = await screen.findByRole('article', { name: 'Đơn hàng 1' });
+    fireEvent.click(within(card).getByRole('button', { name: 'Hủy đơn' }));
+    fireEvent.change(within(card).getByLabelText('Lý do hủy đơn'), { target: { value: 'Đặt nhầm sản phẩm' } });
+    fireEvent.click(within(card).getByRole('button', { name: 'Xác nhận hủy đơn' }));
+    expect(await within(card).findByText('Đã hủy')).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: 'Đơn hàng 1' })).toBe(card);
+    expect(within(card).getByText('Áo mẫu × 1')).toBeInTheDocument();
+    expect(getAllOrdersByUser).toHaveBeenLastCalledWith(7, expect.objectContaining({ fresh: true, signal: expect.any(AbortSignal) }));
 });
