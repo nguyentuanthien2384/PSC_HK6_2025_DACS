@@ -39,14 +39,43 @@ export const ADMIN_NAV_GROUPS = [
     ] },
 ];
 
+const DETAIL_PAGES = {
+    'order-detail': ['list-order', 'Chi tiết đơn hàng'],
+    'add-receipt': ['list-receipt', 'Tạo phiếu nhập hàng'],
+    'detail-receipt': ['list-receipt', 'Chi tiết phiếu nhập hàng'],
+    'add-supplier': ['list-supplier', 'Thêm nhà cung cấp'],
+    'edit-supplier': ['list-supplier', 'Chỉnh sửa nhà cung cấp'],
+    'add-user': ['list-user', 'Thêm tài khoản'],
+    'edit-user': ['list-user', 'Chỉnh sửa tài khoản'],
+    'add-product': ['list-product', 'Thêm sản phẩm'],
+    'edit-product': ['list-product', 'Chỉnh sửa sản phẩm'],
+    'list-product-detail': ['list-product', 'Biến thể sản phẩm'],
+    'list-product-detail-image': ['list-product', 'Ảnh và kích thước sản phẩm'],
+    'add-product-detail': ['list-product', 'Thêm biến thể sản phẩm'],
+    'update-product-detail': ['list-product', 'Chỉnh sửa biến thể sản phẩm'],
+    'infor': [null, 'Thông tin cá nhân'],
+    'change-password': [null, 'Đổi mật khẩu'],
+    'notifications': [null, 'Thông báo'],
+};
+
+export function getAdminRouteContext(pathname) {
+    const segment = pathname.replace(/^\/system\/home\/?/i, '').split('/')[0].toLowerCase();
+    const detail = DETAIL_PAGES[segment];
+    const parent = detail ? detail[0] : segment.replace(/^(?:add|edit)-/, 'list-');
+    const currentLink = ADMIN_NAV_GROUPS.flatMap(group => group.links).find(link => link.path === parent);
+    const group = currentLink ? ADMIN_NAV_GROUPS.find(item => item.links.includes(currentLink)) : undefined;
+    const title = !segment ? 'Tổng quan vận hành' : detail?.[1] || (currentLink ? `${/^(?:add|edit)-/.test(segment) ? (segment.startsWith('add-') ? 'Thêm mới · ' : 'Chỉnh sửa · ') : ''}${currentLink.label}` : 'Quản lý cửa hàng');
+    return { currentLink, group, title };
+}
+
 export default function SideBar({ onNavigate = () => {}, mobileNavigation = false, navigationOpen = false }) {
     const user = getUser();
     const location = useLocation();
+    const { currentLink, group: activeGroup } = getAdminRouteContext(location.pathname);
     const [expanded, setExpanded] = useState({ operations: true, inventory: true, catalog: true });
     useEffect(() => {
-        const active = ADMIN_NAV_GROUPS.find(group => group.links.some(link => location.pathname === `/system/home/${link.path}`));
-        if (active) setExpanded(current => ({ ...current, [active.id]: true }));
-    }, [location.pathname]);
+        if (activeGroup) setExpanded(current => ({ ...current, [activeGroup.id]: true }));
+    }, [activeGroup]);
     return <aside className="admin-sidebar" id="admin-navigation" aria-label="Menu quản trị" aria-hidden={mobileNavigation && !navigationOpen ? true : undefined} inert={mobileNavigation && !navigationOpen ? true : undefined}>
         <Link to="/system/home" className="admin-brand" onClick={onNavigate}>
             <span className="admin-brand-mark" aria-hidden="true">D</span><span><strong>DACS</strong><small>Quản trị cửa hàng</small></span>
@@ -58,7 +87,7 @@ export default function SideBar({ onNavigate = () => {}, mobileNavigation = fals
                 <button type="button" className="admin-nav-group-toggle" aria-expanded={!!expanded[group.id]} aria-controls={`admin-nav-${group.id}`} onClick={() => setExpanded(current => ({ ...current, [group.id]: !current[group.id] }))}>
                     <span><i className={group.icon} aria-hidden="true" />{group.title}</span><i className={`fas fa-chevron-${expanded[group.id] ? 'up' : 'down'}`} aria-hidden="true" />
                 </button>
-                <div id={`admin-nav-${group.id}`} hidden={!expanded[group.id]}>{group.links.map(link => <NavLink key={link.path} to={`/system/home/${link.path}`} className={({ isActive }) => `admin-nav-link${isActive ? ' active' : ''}`} onClick={onNavigate}><i className={link.icon} aria-hidden="true" /><span>{link.label}</span></NavLink>)}</div>
+                <div id={`admin-nav-${group.id}`} hidden={!expanded[group.id]}>{group.links.map(link => <Link key={link.path} to={`/system/home/${link.path}`} aria-current={currentLink?.path === link.path ? 'page' : undefined} className={`admin-nav-link${currentLink?.path === link.path ? ' active' : ''}`} onClick={onNavigate}><i className={link.icon} aria-hidden="true" /><span>{link.label}</span></Link>)}</div>
             </div>)}
         </nav>
         <div className="admin-sidebar-footer"><span className="admin-role-dot" aria-hidden="true" /><div><strong>{user?.roleId === 'R1' ? 'Chủ cửa hàng' : 'Nhân viên vận hành'}</strong><small>{user?.firstName || user?.lastName ? [user.firstName, user.lastName].filter(Boolean).join(' ') : 'Tài khoản quản trị'}</small></div></div>

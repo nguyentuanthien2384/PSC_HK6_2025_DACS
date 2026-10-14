@@ -1,38 +1,19 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { toast } from 'react-toastify';
-import { useParams } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
-
-
-const FormSearch = (props) => {
-    const [keyword, setkeyword] = useState('')
-
-    let handleSearchProduct = () =>{
-        props.handleSearch(keyword)
-    }
-    let handleOnchange = (keyword)=>{
-        setkeyword(keyword)
-        props.handleOnchange(keyword)
-    }
-
-
-    return (
-        <form   >
+export default function FormSearch({ title, handleSearch, handleOnchange }) {
+    const [keyword, setKeyword] = useState('');
+    const label = `Tìm kiếm theo ${title}`;
+    return <form role="search" aria-label={label} onSubmit={event => { event.preventDefault(); handleSearch(keyword); }}>
         <div className="form-group">
             <div className="input-group mb-3">
-                <input onChange={(e) => handleOnchange(e.target.value)} value={keyword} type="text" className="form-control" placeholder={`Tìm kiếm theo ${props.title}`} />
+                <input type="search" aria-label={label} placeholder={label} className="form-control" value={keyword} maxLength={100} onChange={event => { setKeyword(event.target.value); handleOnchange?.(event.target.value); }} />
                 <div className="input-group-append">
-                    <button onClick={() =>handleSearchProduct()}  className="btn" type="button"><i className="ti-search" /></button>
+                    <button className="btn" type="submit" aria-label={label}><i className="ti-search" aria-hidden="true" /></button>
                 </div>
             </div>
         </div>
-        
-        </form>
-    )
+    </form>;
 }
-export default FormSearch;
 
 
 

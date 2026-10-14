@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import './ManageProductImage.scss';
 import 'react-image-lightbox/style.css';
 import { PAGINATION } from '../../../../utils/constant';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../../AdminPagination';
 import { useParams } from 'react-router-dom';
 import usePagedAdminList from '../../usePagedAdminList';
 const Lightbox = lazy(() => import('react-image-lightbox'));
@@ -191,9 +191,9 @@ const ManageProductImage = () => {
                                                     <td><button type="button" className="product-image-preview" aria-label={`Xem hình ${item.caption || item.id}`} onClick={() => openPreviewImage(item.previewImage || item.image)}><img src={item.image} alt={item.caption || ''} className="box-image" width={100} height={40} loading="lazy" decoding="async" /></button></td>
                                                     <td>
 
-                                                        <span onClick={() => handleEditProductImage(item.id)} style={{ color: '#0E6DFE', cursor: 'pointer' }}   >Edit</span>
+                                                        <button type="button" className="btn btn-link p-0" disabled={images.loading} aria-label={`Chỉnh sửa hình ${item.caption || item.id}`} onClick={() => handleEditProductImage(item.id)}>Chỉnh sửa</button>
                                                         &nbsp; &nbsp;
-                                                        <span onClick={() => handleDeleteProductImage(item.id)} style={{ color: '#0E6DFE', cursor: 'pointer' }}   >Delete</span>
+                                                        <button type="button" className="btn btn-link p-0" disabled={images.loading} aria-label={`Xóa hình ${item.caption || item.id}`} onClick={() => handleDeleteProductImage(item.id)}>Xóa</button>
 
                                                     </td>
                                                 </tr>
@@ -222,25 +222,7 @@ const ManageProductImage = () => {
                         onCloseRequest={() => setisOpen(false)}
                     /></Suspense>
                 }
-                <ReactPaginate
-                    previousLabel={'Quay lại'}
-                    nextLabel={'Tiếp'}
-                    breakLabel={'...'}
-                    pageCount={Math.max(1, count)}
-                    forcePage={numberPage}
-                    disableInitialCallback
-                    marginPagesDisplayed={3}
-                    containerClassName={"pagination justify-content-center"}
-                    pageClassName={"page-item"}
-                    pageLinkClassName={"page-link"}
-                    previousLinkClassName={"page-link"}
-                    nextClassName={"page-item"}
-                    nextLinkClassName={"page-link"}
-                    breakLinkClassName={"page-link"}
-                    breakClassName={"page-item"}
-                    activeClassName={"active"}
-                    onPageChange={handleChangePage}
-                />
+                <AdminPagination pageCount={Math.max(1, count)} forcePage={numberPage} onPageChange={handleChangePage} loading={images.loading} ariaLabel="Phân trang hình ảnh" />
             </div>
 
             <div>
@@ -280,9 +262,9 @@ const ManageProductImage = () => {
                                                     <td>{item.stock}</td>
                                                     <td>
 
-                                                        <span onClick={() => handleEditProductSize(item.id)} style={{ color: '#0E6DFE', cursor: 'pointer' }}   >Edit</span>
+                                                        <button type="button" className="btn btn-link p-0" disabled={sizes.loading} aria-label={`Chỉnh sửa kích thước ${item.sizeData?.value || item.id}`} onClick={() => handleEditProductSize(item.id)}>Chỉnh sửa</button>
                                                         &nbsp; &nbsp;
-                                                        <span onClick={() => handleDeleteProductSize(item.id)} style={{ color: '#0E6DFE', cursor: 'pointer' }}   >Delete</span>
+                                                        <button type="button" className="btn btn-link p-0" disabled={sizes.loading} aria-label={`Xóa kích thước ${item.sizeData?.value || item.id}`} onClick={() => handleDeleteProductSize(item.id)}>Xóa</button>
 
                                                     </td>
                                                 </tr>
@@ -302,25 +284,7 @@ const ManageProductImage = () => {
                     /></Suspense>}
                 </div>
 
-                <ReactPaginate
-                    previousLabel={'Quay lại'}
-                    nextLabel={'Tiếp'}
-                    breakLabel={'...'}
-                    pageCount={Math.max(1, countSize)}
-                    forcePage={numberSizePage}
-                    disableInitialCallback
-                    marginPagesDisplayed={3}
-                    containerClassName={"pagination justify-content-center"}
-                    pageClassName={"page-item"}
-                    pageLinkClassName={"page-link"}
-                    previousLinkClassName={"page-link"}
-                    nextClassName={"page-item"}
-                    nextLinkClassName={"page-link"}
-                    breakLinkClassName={"page-link"}
-                    breakClassName={"page-item"}
-                    activeClassName={"active"}
-                    onPageChange={handleChangePageProductSize}
-                />
+                <AdminPagination pageCount={Math.max(1, countSize)} forcePage={numberSizePage} onPageChange={handleChangePageProductSize} loading={sizes.loading} ariaLabel="Phân trang kích thước" />
             </div>
         </div >
     )

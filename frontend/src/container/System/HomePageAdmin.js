@@ -28,6 +28,7 @@ const AddProductDetail = lazy(() => import('./Product/ProductDetail/AddProductDe
 const EditProductDetail = lazy(() => import('./Product/ProductDetail/EditProductDetail'));
 const DetailOrder = lazy(() => import('./Order/DetailOrder'));
 const PaymentReconciliation = lazy(() => import('./Order/PaymentReconciliation'));
+const NotificationsPage = lazy(() => import('../User/NotificationsPage'));
 const AddTypeVoucher = lazy(() => import('./Voucher/AddTypeVoucher'));
 const ManageTypeVoucher = lazy(() => import('./Voucher/ManageTypeVoucher'));
 const AddVoucher = lazy(() => import('./Voucher/AddVoucher'));
@@ -116,6 +117,7 @@ export default function HomePageAdmin() {
             <Route path="order-detail/:id" element={<DetailOrder />} />
             <Route path="returns" element={<OperationsReturns />} />
             <Route path="payment-reconciliation" element={<PaymentReconciliation />} />
+            <Route path="notifications" element={<NotificationsPage inWorkspace />} />
             <Route path="inventory" element={<InventoryManagement />} />
             <Route path="list-user" element={owner(<ManageUser />)} />
             <Route path="add-user" element={owner(<Adduser />)} />

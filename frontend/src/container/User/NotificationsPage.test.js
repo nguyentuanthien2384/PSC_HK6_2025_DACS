@@ -9,6 +9,19 @@ const notification = { id: 40, title: 'Đơn đang giao', message: 'Đơn #12 đ
 const result = (data = [notification], unreadCount = 1, count = data.length) => ({ errCode: 0, data, unreadCount, count });
 beforeEach(() => { jest.clearAllMocks(); operations.getNotifications.mockResolvedValue(result()); operations.readNotification.mockResolvedValue({ errCode: 0 }); operations.readAllNotifications.mockResolvedValue({ errCode: 0 }); });
 
+test('read changes from the header refresh the open notification page without waiting for polling', async () => {
+    const { unmount } = render(<NotificationsPage inWorkspace />);
+    await screen.findByRole('article', { name: 'Thông báo 40' });
+    operations.getNotifications.mockResolvedValue(result([{ ...notification, readAt: '2026-10-14T05:00:00Z' }], 0));
+    fireEvent(window, new Event('notifications-changed'));
+    await waitFor(() => expect(screen.getByText('0 thông báo chưa đọc')).toBeInTheDocument());
+    expect(screen.getByRole('article', { name: 'Thông báo 40' })).not.toHaveClass('unread');
+    const calls = operations.getNotifications.mock.calls.length;
+    unmount();
+    fireEvent(window, new Event('notifications-changed'));
+    expect(operations.getNotifications).toHaveBeenCalledTimes(calls);
+});
+
 test.each(['https://evil.example/', '//evil.example', '/user/order/7/../../login', '/system/home/../settings', '/user/order/%37', '/shipper\\evil', '/user/order/7\n'])('unsafe notification link %s is discarded', link => expect(notificationDestination({ link })).toBeNull());
 test.each(['/user/order/7', '/system/home/order-detail/12', '/shipper', '/shipper?tab=working'])('allowed order destination %s remains local', link => expect(notificationDestination({ link })).toBe(link));
 

@@ -1,224 +1,46 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { getAllProductAdmin, getDetailReceiptByIdService, createNewReceiptDetailService } from '../../../services/userService';
-
+import React, { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Link, useParams } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
+import { getDetailReceiptByIdService, createNewReceiptDetailService } from '../../../services/userService';
 import CommonUtils from '../../../utils/CommonUtils';
-import moment from 'moment';
-const DetailReceipt = (props) => {
+import ReceiptLineForm from './ReceiptLineForm';
+import useReceiptResources from './useReceiptResources';
+import '../StaffTools.scss';
+
+export default function DetailReceipt() {
     const { id } = useParams();
-    const [dataProduct, setdataProduct] = useState([])
-    const [dataProductDetail, setdataProductDetail] = useState([])
-    const [dataProductDetailSize, setdataProductDetailSize] = useState([])
-    const [productDetailSizeId, setproductDetailSizeId] = useState('')
-    const [dataReceiptDetail, setdataReceiptDetail] = useState({})
-    const [inputValues, setInputValues] = useState({
-        quantity: '', price: '', productId: ''
-    });
-    if (dataProduct && dataProduct.length > 0 && inputValues.productId === '') {
-        setInputValues({ ...inputValues, ["productId"]: dataProduct[0].id, })
-        setproductDetailSizeId(dataProduct[0].productDetail[0].productDetailSize[0].id)
-        setdataProductDetail(dataProduct[0].productDetail)
-        setdataProductDetailSize(dataProduct[0].productDetail[0].productDetailSize)
-
-    }
+    const resources = useReceiptResources();
+    const [version, setVersion] = useState(0);
+    const [receipt, setReceipt] = useState({ id: '', loading: true, error: '', data: null });
     useEffect(() => {
-
-        loadProduct()
-        loadReceiptDetail(id)
-
-    }, [])
-    let loadReceiptDetail = async (id) => {
-        let res = await getDetailReceiptByIdService(id)
-        if (res && res.errCode == 0) {
-            setdataReceiptDetail(res.data.receiptDetail)
-        }
-    }
-    let loadProduct = async () => {
-        let arrData = await getAllProductAdmin({
-
-            sortName: '',
-            sortPrice: '',
-            categoryId: 'ALL',
-            brandId: 'ALL',
-            limit: '',
-            offset: '',
-            keyword: ''
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProduct(arrData.data)
-
-        }
-    }
-    const handleOnChange = event => {
-        const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
-
+        let active = true;
+        setReceipt({ id, loading: true, error: '', data: null });
+        getDetailReceiptByIdService(id).then(response => {
+            if (!active) return;
+            if (response?.errCode !== 0 || !response.data) throw new Error(response?.errMessage || 'Không tìm thấy phiếu nhập.');
+            setReceipt({ id, loading: false, error: '', data: response.data });
+        }).catch(failure => { if (active) setReceipt({ id, loading: false, error: failure.message || 'Không thể tải phiếu nhập.', data: null }); });
+        return () => { active = false; };
+    }, [id, version]);
+    const loading = receipt.id !== id || receipt.loading;
+    const lines = receipt.id === id ? receipt.data?.receiptDetail || [] : [];
+    const save = async line => {
+        const response = await createNewReceiptDetailService({ ...line, receiptId: id });
+        if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể thêm hàng vào phiếu nhập.');
+        toast.success('Thêm chi tiết nhập hàng thành công'); setVersion(old => old + 1);
     };
-    const handleOnChangeProduct = event => {
-        const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value })
-        for (let i = 0; i < dataProduct.length; i++) {
-            if (dataProduct[i].id == value) {
-
-                setdataProductDetail(dataProduct[i].productDetail)
-                setdataProductDetailSize(dataProduct[i].productDetail[0].productDetailSize)
-                setproductDetailSizeId(dataProduct[i].productDetail[0].productDetailSize[0].id)
-            }
-        }
-
-    };
-    let handleOnChangeProductDetail = event => {
-        const { name, value } = event.target;
-        for (let i = 0; i < dataProductDetail.length; i++) {
-            if (dataProductDetail[i].id == value) {
-
-                setdataProductDetailSize(dataProductDetail[i].productDetailSize)
-                setproductDetailSizeId(dataProductDetail[i].productDetailSize[0].id)
-            }
-        }
-    }
-    let handleSaveReceiptDetail = async () => {
-
-        let res = await createNewReceiptDetailService({
-            receiptId: id,
-            productDetailSizeId: productDetailSizeId,
-            quantity: inputValues.quantity,
-            price: inputValues.price
-        })
-        if (res && res.errCode === 0) {
-            toast.success("Thêm nhập chi tiết hàng thành công")
-            setInputValues({
-                ...inputValues,
-
-                ["quantity"]: '',
-                ["price"]: ''
-            })
-            loadReceiptDetail(id)
-        }
-        else if (res && res.errCode === 2) {
-            toast.error(res.errMessage)
-        }
-        else toast.error("Thêm nhập hàng thất bại")
-
-    }
-
-
-    return (
-        <div className="container-fluid px-4">
-            <h1 className="mt-4">Quản lý chi tiết nhập hàng</h1>
-
-
-            <div className="card mb-4">
-                <div className="card-header">
-                    <i className="fas fa-table me-1" />
-                    Thêm mới chi tiết nhập hàng
-                </div>
-                <div className="card-body">
-                    <form>
-                        <div className="form-row">
-                            <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Sản phẩm</label>
-                                <select value={inputValues.productId} name="productId" onChange={(event) => handleOnChangeProduct(event)} id="inputState" className="form-control">
-                                    {dataProduct && dataProduct.length > 0 &&
-                                        dataProduct.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.name}</option>
-                                            )
-                                        })
-                                    }
-                                </select>
-                            </div>
-                            <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Loại sản phẩm</label>
-                                <select onChange={(event) => handleOnChangeProductDetail(event)} id="inputState" className="form-control">
-                                    {dataProductDetail && dataProductDetail.length > 0 &&
-                                        dataProductDetail.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.nameDetail}</option>
-                                            )
-                                        })
-                                    }
-                                </select>
-                            </div>
-                            <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Size sản phẩm</label>
-                                <select value={productDetailSizeId} name="productDetailSizeId" onChange={(event) => setproductDetailSizeId(event.target.value)} id="inputState" className="form-control">
-                                    {dataProductDetailSize && dataProductDetailSize.length > 0 &&
-                                        dataProductDetailSize.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.sizeId}</option>
-                                            )
-                                        })
-                                    }
-                                </select>
-                            </div>
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Số lượng</label>
-                                <input type="number" value={inputValues.quantity} name="quantity" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
-                            </div>
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Đơn giá</label>
-                                <input type="number" value={inputValues.price} name="price" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
-                            </div>
-                        </div>
-
-                        <button type="button" onClick={() => handleSaveReceiptDetail()} className="btn btn-primary">Lưu thông tin</button>
-                    </form>
-                </div>
-                <div className="card-header">
-                    <i className="fas fa-table me-1" />
-                    Danh sách chi tiết nhập hàng
-                </div>
-                <div className="card-body">
-
-                    <div className='row'>
-
-                        <div className='col-12'>
-                            {/* <button  style={{float:'right'}} onClick={() => handleOnClickExport()} className="btn btn-success mb-2" >Xuất excel <i class="fa-solid fa-file-excel"></i></button> */}
-                        </div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Mã đơn</th>
-                                    <th>Tên sản phẩm</th>
-                                    <th>Số lượng</th>
-                                    <th>Đơn giá</th>
-
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {dataReceiptDetail && dataReceiptDetail.length > 0 &&
-                                    dataReceiptDetail.map((item, index) => {
-                                        let name = `${item.productData.name} - ${item.productDetailData.nameDetail} - ${item.productDetailSizeData.sizeData.value}`
-                                        return (
-                                            <tr key={index}>
-                                                <td>{index + 1}</td>
-                                                <td>{item.receiptId}</td>
-                                                <td>{name}</td>
-                                                <td>{item.quantity}</td>
-                                                <td>{CommonUtils.formatter.format(item.price)}</td>
-
-                                            </tr>
-                                        )
-                                    })
-                                }
-
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    )
+    return <div className="staff-tools">
+        <Link to="/system/home/list-receipt" className="staff-tools-back">← Danh sách phiếu nhập</Link>
+        <div className="staff-tools-header"><div><h1>Chi tiết phiếu nhập #{id}</h1><p>Xem hàng đã nhập và thêm các dòng hàng vào phiếu.</p></div></div>
+        {receipt.error && <p role="alert" className="staff-tools-error">{receipt.error} <button type="button" className="btn btn-outline-secondary" onClick={() => setVersion(old => old + 1)}>Thử lại</button></p>}
+        <section className="staff-tools-panel" aria-busy={loading}><h2>Danh sách hàng nhập</h2>{loading && <p role="status">Đang tải phiếu nhập…</p>}<div className="table-responsive"><table className="table table-bordered"><thead><tr><th scope="col">STT</th><th scope="col">Sản phẩm / biến thể / kích thước</th><th scope="col">Số lượng</th><th scope="col">Đơn giá</th></tr></thead><tbody>
+            {!loading && !lines.length && <tr><td colSpan={4} className="staff-tools-empty">{receipt.error ? 'Dữ liệu chưa tải được.' : 'Phiếu nhập chưa có hàng.'}</td></tr>}
+            {lines.map((line, index) => <tr key={line.id || index}><td>{index + 1}</td><td>{[line.productData?.name || 'Sản phẩm không còn tồn tại', line.productDetailData?.nameDetail, line.productDetailSizeData?.sizeData?.value || line.productDetailSizeData?.sizeId].filter(Boolean).join(' · ')}</td><td>{line.quantity}</td><td>{CommonUtils.formatter.format(line.price || 0)}</td></tr>)}
+        </tbody></table></div></section>
+        <section className="staff-tools-panel" aria-busy={resources.loading}><h2>Thêm hàng vào phiếu nhập</h2>
+            {resources.loading && <p role="status">Đang tải sản phẩm…</p>}
+            {resources.error && <p role="alert" className="staff-tools-error">{resources.error} <button type="button" className="btn btn-outline-secondary" onClick={resources.reload}>Thử lại</button></p>}
+            <ReceiptLineForm key={id} products={resources.products} sizeCodes={resources.sizeCodes} disabled={resources.loading || !!resources.error || loading || !!receipt.error} onSave={save} submitLabel="Thêm vào phiếu nhập" />
+        </section>
+    </div>;
 }
-export default DetailReceipt;

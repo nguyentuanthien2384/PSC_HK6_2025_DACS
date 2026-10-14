@@ -1,0 +1,17 @@
+.admin-stock {
+    h1 { margin: 0 0 12px; color: #243650; font-size: 28px; font-weight: 700; }
+    &__description { max-width: 950px; color: #65738a; font-size: 14px; line-height: 1.7; }
+    &__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    &__actions button { min-height: 44px; }
+    &__status { min-height: 24px; margin: 10px 0; color: #65738a; font-size: 13px; }
+    &__list { padding: 18px; border: 1px solid #e1e7f0; border-radius: 12px; background: #fff; }
+    .table-responsive { border: 1px solid #e3e8f1; border-radius: 8px; }
+    .table { min-width: 860px; margin: 0; font-size: 14px; }
+    .table th { padding: 14px 12px; vertical-align: middle; background: #f7f9fc; color: #34445f; border-top: 0; font-size: 13px; }
+    .table td { padding: 14px 12px; vertical-align: middle; color: #243650; line-height: 1.6; }
+    .table th:nth-child(2) { width: 40%; }
+    .table td:nth-child(n + 5), .table th:nth-child(n + 5) { text-align: right; }
+    &__empty { margin: 0; padding: 28px 16px; text-align: center; color: #65738a; }
+    .admin-pagination { margin-bottom: 0; padding-bottom: 0; }
+    @media (max-width: 650px) { h1 { font-size: 23px; } &__list { padding: 12px; } }
+}

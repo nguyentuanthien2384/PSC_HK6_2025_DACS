@@ -34,6 +34,8 @@ test('image and size lists load once without closed modals and use lazy thumbnai
     expect(thumbnail).toHaveAttribute('decoding', 'async');
     expect(thumbnail).toHaveAttribute('width', '100');
     expect(thumbnail).toHaveAttribute('height', '40');
+    expect(screen.getByRole('button', { name: 'Chỉnh sửa hình Ảnh áo' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Xóa kích thước M' })).toBeEnabled();
     fireEvent.click(screen.getByRole('button', { name: 'Xem hình Ảnh áo' }));
     expect(await screen.findByRole('dialog', { name: 'Image preview' })).toHaveTextContent(image.previewImage);
     expect(screen.getAllByRole('dialog', { name: 'Image preview' })).toHaveLength(1);
@@ -45,10 +47,10 @@ test('image and size lists load once without closed modals and use lazy thumbnai
 test('images and sizes keep independent pagination and cancel reads when the variant route changes', async () => {
     const view = render(<ManageProductImage />);
     await screen.findByText('M'); await screen.findByRole('img');
-    fireEvent.click(screen.getAllByLabelText('Next page')[1]);
+    fireEvent.click(screen.getAllByLabelText('Trang sau')[1]);
     await waitFor(() => expect(api.getAllProductDetailSizeByIdService).toHaveBeenLastCalledWith(expect.objectContaining({ id: '8', offset: 6 })));
     expect(api.getAllProductDetailImageByIdService).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getAllByLabelText('Next page')[0]);
+    fireEvent.click(screen.getAllByLabelText('Trang sau')[0]);
     await waitFor(() => expect(api.getAllProductDetailImageByIdService).toHaveBeenLastCalledWith(expect.objectContaining({ id: '8', offset: 6 })));
     const oldImageSignal = api.getAllProductDetailImageByIdService.mock.calls.at(-1)[0].signal;
     const oldSizeSignal = api.getAllProductDetailSizeByIdService.mock.calls.at(-1)[0].signal;

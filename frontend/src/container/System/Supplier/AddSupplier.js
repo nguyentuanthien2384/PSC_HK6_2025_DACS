@@ -1,125 +1,68 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { createNewSupplierService, getDetailSupplierByIdService, updateSupplierService } from '../../../services/userService';
-
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useParams } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
+import { createNewSupplierService, getDetailSupplierByIdService, updateSupplierService } from '../../../services/userService';
+import '../StaffTools.scss';
 
-import moment from 'moment';
-const AddSupplier = (props) => {
-
-
-
-    const [isActionADD, setisActionADD] = useState(true)
-
-
+const emptyValues = { name: '', address: '', phonenumber: '', email: '' };
+export default function AddSupplier() {
     const { id } = useParams();
-
-    const [inputValues, setInputValues] = useState({
-        name: '', address: '',phonenumber: '',email: ''
-    });
+    const routeId = id || 'new';
+    const routeRef = useRef(routeId); routeRef.current = routeId;
+    const savingRef = useRef(false);
+    const [record, setRecord] = useState({ routeId: '', loading: !!id, error: '', values: emptyValues });
+    const [version, setVersion] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState('');
     useEffect(() => {
-
-        if (id) {
-            let fetchDetailSupplier = async () => {
-                setisActionADD(false)
-                let supplier = await getDetailSupplierByIdService(id)
-                if (supplier && supplier.errCode === 0) {
-                    setInputValues({ ...inputValues, 
-                        ["name"]: supplier.data.name, 
-                        ["address"]: supplier.data.address,
-                        ["phonenumber"]: supplier.data.phonenumber,
-                        ["email"]: supplier.data.email
-                    })
-                }
-            }
-            fetchDetailSupplier()
-        }
-    }, [])
-
-    const handleOnChange = event => {
-        const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
-
+        const controller = new AbortController();
+        setSaveError('');
+        setRecord({ routeId, loading: !!id, error: '', values: emptyValues });
+        if (id) getDetailSupplierByIdService(id, { signal: controller.signal }).then(response => {
+            if (controller.signal.aborted) return;
+            if (response?.errCode !== 0 || !response.data) throw new Error(response?.errMessage || 'Không tìm thấy nhà cung cấp.');
+            const values = Object.fromEntries(Object.keys(emptyValues).map(key => [key, response.data[key] || '']));
+            setRecord({ routeId, loading: false, error: '', values });
+        }).catch(failure => {
+            if (!controller.signal.aborted) setRecord({ routeId, loading: false, error: failure.message || 'Không thể tải nhà cung cấp.', values: emptyValues });
+        });
+        return () => controller.abort();
+    }, [id, routeId, version]);
+    const loading = record.routeId !== routeId || record.loading;
+    const error = record.routeId === routeId ? record.error : '';
+    const values = record.routeId === routeId ? record.values : emptyValues;
+    const update = event => { const { name, value } = event.target; setRecord(old => ({ ...old, values: { ...old.values, [name]: value } })); };
+    const submit = async event => {
+        event.preventDefault();
+        if (loading || error || savingRef.current) return;
+        const data = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.trim()]));
+        if (Object.values(data).some(value => !value)) { setSaveError('Vui lòng điền đầy đủ thông tin nhà cung cấp.'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { setSaveError('Địa chỉ email không hợp lệ.'); return; }
+        savingRef.current = true; setSaving(true); setSaveError('');
+        try {
+            const response = await (id ? updateSupplierService({ ...data, id }) : createNewSupplierService(data));
+            if (response?.errCode !== 0) throw new Error(response?.errMessage || 'Không thể lưu nhà cung cấp.');
+            toast.success(id ? 'Cập nhật nhà cung cấp thành công' : 'Thêm nhà cung cấp thành công');
+            if (!id && routeRef.current === routeId) setRecord(old => ({ ...old, values: emptyValues }));
+        } catch (failure) { if (routeRef.current === routeId) setSaveError(failure.message || 'Không thể lưu nhà cung cấp.'); }
+        finally { savingRef.current = false; setSaving(false); }
     };
-    let handleSaveSupplier = async () => {
-        if (isActionADD === true) {
-            let res = await createNewSupplierService({
-                name: inputValues.name,
-                address: inputValues.address,
-                email: inputValues.email,
-                phonenumber: inputValues.phonenumber,
-            })
-            if (res && res.errCode === 0) {
-                toast.success("Thêm nhà cung cấp thành công")
-                setInputValues({
-                    ...inputValues,
-                    ["name"]: '',
-                    ["address"]: '',
-                    ["email"]: '',
-                    ["phonenumber"]: ''
-                })
-            }
-            else if (res && res.errCode === 2) {
-                toast.error(res.errMessage)
-            }
-            else toast.error("Thêm nhà cung cấp thất bại")
-        } else {
-            let res = await updateSupplierService({
-                name: inputValues.name,
-                address: inputValues.address,
-                email: inputValues.email,
-                phonenumber: inputValues.phonenumber,
-                id: id
-            })
-            if (res && res.errCode === 0) {
-                toast.success("Cập nhật nhà cung cấp thành công")
-
-            }
-            else if (res && res.errCode === 2) {
-                toast.error(res.errMessage)
-            }
-            else toast.error("Cập nhật nhà cung cấp thất bại")
-        }
-    }
-
-
-    return (
-        <div className="container-fluid px-4">
-            <h1 className="mt-4">Quản lý nhà cung cấp</h1>
-
-
-            <div className="card mb-4">
-                <div className="card-header">
-                    <i className="fas fa-table me-1" />
-                    {isActionADD === true ? 'Thêm mới nhà cung cấp' : 'Cập nhật thông tin nhà cung cấp'}
+    return <div className="staff-tools">
+        <Link to="/system/home/list-supplier" className="staff-tools-back">← Danh sách nhà cung cấp</Link>
+        <div className="staff-tools-header"><div><h1>{id ? 'Chỉnh sửa nhà cung cấp' : 'Thêm nhà cung cấp'}</h1><p>Cập nhật thông tin liên hệ dùng trong quá trình nhập hàng.</p></div></div>
+        <section className="staff-tools-panel" aria-busy={loading}>
+            {loading && <p role="status">Đang tải nhà cung cấp…</p>}
+            {error && <p role="alert" className="staff-tools-error">{error} <button type="button" className="btn btn-outline-secondary" onClick={() => setVersion(old => old + 1)}>Thử lại</button></p>}
+            <form aria-label="Thông tin nhà cung cấp" onSubmit={submit}><fieldset disabled={loading || !!error || saving}>
+                <div className="staff-tools-form-grid">
+                    <label htmlFor="supplier-name">Tên nhà cung cấp<input className="form-control" id="supplier-name" name="name" type="text" required maxLength={255} value={values.name} onChange={update} /></label>
+                    <label htmlFor="supplier-email">Địa chỉ email<input className="form-control" id="supplier-email" name="email" type="email" required maxLength={255} value={values.email} onChange={update} /></label>
+                    <label htmlFor="supplier-phone">Số điện thoại<input className="form-control" id="supplier-phone" name="phonenumber" type="tel" required maxLength={30} value={values.phonenumber} onChange={update} /></label>
+                    <label htmlFor="supplier-address">Địa chỉ<input className="form-control" id="supplier-address" name="address" type="text" required maxLength={255} value={values.address} onChange={update} /></label>
                 </div>
-                <div className="card-body">
-                    <form>
-                        <div className="form-row">
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Tên nhà cung cấp</label>
-                                <input type="text" value={inputValues.name} name="name" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
-                            </div>
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputPassword4">Địa chỉ email</label>
-                                <input type="text" value={inputValues.email} name="email" onChange={(event) => handleOnChange(event)} className="form-control" id="inputPassword4" />
-                            </div>
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Địa chỉ</label>
-                                <input type="text" value={inputValues.address} name="address" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
-                            </div>
-                            <div className="form-group col-md-6">
-                                <label htmlFor="inputPassword4">Số điện thoại</label>
-                                <input type="text" value={inputValues.phonenumber} name="phonenumber" onChange={(event) => handleOnChange(event)} className="form-control" id="inputPassword4" />
-                            </div>
-                        </div>
-                        <button type="button" onClick={() => handleSaveSupplier()} className="btn btn-primary">Lưu thông tin</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    )
+                {saveError && <p role="alert" className="staff-tools-error">{saveError}</p>}
+                <button type="submit" className="btn btn-primary" disabled={loading || !!error || saving}>{saving ? 'Đang lưu…' : 'Lưu thông tin'}</button>
+            </fieldset></form>
+        </section>
+    </div>;
 }
-export default AddSupplier;

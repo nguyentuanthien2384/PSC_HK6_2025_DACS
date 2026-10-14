@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import CommonUtils from '../../../utils/CommonUtils';
 import { Link } from 'react-router-dom';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../AdminPagination';
 import FormSearch from '../../../component/Search/FormSearch';
 import usePagedAdminList from '../usePagedAdminList';
 
@@ -96,25 +96,7 @@ const ManageCategory = () => {
 
                             </tbody>
                         </table>
-                        <ReactPaginate
-                            previousLabel={'Quay lại'}
-                            nextLabel={'Tiếp'}
-                            breakLabel={'...'}
-                            pageCount={Math.max(1, count)}
-                            forcePage={numberPage}
-                            disableInitialCallback
-                            marginPagesDisplayed={3}
-                            containerClassName={"pagination justify-content-center"}
-                            pageClassName={"page-item"}
-                            pageLinkClassName={"page-link"}
-                            previousLinkClassName={"page-link"}
-                            nextClassName={"page-item"}
-                            nextLinkClassName={"page-link"}
-                            breakLinkClassName={"page-link"}
-                            breakClassName={"page-item"}
-                            activeClassName={"active"}
-                            onPageChange={handleChangePage}
-                        />
+                        <AdminPagination pageCount={Math.max(1, count)} forcePage={numberPage} onPageChange={handleChangePage} loading={loading} />
                     </div>
                 </div>
             </div>

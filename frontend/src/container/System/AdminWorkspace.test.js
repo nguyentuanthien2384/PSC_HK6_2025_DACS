@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { setAuth } from '../../utils/token';
 import HomePageAdmin, { AdminLayout, OwnerRoute } from './HomePageAdmin';
-import SideBar from './SideBar';
+import SideBar, { getAdminRouteContext } from './SideBar';
 
 // CRA's Jest resolver predates package exports; use the installed router's CJS entry.
 jest.mock('react-router-dom', () => {
@@ -14,6 +14,7 @@ jest.mock('../../component/Notifications/NotificationsBell', () => () => <span>T
 jest.mock('./Operations/OperationsDashboard', () => () => <h1>Dashboard đã tải</h1>);
 jest.mock('./Operations/OperationsOrders', () => () => <h1>Danh sách đơn đã tải</h1>);
 jest.mock('./Inventory/InventoryManagement', () => () => <h1>Kho đã tải</h1>);
+jest.mock('../User/NotificationsPage', () => ({ inWorkspace }) => <h1>{inWorkspace ? 'Thông báo trong quản trị' : 'Thông báo ngoài cửa hàng'}</h1>);
 
 function LocationProbe() {
     const location = useLocation();
@@ -45,6 +46,22 @@ test('owner navigation opens the section containing the active deep link', () =>
     expect(screen.queryByRole('link', { name: 'Nhật ký thao tác' })).not.toBeInTheDocument();
 });
 
+test.each([
+    ['edit-supplier/12', 'Nhà cung cấp', 'Chỉnh sửa nhà cung cấp'],
+    ['detail-receipt/12', 'Phiếu nhập hàng', 'Chi tiết phiếu nhập hàng'],
+    ['order-detail/12', 'Đơn hàng', 'Chi tiết đơn hàng'],
+    ['list-product-detail-image/12', 'Danh sách sản phẩm', 'Ảnh và kích thước sản phẩm'],
+    ['edit-voucher/12', 'Mã khuyến mãi', 'Chỉnh sửa · Mã khuyến mãi'],
+])('deep route %s retains parent navigation and header context', (route, parent, title) => {
+    render(<MemoryRouter initialEntries={[`/system/home/${route}`]}><AdminLayout><h1>Trang con</h1></AdminLayout></MemoryRouter>);
+    expect(screen.getByRole('link', { name: parent })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText(title)).toBeInTheDocument();
+});
+
+test('notification workspace page has its own title', () => {
+    expect(getAdminRouteContext('/system/home/notifications').title).toBe('Thông báo');
+});
+
 test('owner guard prevents rendering protected content for staff', () => {
     login('R4');
     const protectedRender = jest.fn();
@@ -72,6 +89,14 @@ test('staff can load the inventory route within the workspace', async () => {
     login('R4');
     render(<MemoryRouter initialEntries={['/system/home/inventory']}><Routes><Route path="/system/home/*" element={<HomePageAdmin />} /></Routes></MemoryRouter>);
     expect(await screen.findByRole('heading', { name: 'Kho đã tải' })).toBeInTheDocument();
+});
+
+test('staff can view all notifications without leaving the admin workspace', async () => {
+    login('R4');
+    render(<MemoryRouter initialEntries={['/system/home/notifications']}><Routes><Route path="/system/home/*" element={<HomePageAdmin />} /></Routes></MemoryRouter>);
+    expect(await screen.findByRole('heading', { name: 'Thông báo trong quản trị' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Các chức năng quản trị' })).toBeInTheDocument();
+    expect(screen.getByText('Nhân viên vận hành')).toBeInTheDocument();
 });
 
 test('drawer can close by escape, overlay and navigation', async () => {

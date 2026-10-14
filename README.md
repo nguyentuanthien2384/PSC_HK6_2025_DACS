@@ -205,7 +205,7 @@ npm test
 npm run build
 ```
 
-Frontend có 284 kiểm thử; backend có 231 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 7 bộ MySQL opt-in.
+Frontend có 327 kiểm thử; backend có 231 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 7 bộ MySQL opt-in.
 
 Bộ tích hợp có 52 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền, vận đơn GHN/GHTK, phân trang/tồn kho catalog, phân quyền admin, xử lý nhiều đơn, kiểm kê đồng thời và thu hồi phiên đăng nhập/socket. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; không xóa dữ liệu hiện có. Fixture catalog chạy trong transaction và rollback. Migration database này trước khi chạy.
 
@@ -253,6 +253,17 @@ Bản production build tạo bundle thành công, còn các cảnh báo ESLint t
 Kiểm thử bổ sung xác minh hủy yêu cầu, đổi bộ lọc nhanh, chuyển A → B → A, phân trang độc lập, giữ giá/tồn kho đúng, ảnh gốc chỉnh sửa và phục hồi lỗi tải mã. Kiểm thử MySQL catalog chạy trên database riêng với fixture rollback. Dùng `npm run build` rồi `npm run preview` để đánh giá bản tối ưu; `npm start` vẫn dành cho phát triển.
 
 Đã kiểm tra bản build ngày 14/10 trực tiếp trên trình duyệt: đổi nhanh danh mục giày/đồng hồ, chi tiết sản phẩm có giá/tồn kho, tìm sản phẩm quản trị, mở biến thể/thumbnail/ảnh lớn và bảng tồn kho. Không có lỗi console trong các luồng này. Build thành công, còn cảnh báo lint/dependency ở mã giao diện cũ. Chưa đo FPS hay thời gian tải từ thiết bị di động/mạng Internet thực tế.
+
+## Hoàn thiện giao diện quản trị và Staff ngày 14/10/2026
+
+- Chuông thông báo mở bảng ngay tại header, hiển thị sáu thông báo mới nhất, số chưa đọc, thao tác đánh dấu đã đọc và trạng thái tải/lỗi/rỗng. Đóng bằng Escape, bấm bên ngoài hoặc chuyển trang. Chỉ mở bảng không tự đánh dấu đã đọc. `Xem tất cả` trong quản trị dùng `/system/home/notifications`, giữ sidebar và quyền theo tài khoản; thay đổi đã đọc cập nhật cả bảng, badge và trang thông báo đang mở.
+- Bộ lọc kỳ báo cáo căn đều ô ngày/nút, đặt ghi chú ở hàng riêng, bỏ khoảng trống trạng thái khi đã tải. Kiểm tra ngày thiếu/đảo thứ tự/kỳ quá 366 ngày và báo lỗi cạnh biểu mẫu. Staff hiển thị ba ô chỉ số; doanh thu vẫn chỉ dành cho chủ cửa hàng.
+- Phân trang quản trị dùng chung nút có nhãn tiếng Việt, dấu `…` đồng bộ, trạng thái khóa khi tải và số trang/khoảng kết quả. Báo cáo tồn kho không gửi yêu cầu trùng khi mở; giữ trang và số thứ tự của dữ liệu đang hiển thị cho đến khi kết quả mới trả về, hỗ trợ hủy yêu cầu và trang dữ liệu đã giảm.
+- Nhà cung cấp/phiếu nhập có đường dẫn tạo mới, trạng thái tải/lỗi/rỗng, tìm bằng Enter và xuất đầy đủ dữ liệu. Biểu mẫu nhập hàng chọn đúng sản phẩm/biến thể/kích cỡ, xử lý dữ liệu còn thiếu và chặn gửi trùng. Biểu mẫu sửa nhà cung cấp chờ dữ liệu đúng bản ghi trước khi cho lưu, bỏ qua phản hồi cũ khi đổi trang. Header/sidebar xác định đúng các trang con.
+
+Các sửa đổi chỉ ở frontend, dùng API/quyền nghiệp vụ hiện có. Kiểm thử biểu mẫu dùng dữ liệu giả lập; không tạo phiếu nhập, xóa nhà cung cấp hoặc đổi tồn kho thật trong kiểm tra giao diện.
+
+Đã kiểm tra bằng tài khoản demo Staff trên bản build: chuông mở bảng mà URL không đổi, `Xem tất cả` giữ trong quản trị, tồn kho đổi trang đúng STT, biểu mẫu có đủ nhà cung cấp/sản phẩm và nhãn kích thước S/M/L. Đã đối chiếu bố cục desktop 1600px với ảnh phản ánh và viewport điện thoại 375px: ô ngày/nút báo cáo thẳng hàng, bảng cuộn trong vùng riêng, dropdown và phân trang không tràn ngang. 62 bộ kiểm thử frontend đạt; kiểm thử form nhập hàng được chạy lại sau sửa nhãn kích thước. Build thành công, còn cảnh báo cũ ngoài các thành phần mới. Không ghi nhận lỗi console trong các luồng kiểm tra.
 
 ## Lưu ý Git
 

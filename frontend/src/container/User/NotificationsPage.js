@@ -2,15 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getNotifications, readNotification, readAllNotifications, notifyNotificationsChanged } from '../../services/notificationService';
 import { formatOrderDate } from '../../utils/orders';
+import { notificationDestination } from '../../utils/notifications';
 import '../../component/Notifications/Notifications.scss';
 import '../../component/Order/OrderWorkflow.scss';
 
-export function notificationDestination(notification) {
-    const link = notification.link;
-    return typeof link === 'string' && /^\/(?:user\/order\/\d+|system\/home\/order-detail\/\d+|shipper)(?:\?[^\\\r\n#]*)?$/.test(link) ? link : null;
-}
+export { notificationDestination } from '../../utils/notifications';
 
-export default function NotificationsPage() {
+export default function NotificationsPage({ inWorkspace = false }) {
     const [items, setItems] = useState([]);
     const [count, setCount] = useState(0);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -40,7 +38,8 @@ export default function NotificationsPage() {
         const focus = () => { if (!pending.current) load(true); };
         const interval = setInterval(() => { if (!pending.current && document.visibilityState !== 'hidden') load(true); }, 30000);
         window.addEventListener('focus', focus);
-        return () => { requests.current += 1; clearInterval(interval); window.removeEventListener('focus', focus); };
+        window.addEventListener('notifications-changed', focus);
+        return () => { requests.current += 1; clearInterval(interval); window.removeEventListener('focus', focus); window.removeEventListener('notifications-changed', focus); };
     }, [load]);
     const markRead = async id => {
         if (pending.current) return;
@@ -54,7 +53,7 @@ export default function NotificationsPage() {
         } catch (failure) { if (mounted.current) setActionError(failure.message); }
         finally { pending.current = false; if (mounted.current) setBusy(false); }
     };
-    return <main className="container order-workflow notifications-page">
+    return <main className={`order-workflow notifications-page ${inWorkspace ? 'notifications-page--admin' : 'container'}`}>
         <div className="order-heading"><h1 className="h3">Thông báo của tôi</h1><button type="button" className="btn btn-outline-success" disabled={busy || loading || !unreadCount} onClick={() => markRead(null)}>{busy ? 'Đang cập nhật…' : 'Đánh dấu tất cả đã đọc'}</button></div>
         <p>{unreadCount} thông báo chưa đọc</p>
         {loading && <p role="status">Đang tải thông báo…</p>}

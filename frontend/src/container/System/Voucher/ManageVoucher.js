@@ -5,7 +5,7 @@ import { deleteVoucherService, getAllVoucher } from '../../../services/userServi
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../AdminPagination';
 import CommonUtils from '../../../utils/CommonUtils';
 import {
     BrowserRouter as Router,
@@ -18,7 +18,7 @@ const ManageVoucher = () => {
 
     const [dataVoucher, setdataVoucher] = useState([])
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [numberPage, setnumberPage] = useState(0)
     useEffect(() => {
         try {
             let fetchData = async () => {
@@ -126,7 +126,7 @@ const ManageVoucher = () => {
                                         let name = `${item.typeVoucherOfVoucherData.value} ${item.typeVoucherOfVoucherData.typeVoucherData.value}`
                                         return (
                                             <tr key={index}>
-                                                <td>{index + 1}</td>
+                                                <td>{numberPage * PAGINATION.pagerow + index + 1}</td>
                                                 <td>{item.codeVoucher}</td>
                                                 <td>{name}</td>
                                                 <td>{item.amount}</td>
@@ -149,23 +149,7 @@ const ManageVoucher = () => {
                     </div>
                 </div>
             </div>
-            <ReactPaginate
-                previousLabel={'Quay lại'}
-                nextLabel={'Tiếp'}
-                breakLabel={'...'}
-                pageCount={count}
-                marginPagesDisplayed={3}
-                containerClassName={"pagination justify-content-center"}
-                pageClassName={"page-item"}
-                pageLinkClassName={"page-link"}
-                previousLinkClassName={"page-link"}
-                nextClassName={"page-item"}
-                nextLinkClassName={"page-link"}
-                breakLinkClassName={"page-link"}
-                breakClassName={"page-item"}
-                activeClassName={"active"}
-                onPageChange={handleChangePage}
-            />
+            <AdminPagination pageCount={count} forcePage={numberPage} onPageChange={handleChangePage} />
         </div>
     )
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { getAllProductDetailByIdService, DeleteProductDetailService } from '../../../../services/userService';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../../utils/constant';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../../AdminPagination';
 import CommonUtils from '../../../../utils/CommonUtils';
 import { Link, useParams } from 'react-router-dom';
 import usePagedAdminList from '../../usePagedAdminList';
@@ -79,25 +79,7 @@ const ManageProductDetail = () => {
                     </div>
                 </div>
             </div>
-            <ReactPaginate
-                previousLabel={'Quay lại'}
-                nextLabel={'Tiếp'}
-                breakLabel={'...'}
-                pageCount={Math.max(1, count)}
-                forcePage={numberPage}
-                disableInitialCallback
-                marginPagesDisplayed={3}
-                containerClassName={"pagination justify-content-center"}
-                pageClassName={"page-item"}
-                pageLinkClassName={"page-link"}
-                previousLinkClassName={"page-link"}
-                nextClassName={"page-item"}
-                nextLinkClassName={"page-link"}
-                breakLinkClassName={"page-link"}
-                breakClassName={"page-item"}
-                activeClassName={"active"}
-                onPageChange={handleChangePage}
-            />
+            <AdminPagination pageCount={Math.max(1, count)} forcePage={numberPage} onPageChange={handleChangePage} loading={loading} />
         </div>
     )
 }

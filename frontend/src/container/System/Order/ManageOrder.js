@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../AdminPagination';
 import { getAllOrder } from '../../../services/userService';
 import { PAGINATION } from '../../../utils/constant';
 import CommonUtils from '../../../utils/CommonUtils';
@@ -67,6 +67,6 @@ export default function ManageOrder() {
                 {orders.map(order => <tr key={order.id}><td>#{order.id}</td><td>{order.addressUser?.shipName || order.userData?.email || '—'}<br />{order.addressUser?.shipPhonenumber || order.userData?.phonenumber || ''}</td><td>{formatOrderDate(order.createdAt)}</td><td>{formatOrderMoney(orderTotals(order).totalPrice)}</td><td>{Number(order.isPaymentOnlien) === 1 ? 'Trực tuyến' : 'Tiền mặt'}</td><td>{order.statusOrderData?.value || ORDER_STATUSES[order.statusId]}</td><td>{order.shipperData ? shipperName(order.shipperData) : 'Chưa phân công'}</td><td>{order.shipperRating ? `${order.shipperRating.rating}/5` : '—'}</td><td><Link to={`/system/home/order-detail/${order.id}`}>Xem chi tiết</Link></td></tr>)}
             </tbody></table></div>}
         </div></div>
-        {count > PAGINATION.pagerow && <ReactPaginate previousLabel="Quay lại" nextLabel="Tiếp" breakLabel="…" pageCount={Math.ceil(count / PAGINATION.pagerow)} forcePage={page} containerClassName="pagination justify-content-center" pageClassName="page-item" pageLinkClassName="page-link" previousLinkClassName="page-link" nextLinkClassName="page-link" activeClassName="active" onPageChange={({ selected }) => setPage(selected)} />}
+        <AdminPagination ariaLabel="Phân trang đơn đặt hàng" pageCount={Math.ceil(count / PAGINATION.pagerow)} forcePage={page} total={count} pageSize={PAGINATION.pagerow} loading={loading} onPageChange={({ selected }) => setPage(selected)} />
     </main>;
 }

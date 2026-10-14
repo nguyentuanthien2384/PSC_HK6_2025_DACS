@@ -91,7 +91,7 @@ const getAllProductUser = (data) => {
 
 }
 const getAllProductAdmin = (data) => {
-    return axios.get(`/api/get-all-product-admin`, { params: { limit: data.limit, offset: data.offset, sortPrice: data.sortPrice, sortName: data.sortName, categoryId: data.categoryId, brandId: data.brandId, keyword: data.keyword } })
+    return axios.get(`/api/get-all-product-admin`, { signal: data.signal, params: { limit: data.limit, offset: data.offset, sortPrice: data.sortPrice, sortName: data.sortName, categoryId: data.categoryId, brandId: data.brandId, keyword: data.keyword } })
 
 }
 const handleBanProductService = (data) => {
@@ -387,7 +387,7 @@ const getStatisticProfit = (data) => {
     return axios.get(`/api/get-statistic-profit`, { params: { oneDate: data.oneDate, twoDate: data.twoDate, type: data.type } })
 }
 const getStatisticStockProduct = (data) => {
-    return axios.get(`/api/get-statistic-stock-product`, { params: { limit: data.limit, offset: data.offset } })
+    return axios.get(`/api/get-statistic-stock-product`, { params: { limit: data.limit, offset: data.offset }, signal: data.signal })
 }
 //=======================SUPPLIER==========================//
 const createNewSupplierService = (data) => {
@@ -399,11 +399,11 @@ const updateSupplierService = (data) => {
 const deleteSupplierService = (data) => {
     return axios.delete(`/api/delete-supplier`, deleteConfig(data))
 }
-const getDetailSupplierByIdService = (id) => {
-    return axios.get(`/api/get-detail-supplier`, { params: { id: id } })
+const getDetailSupplierByIdService = (id, { signal } = {}) => {
+    return axios.get(`/api/get-detail-supplier`, { signal, params: { id: id } })
 }
 const getAllSupplier = (data) => {
-    return axios.get(`/api/get-all-supplier`, { params: { limit: data.limit, offset: data.offset, keyword: data.keyword } })
+    return axios.get(`/api/get-all-supplier`, { signal: data.signal, params: { limit: data.limit, offset: data.offset, keyword: data.keyword } })
 }
 //=======================RECEIPT==========================//
 const createNewReceiptService = (data) => {
@@ -419,7 +419,7 @@ const getDetailReceiptByIdService = (id) => {
     return axios.get(`/api/get-detail-receipt`, { params: { id: id } })
 }
 const getAllReceipt = (data) => {
-    return axios.get(`/api/get-all-receipt`, { params: { limit: data.limit, offset: data.offset } })
+    return axios.get(`/api/get-all-receipt`, { signal: data.signal, params: { limit: data.limit, offset: data.offset } })
 }
 const createNewReceiptDetailService = (data) => {
     return axios.post(`/api/create-new-detail-receipt`, data)

@@ -7,7 +7,7 @@ import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 import './AddBanner.scss';
 import { PAGINATION } from '../../../utils/constant';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../AdminPagination';
 import CommonUtils from '../../../utils/CommonUtils';
 import {
     BrowserRouter as Router,
@@ -25,13 +25,14 @@ const ManageBanner = () => {
     const [imgPreview, setimgPreview] = useState('')
     const [isOpen, setisOpen] = useState(false)
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [numberPage, setnumberPage] = useState(0)
     useEffect(() => {
       
          loadBanner(keyword)
      
     }, [])
     let loadBanner = async (keyword) => {
+        setnumberPage(0);
         let arrData = await getAllBanner({
 
             limit: PAGINATION.pagerow,
@@ -148,7 +149,7 @@ const ManageBanner = () => {
                                     dataBanner.map((item, index) => {
                                         return (
                                             <tr key={index}>
-                                                <td>{index + 1}</td>
+                                                <td>{numberPage * PAGINATION.pagerow + index + 1}</td>
                                                 <td>{item.name}</td>
                                                 <td style={{ width: '30%' }} ><div onClick={() => openPreviewImage(item.image)} className="box-img-preview" style={{ backgroundImage: `url(${item.image})`, width: '100%' }}></div></td>
                                                 <td style={{ width: '20%' }}>
@@ -171,23 +172,7 @@ const ManageBanner = () => {
                         </table>
                     </div>
                 </div>
-                <ReactPaginate
-                    previousLabel={'Quay lại'}
-                    nextLabel={'Tiếp'}
-                    breakLabel={'...'}
-                    pageCount={count}
-                    marginPagesDisplayed={3}
-                    containerClassName={"pagination justify-content-center"}
-                    pageClassName={"page-item"}
-                    pageLinkClassName={"page-link"}
-                    previousLinkClassName={"page-link"}
-                    nextClassName={"page-item"}
-                    nextLinkClassName={"page-link"}
-                    breakLinkClassName={"page-link"}
-                    breakClassName={"page-item"}
-                    activeClassName={"active"}
-                    onPageChange={handleChangePage}
-                />
+                <AdminPagination pageCount={count} forcePage={numberPage} onPageChange={handleChangePage} />
             </div>
             {
                 isOpen === true &&

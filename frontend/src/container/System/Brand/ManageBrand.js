@@ -5,7 +5,7 @@ import { DeleteAllcodeService, getListAllCodeService } from '../../../services/u
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
-import ReactPaginate from 'react-paginate';
+import AdminPagination from '../AdminPagination';
 import FormSearch from '../../../component/Search/FormSearch';
 import CommonUtils from '../../../utils/CommonUtils';
 import {
@@ -20,7 +20,7 @@ const ManageBrand = () => {
     const [keyword, setkeyword] = useState('')
     const [dataBrand, setdataBrand] = useState([])
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [numberPage, setnumberPage] = useState(0)
     useEffect(() => {
         try {
            
@@ -31,6 +31,7 @@ const ManageBrand = () => {
 
     }, [])
     let fetchData = async (keyword) => {
+        setnumberPage(0);
         let arrData = await getListAllCodeService({
 
             type: 'BRAND',
@@ -136,7 +137,7 @@ const ManageBrand = () => {
                                     dataBrand.map((item, index) => {
                                         return (
                                             <tr key={index}>
-                                                <td>{index + 1}</td>
+                                                <td>{numberPage * PAGINATION.pagerow + index + 1}</td>
                                                 <td>{item.value}</td>
                                                 <td>{item.code}</td>
                                                 <td>
@@ -155,23 +156,7 @@ const ManageBrand = () => {
                     </div>
                 </div>
             </div>
-            <ReactPaginate
-                previousLabel={'Quay lại'}
-                nextLabel={'Tiếp'}
-                breakLabel={'...'}
-                pageCount={count}
-                marginPagesDisplayed={3}
-                containerClassName={"pagination justify-content-center"}
-                pageClassName={"page-item"}
-                pageLinkClassName={"page-link"}
-                previousLinkClassName={"page-link"}
-                nextClassName={"page-item"}
-                nextLinkClassName={"page-link"}
-                breakLinkClassName={"page-link"}
-                breakClassName={"page-item"}
-                activeClassName={"active"}
-                onPageChange={handleChangePage}
-            />
+            <AdminPagination pageCount={count} forcePage={numberPage} onPageChange={handleChangePage} />
         </div>
     )
 }

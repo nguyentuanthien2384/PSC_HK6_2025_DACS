@@ -1,9 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getOperationsDashboard } from '../../../services/adminOperationsService';
 import { ORDER_STATUSES } from '../../../utils/orders';
 import { orderMoney, operationDate, recentRange, useOperationsQuery } from './operationsShared';
 import './Operations.scss';
+
+function reportRangeValidation(draft) {
+    const parseDay = value => {
+        const time = /^\d{4}-\d{2}-\d{2}$/.test(value) ? Date.parse(`${value}T00:00:00+07:00`) : NaN;
+        return Number.isFinite(time) && new Date(time + 7 * 3600000).toISOString().slice(0, 10) === value ? time : NaN;
+    };
+    const from = parseDay(draft.from); const to = parseDay(draft.to);
+    if (!Number.isFinite(from)) return { field: 'from', message: 'Vui lòng chọn ngày bắt đầu hợp lệ.' };
+    if (!Number.isFinite(to)) return { field: 'to', message: 'Vui lòng chọn ngày kết thúc hợp lệ.' };
+    if (to < from) return { field: 'to', message: 'Ngày kết thúc phải bằng hoặc sau ngày bắt đầu.' };
+    if ((to - from) / 86400000 + 1 > 366) return { field: 'to', message: 'Vui lòng chọn kỳ báo cáo không quá 366 ngày.' };
+    return null;
+}
 
 function DailyTrend({ rows, financialAccess }) {
     const values = rows.map(row => Number(financialAccess ? row.netRevenue : row.orders) || 0);
@@ -14,17 +27,34 @@ function DailyTrend({ rows, financialAccess }) {
 }
 export default function OperationsDashboard() {
     const [draft, setDraft] = useState(recentRange); const [range, setRange] = useState(recentRange);
+    const [rangeError, setRangeError] = useState(null);
+    const fromRef = useRef(null); const toRef = useRef(null);
     const params = useMemo(() => range, [range]);
     const { response, loading, error, reload } = useOperationsQuery(getOperationsDashboard, params);
     const data = response?.data; const queue = data?.queues || {}; const returns = data?.returnQueues || {};
     const pendingReturns = ['REQUESTED', 'APPROVED', 'SHIPPED', 'REFUND_PENDING'].reduce((sum, status) => sum + (Number(returns[status]) || 0), 0);
+    const updateDraft = (field, value) => { setDraft(old => ({ ...old, [field]: value })); setRangeError(null); };
+    const applyRange = event => {
+        event.preventDefault();
+        if (loading) return;
+        const invalid = reportRangeValidation(draft);
+        setRangeError(invalid);
+        if (invalid) { (invalid.field === 'from' ? fromRef : toRef).current?.focus(); return; }
+        setRange({ ...draft });
+    };
     return <main className="admin-operations admin-workspace-page">
         <div className="operations-page-heading"><div><p className="operations-eyebrow">Tổng quan cửa hàng</p><h1>Trung tâm vận hành</h1><p>Đơn hàng, hàng hoàn và tồn kho cần xử lý trong hôm nay.</p></div><button type="button" className="btn btn-outline-secondary" disabled={loading} onClick={reload}>Làm mới dữ liệu</button></div>
-        <form className="operations-range" onSubmit={event => { event.preventDefault(); setRange({ ...draft }); }}><label>Từ ngày<input type="date" value={draft.from} required onChange={event => setDraft(old => ({ ...old, from: event.target.value }))} /></label><label>Đến ngày<input type="date" min={draft.from} value={draft.to} required onChange={event => setDraft(old => ({ ...old, to: event.target.value }))} /></label><button type="submit" className="btn btn-primary">Xem kỳ báo cáo</button><small>Ngày giao và ngày hoàn theo UTC+7 · Tối đa 366 ngày</small></form>
-        <p role="status" className={data ? 'operations-refresh-status' : 'operations-loading'}>{loading ? data ? 'Đang cập nhật tổng quan vận hành…' : 'Đang tải tổng quan vận hành…' : ''}</p>
+        <form className="operations-range" aria-label="Chọn kỳ báo cáo" noValidate onSubmit={applyRange}>
+            <label htmlFor="operations-range-from">Từ ngày<input ref={fromRef} id="operations-range-from" type="date" value={draft.from} required aria-invalid={rangeError?.field === 'from' || undefined} aria-describedby={rangeError?.field === 'from' ? 'operations-range-help operations-range-error' : 'operations-range-help'} onChange={event => updateDraft('from', event.target.value)} /></label>
+            <label htmlFor="operations-range-to">Đến ngày<input ref={toRef} id="operations-range-to" type="date" min={draft.from || undefined} value={draft.to} required aria-invalid={rangeError?.field === 'to' || undefined} aria-describedby={rangeError?.field === 'to' ? 'operations-range-help operations-range-error' : 'operations-range-help'} onChange={event => updateDraft('to', event.target.value)} /></label>
+            <button type="submit" className="btn btn-primary" disabled={loading}>Xem kỳ báo cáo</button>
+            <div className="operations-range-help"><small id="operations-range-help">Ngày giao và ngày hoàn theo UTC+7 · Tối đa 366 ngày</small><span role="status" className="operations-range-status">{loading && data ? 'Đang cập nhật tổng quan vận hành…' : ''}</span></div>
+            {rangeError && <p id="operations-range-error" className="operations-range-error" role="alert">{rangeError.message}</p>}
+        </form>
+        {loading && !data && <p role="status" className="operations-loading">Đang tải tổng quan vận hành…</p>}
         {error && <div role="alert" className="operations-error"><p>{error}</p><button type="button" onClick={reload}>Thử lại</button></div>}
         {data && <>
-            <div className="operations-kpi-grid">
+            <div className={`operations-kpi-grid${data.financialAccess ? '' : ' operations-kpi-grid-staff'}`}>
                 {data.financialAccess && <article className="operations-kpi"><span>Doanh thu sau hoàn</span><strong>{orderMoney(data.metrics.netRevenue)}</strong><small>Đơn giao trong kỳ · đã trừ khoản hoàn xác nhận</small></article>}
                 <article className="operations-kpi"><span>Đơn giao trong kỳ</span><strong>{data.metrics.deliveredOrders}</strong><small>{data.range.from} → {data.range.to}</small></article>
                 <article className="operations-kpi"><span>Đơn chờ xác nhận</span><strong>{queue.S3 || 0}</strong><Link to="/system/home/list-order?status=S3">Xử lý đơn mới →</Link></article>
