@@ -1,4 +1,7 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { lazyWithPreload as lazy } from '../../utils/lazyPage';
+import RoutePreload from '../../component/RoutePreload';
+import PageLoadBoundary from '../../component/PageLoadBoundary';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { getUser } from '../../utils/token';
 import Footer from './Footer';
@@ -51,6 +54,18 @@ const ManageTypeShip = lazy(() => import('./TypeShip/ManageTypeShip'));
 const AddTypeShip = lazy(() => import('./TypeShip/AddTypeShip'));
 const Message = lazy(() => import('./Message/Message'));
 
+const catalogPages = {
+    '/system/home/list-product': ManageProduct,
+    '/system/home/inventory': InventoryManagement,
+    '/system/home/list-product-detail/': ManageProductDetail,
+    '/system/home/list-product-detail-image/': ManageProductImage,
+    '/system/home/edit-product/': EditProduct,
+    '/system/home/update-product-detail/': EditProductDetail,
+    '/system/home/list-category': ManageCategory,
+    '/system/home/list-brand': ManageBrand,
+    '/system/home/list-receipt': ManageReceipt,
+};
+
 export function OwnerRoute({ children }) {
     if (getUser()?.roleId === 'R1') return children;
     return <section className="admin-access-denied" aria-labelledby="admin-access-title">
@@ -93,7 +108,8 @@ export function AdminLayout({ children }) {
 }
 
 export default function HomePageAdmin() {
-    return <AdminLayout><Suspense fallback={<div className="admin-page-loading" role="status"><span className="admin-loading-spinner" aria-hidden="true" />Đang tải trang quản trị…</div>}>
+    const { pathname } = useLocation();
+    return <AdminLayout><RoutePreload pages={catalogPages} /><PageLoadBoundary key={pathname}><Suspense fallback={<div className="admin-page-loading" role="status"><span className="admin-loading-spinner" aria-hidden="true" />Đang tải trang quản trị…</div>}>
         <Routes>
             <Route index element={<OperationsDashboard />} />
             <Route path="list-order" element={<OperationsOrders />} />
@@ -151,5 +167,5 @@ export default function HomePageAdmin() {
             <Route path="stock-product" element={<StockProduct />} />
             <Route path="*" element={<Navigate to="/system/home" replace />} />
         </Routes>
-    </Suspense></AdminLayout>;
+    </Suspense></PageLoadBoundary></AdminLayout>;
 }

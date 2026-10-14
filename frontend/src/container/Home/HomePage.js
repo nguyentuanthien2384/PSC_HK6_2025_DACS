@@ -20,6 +20,18 @@ function HomePage() {
     const [blogs, setBlogs] = useState([]);
     const [banners, setBanners] = useState([]);
     const [bannersLoading, setBannersLoading] = useState(true);
+    const [bannerAutoplay, setBannerAutoplay] = useState(() => document.visibilityState !== 'hidden' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+
+    useEffect(() => {
+        const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+        const updateAutoplay = () => setBannerAutoplay(document.visibilityState !== 'hidden' && !motion?.matches);
+        document.addEventListener('visibilitychange', updateAutoplay);
+        motion?.addEventListener?.('change', updateAutoplay);
+        return () => {
+            document.removeEventListener('visibilitychange', updateAutoplay);
+            motion?.removeEventListener?.('change', updateAutoplay);
+        };
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -66,7 +78,9 @@ function HomePage() {
         slidesToShow: 1,
         slidesToScroll: 1,
         autoplaySpeed: 4000,
-        autoplay: banners.length > 1,
+        autoplay: banners.length > 1 && bannerAutoplay,
+        lazyLoad: 'ondemand',
+        pauseOnFocus: true,
         cssEase: 'ease',
     };
 
@@ -75,7 +89,7 @@ function HomePage() {
             {bannersLoading && <div className="store-home__banner-loading" aria-hidden="true" />}
             {!!banners.length && (
                 <Slider {...bannerSettings}>
-                    {banners.map((item) => <HomeBanner key={item.id} image={item.image} name={item.name} />)}
+                    {banners.map((item, index) => <HomeBanner key={item.id} image={item.image} name={item.name} priority={index === 0} />)}
                 </Slider>
             )}
             <MainFeature />

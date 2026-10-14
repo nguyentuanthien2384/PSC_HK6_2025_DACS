@@ -33,6 +33,34 @@ test('cards resize to bounded WebP, deduplicate simultaneous requests and serve 
     assert.equal(f.calls.length, 1);
 }));
 
+test('warm disk thumbnails remain available while both cold image encoder slots are occupied', async () => fixture(async f => {
+    const cached = await f.service.get(1, f.row.imageVersion, 'card');
+    let releaseEncoders, signalStarted, started = 0;
+    const gate = new Promise(resolve => { releaseEncoders = resolve; });
+    const encodersStarted = new Promise(resolve => { signalStarted = resolve; });
+    const service = createProductMediaService(f.db, { ...f.options, encode: async () => {
+        if (++started === 2) signalStarted();
+        await gate;
+        return cached.body;
+    } });
+    const cold = ['detail', 'banner'].map(variant => service.get(1, f.row.imageVersion, variant));
+    let timeout;
+    try {
+        await encodersStarted;
+        const hits = await Promise.race([
+            Promise.all(Array.from({ length: 6 }, () => service.get(1, f.row.imageVersion, 'card'))),
+            new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('Disk thumbnails waited for encoder work')), 1000); }),
+        ]);
+        assert.ok(hits.every(hit => hit.etag === cached.etag));
+        assert.equal(f.calls.length, 3, 'cached thumbnail skips the source database even under cold image load');
+        assert.equal(started, 2);
+    } finally {
+        clearTimeout(timeout);
+        releaseEncoders();
+        await Promise.allSettled(cold);
+    }
+}));
+
 test('versioned source edits generate a new URL and stale uncached URLs redirect without serving changed pixels under immutable URLs', async () => fixture(async f => {
     const first = productImageUrl(f.row);
     const old = f.row.imageVersion;

@@ -17,3 +17,11 @@ test('existing data, external and normal local image URLs retain their original 
     }
     expect(resolveMediaImages(undefined, 'http://localhost:6969')).toBeUndefined();
 });
+
+test('seller image previews resolve to the API origin while original editor image data is preserved', () => {
+    const value = { data: [{ image: '/api/media/product-images/2/version/card', previewImage: '/api/media/product-images/2/version/detail' }], editor: { image: 'data:image/png;base64,AA==' } };
+    resolveMediaImages(value, 'http://localhost:6969');
+    expect(value.data[0].previewImage).toBe('http://localhost:6969/api/media/product-images/2/version/detail');
+    expect(value.data[0].image).toBe('http://localhost:6969/api/media/product-images/2/version/card');
+    expect(value.editor.image).toBe('data:image/png;base64,AA==');
+});

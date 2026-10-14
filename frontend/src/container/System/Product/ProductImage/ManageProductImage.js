@@ -1,78 +1,33 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import {
     getAllProductDetailImageByIdService, createNewProductImageService, UpdateProductDetailImageService,
     DeleteProductDetailImageService, getAllProductDetailSizeByIdService, createNewProductSizeService,
     UpdateProductDetailSizeService, DeleteProductDetailSizeService
 } from '../../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import './ManageProductImage.scss';
-import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 import { PAGINATION } from '../../../../utils/constant';
 import ReactPaginate from 'react-paginate';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
-import AddImageModal from './AddImageModal';
-import AddSizeModal from './AddSizeModal';
+import { useParams } from 'react-router-dom';
+import usePagedAdminList from '../../usePagedAdminList';
+const Lightbox = lazy(() => import('react-image-lightbox'));
+const AddImageModal = lazy(() => import('./AddImageModal'));
+const AddSizeModal = lazy(() => import('./AddSizeModal'));
 const ManageProductImage = () => {
 
     const { id } = useParams()
-    const [dataProductDetailImage, setdataProductDetailImage] = useState([])
-    const [dataProductDetailSize, setdataProductDetailSize] = useState([])
+    const images = usePagedAdminList(getAllProductDetailImageByIdService, { id });
+    const sizes = usePagedAdminList(getAllProductDetailSizeByIdService, { id });
+    const { data: dataProductDetailImage, count, page: numberPage, reload: loadProductDetailImage } = images;
+    const { data: dataProductDetailSize, count: countSize, page: numberSizePage, reload: loadProductDetailSize } = sizes;
     const [isOpen, setisOpen] = useState(false)
     const [isOpenModal, setisOpenModal] = useState(false)
     const [isOpenModalSize, setisOpenModalSize] = useState(false)
     const [imgPreview, setimgPreview] = useState('')
     const [productImageId, setproductImageId] = useState('')
     const [productSizeId, setproductSizeId] = useState('')
-    const [count, setCount] = useState('')
-    const [countSize, setcountSizes] = useState('')
-    const [numberPage, setnumberPage] = useState('')
-    useEffect(() => {
-
-        let fetchProductDetailImage = async () => {
-            await loadProductDetailImage()
-        }
-        let fetchProductSize = async () => {
-            await loadProductDetailSize()
-        }
-        fetchProductDetailImage()
-        fetchProductSize()
-
-    }, [])
-    let loadProductDetailImage = async () => {
-
-        let arrData = await getAllProductDetailImageByIdService({
-
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: 0
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProductDetailImage(arrData.data)
-            setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-        }
-    }
-    let loadProductDetailSize = async () => {
-        let arrSize = await getAllProductDetailSizeByIdService({
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: 0
-        })
-        if (arrSize && arrSize.errCode === 0) {
-            setdataProductDetailSize(arrSize.data)
-            setcountSizes(Math.ceil(arrSize.count / PAGINATION.pagerow))
-        }
-    }
+    useEffect(() => { setisOpen(false); setisOpenModal(false); setisOpenModalSize(false); setproductImageId(''); setproductSizeId(''); }, [id]);
     let openPreviewImage = (url) => {
 
 
@@ -181,17 +136,7 @@ const ManageProductImage = () => {
         })
         if (response && response.errCode === 0) {
             toast.success("Xóa hình ảnh thành công !")
-            let arrData = await getAllProductDetailImageByIdService({
-
-                id: id,
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProductDetailImage(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            loadProductDetailImage();
         } else {
             toast.error("Xóa hình ảnh thất bại !")
         }
@@ -204,49 +149,15 @@ const ManageProductImage = () => {
         })
         if (response && response.errCode === 0) {
             toast.success("Xóa kích thước thành công !")
-            let arrData = await getAllProductDetailSizeByIdService({
-
-                id: id,
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProductDetailSize(arrData.data)
-                setcountSizes(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            loadProductDetailSize();
         } else {
             toast.error("Xóa hình ảnh thất bại !")
         }
     }
-    let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
-        let arrData = await getAllProductDetailImageByIdService({
-
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProductDetailImage(arrData.data)
-
-        }
-    }
-    let handleChangePageProductSize = async (number) => {
-        setnumberPage(number.selected)
-        let arrSize = await getAllProductDetailSizeByIdService({
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow
-        })
-        if (arrSize && arrSize.errCode === 0) {
-            setdataProductDetailSize(arrSize.data)
-
-        }
-    }
+    let handleChangePage = number => { if (!images.loading) images.setPage(number.selected); };
+    let handleChangePageProductSize = number => { if (!sizes.loading) sizes.setPage(number.selected); };
     return (
-        <div className="container-fluid px-4">
+        <div className="container-fluid px-4 product-image-management">
             <h1 className="mt-4">Thông tin chi tiết sản phẩm</h1>
 
             <div>
@@ -254,11 +165,13 @@ const ManageProductImage = () => {
                     <div className="card-header">
                         <i className="fas fa-table me-1" />
                         Danh sách hình ảnh chi tiết sản phẩm
-                        <div onClick={() => handleOpenModal()} className="float-right"><i style={{ fontSize: '35px', cursor: 'pointer', color: '#0D6EFD' }} className="fas fa-plus-square"></i></div>
+                        <button type="button" aria-label="Thêm hình ảnh" onClick={handleOpenModal} className="float-right btn btn-link"><i style={{ fontSize: '35px', color: '#0D6EFD' }} className="fas fa-plus-square" /></button>
                     </div>
                     <div className="card-body">
-                        <div className="table-responsive">
-                            <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
+                        <p role="status" style={{ minHeight: 24 }}>{images.loading ? 'Đang tải hình ảnh…' : ''}</p>
+                        {images.error && <p role="alert">{images.error} <button type="button" onClick={loadProductDetailImage}>Thử lại</button></p>}
+                        <div className="table-responsive" aria-busy={images.loading}>
+                            <table className="table table-bordered" inert={images.loading ? true : undefined} style={{ border: '1' }} width="100%" cellSpacing="0">
                                 <thead>
                                     <tr>
                                         <th>STT</th>
@@ -272,10 +185,10 @@ const ManageProductImage = () => {
                                     {dataProductDetailImage && dataProductDetailImage.length > 0 &&
                                         dataProductDetailImage.map((item, index) => {
                                             return (
-                                                <tr key={index}>
-                                                    <td>{index + 1}</td>
+                                                <tr key={item.id}>
+                                                    <td>{numberPage * PAGINATION.pagerow + index + 1}</td>
                                                     <td>{item.caption}</td>
-                                                    <td ><div onClick={() => openPreviewImage(item.image)} className="box-image" style={{ backgroundImage: `url(${item.image})` }}></div></td>
+                                                    <td><button type="button" className="product-image-preview" aria-label={`Xem hình ${item.caption || item.id}`} onClick={() => openPreviewImage(item.previewImage || item.image)}><img src={item.image} alt={item.caption || ''} className="box-image" width={100} height={40} loading="lazy" decoding="async" /></button></td>
                                                     <td>
 
                                                         <span onClick={() => handleEditProductImage(item.id)} style={{ color: '#0E6DFE', cursor: 'pointer' }}   >Edit</span>
@@ -295,25 +208,27 @@ const ManageProductImage = () => {
                             </table>
                         </div>
                     </div>
-                    <AddImageModal
+                    {isOpenModal && <Suspense fallback={<p role="status">Đang mở biểu mẫu hình ảnh…</p>}><AddImageModal
                         isOpenModal={isOpenModal}
                         closeModal={closeModal}
                         sendDataFromModal={sendDataFromModal}
                         productImageId={productImageId}
-                    />
+                    /></Suspense>}
                 </div>
 
                 {
                     isOpen === true &&
-                    <Lightbox mainSrc={imgPreview}
+                    <Suspense fallback={<p role="status">Đang mở hình ảnh…</p>}><Lightbox mainSrc={imgPreview}
                         onCloseRequest={() => setisOpen(false)}
-                    />
+                    /></Suspense>
                 }
                 <ReactPaginate
                     previousLabel={'Quay lại'}
                     nextLabel={'Tiếp'}
                     breakLabel={'...'}
-                    pageCount={count}
+                    pageCount={Math.max(1, count)}
+                    forcePage={numberPage}
+                    disableInitialCallback
                     marginPagesDisplayed={3}
                     containerClassName={"pagination justify-content-center"}
                     pageClassName={"page-item"}
@@ -333,11 +248,13 @@ const ManageProductImage = () => {
                     <div className="card-header">
                         <i className="fas fa-table me-1" />
                         Danh sách kích thước chi tiết sản phẩm
-                        <div onClick={() => handleOpenModalSize()} className="float-right"><i style={{ fontSize: '35px', cursor: 'pointer', color: '#0D6EFD' }} className="fas fa-plus-square"></i></div>
+                        <button type="button" aria-label="Thêm kích thước" onClick={handleOpenModalSize} className="float-right btn btn-link"><i style={{ fontSize: '35px', color: '#0D6EFD' }} className="fas fa-plus-square" /></button>
                     </div>
                     <div className="card-body">
-                        <div className="table-responsive">
-                            <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
+                        <p role="status" style={{ minHeight: 24 }}>{sizes.loading ? 'Đang tải kích thước…' : ''}</p>
+                        {sizes.error && <p role="alert">{sizes.error} <button type="button" onClick={loadProductDetailSize}>Thử lại</button></p>}
+                        <div className="table-responsive" aria-busy={sizes.loading}>
+                            <table className="table table-bordered" inert={sizes.loading ? true : undefined} style={{ border: '1' }} width="100%" cellSpacing="0">
                                 <thead>
                                     <tr>
                                         <th>STT</th>
@@ -354,8 +271,8 @@ const ManageProductImage = () => {
                                     {dataProductDetailSize && dataProductDetailSize.length > 0 &&
                                         dataProductDetailSize.map((item, index) => {
                                             return (
-                                                <tr key={index}>
-                                                    <td>{index + 1}</td>
+                                                <tr key={item.id}>
+                                                    <td>{numberSizePage * PAGINATION.pagerow + index + 1}</td>
                                                     <td>{item.sizeData.value}</td>
                                                     <td>{item.width}</td>
                                                     <td>{item.height}</td>
@@ -377,25 +294,21 @@ const ManageProductImage = () => {
                         </div>
                     </div>
 
-                    <AddSizeModal
+                    {isOpenModalSize && <Suspense fallback={<p role="status">Đang mở biểu mẫu kích thước…</p>}><AddSizeModal
                         isOpenModal={isOpenModalSize}
                         closeModal={closeModalSize}
                         sendDataFromModalSize={sendDataFromModalSize}
                         productSizeId={productSizeId}
-                    />
+                    /></Suspense>}
                 </div>
 
-                {
-                    isOpen === true &&
-                    <Lightbox mainSrc={imgPreview}
-                        onCloseRequest={() => setisOpen(false)}
-                    />
-                }
                 <ReactPaginate
                     previousLabel={'Quay lại'}
                     nextLabel={'Tiếp'}
                     breakLabel={'...'}
-                    pageCount={countSize}
+                    pageCount={Math.max(1, countSize)}
+                    forcePage={numberSizePage}
+                    disableInitialCallback
                     marginPagesDisplayed={3}
                     containerClassName={"pagination justify-content-center"}
                     pageClassName={"page-item"}

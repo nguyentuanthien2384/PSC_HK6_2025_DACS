@@ -72,3 +72,21 @@ test('Excel string cells cannot become spreadsheet formulas', () => {
     const row = catalogExportRows([{ ...product, name: ' +SUM(1,2)', categoryData: { value: '@cmd' }, brandData: { value: '-DACS' } }])[0];
     expect(row['Tên sản phẩm']).toBe("' +SUM(1,2)"); expect(row['Danh mục']).toBe("'@cmd"); expect(row['Thương hiệu']).toBe("'-DACS"); expect(row['Giá thấp nhất']).toBe(100000);
 });
+
+test('catalog keeps existing row and thumbnail nodes mounted during refresh and disables stale actions', async () => {
+    render(<ManageProduct />);
+    const link = await screen.findByRole('link', { name: 'Áo sơ mi' });
+    const row = link.closest('tr');
+    const image = row.querySelector('img');
+    let finish;
+    catalog.getAdminCatalog.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    fireEvent.change(screen.getByLabelText('Trạng thái'), { target: { value: 'S2' } });
+    expect(screen.getByRole('link', { name: 'Áo sơ mi' }).closest('tr')).toBe(row);
+    expect(row.querySelector('img')).toBe(image);
+    expect(row.closest('.table-responsive')).toHaveAttribute('inert');
+    expect(screen.getByRole('button', { name: 'Ẩn sản phẩm' })).toBeDisabled();
+    await act(async () => finish(response([{ ...product, statusId: 'S2' }])));
+    expect(row.querySelector('img')).toBe(image);
+    expect(screen.getByRole('button', { name: 'Hiện sản phẩm' })).toBeEnabled();
+    expect(row.closest('.table-responsive')).not.toHaveAttribute('inert');
+});

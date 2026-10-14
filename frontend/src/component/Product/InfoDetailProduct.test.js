@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addItemCartStart } from '../../action/ShopCartAction';
 import InfoDetailProduct from './InfoDetailProduct';
+import { renderToStaticMarkup } from 'react-dom/server.node';
 
 jest.mock('react-redux', () => ({ useDispatch: jest.fn() }));
 jest.mock('react-toastify', () => ({ toast: { error: jest.fn() } }));
@@ -196,4 +197,21 @@ test('the zoom image is mounted only while the shopper opens the preview', () =>
     fireEvent.click(screen.getByRole('button', { name: 'Đóng ảnh phóng to', hidden: true }));
     expect(dialog.close).toHaveBeenCalledTimes(1);
     expect(dialog.querySelector('img')).toBeNull();
+});
+
+test('the first render already chooses the stocked variant and its photo without loading a sold-out photo first', () => {
+    const product = makeProduct();
+    product.productDetail[0].productImage = [{ id: 2, image: 'https://example.com/available.webp' }];
+    product.productDetail.unshift({
+        id: 100, nameDetail: 'Trắng', discountPrice: '300000',
+        productDetailSize: [option(999, 'S', 0)],
+        productImage: [{ id: 1, image: 'https://example.com/sold-out.webp' }],
+    });
+    // Static rendering does not run effects, so this catches an incorrect image
+    // request before the effect selects the first available variant.
+    const firstRender = document.createElement('div');
+    firstRender.innerHTML = renderToStaticMarkup(<InfoDetailProduct dataProduct={product} />);
+    expect(firstRender.querySelector('.product-buy__main-image img')).toHaveAttribute('src', 'https://example.com/available.webp');
+    expect(firstRender.querySelector('.product-buy__availability')).toHaveTextContent('5 sản phẩm có sẵn');
+    expect(firstRender.querySelector('[src="https://example.com/sold-out.webp"]')).toBeNull();
 });

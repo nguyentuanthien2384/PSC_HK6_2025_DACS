@@ -1,18 +1,13 @@
-import React, { lazy, Suspense } from "react";
+import React from "react";
 import "./css/App.css";
 import Header from "./container/Header/Header";
 import Footer from "./container/Footer/Footer";
 import TopMenu from "./container/Header/TopMenu";
 import RequireAuth from "./component/RequireAuth";
 import RouteScrollReset from "./component/RouteScrollReset";
+import RoutePreload from "./component/RoutePreload";
+import { lazyPage } from "./utils/lazyPage";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
-
-function lazyPage(loader) {
-    const Page = lazy(loader);
-    return function DeferredPage(props) {
-        return <Suspense fallback={<main className="route-loading" role="status">Đang tải trang…</main>}><Page {...props} /></Suspense>;
-    };
-}
 
 const HomePage = lazyPage(() => import("./container/Home/HomePage"));
 const ShopPage = lazyPage(() => import("./container/Shop/ShopPage"));
@@ -34,10 +29,21 @@ const ShipperPage = lazyPage(() => import("./container/Shipper/ShipperPage"));
 const NotificationsPage = lazyPage(() => import("./container/User/NotificationsPage"));
 const AboutPage = lazyPage(() => import("./container/About/AboutPage"));
 
+const shoppingPages = {
+    '/': HomePage,
+    '/shop': ShopPage,
+    '/detail-product/': DetailProductPage,
+    '/blog': BlogPage,
+    '/blog-detail/': DetailBlog,
+    '/voucher': VoucherHomePage,
+    '/about': AboutPage,
+};
+
 function App() {
     return (
         <Router>
             <RouteScrollReset />
+            <RoutePreload pages={shoppingPages} />
             <Routes>
                 <Route path="/notifications" element={<RequireAuth><Header /><NotificationsPage /><Footer /></RequireAuth>} />
                 <Route path="/forgot-password" element={<><Header /><ForgotPasswordPage /><Footer /></>} />

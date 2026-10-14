@@ -2,7 +2,7 @@
 export function resolveMediaImages(value, apiBaseUrl) {
     if (!value || typeof value !== 'object') return value;
     for (const [key, item] of Object.entries(value)) {
-        if (key === 'image' && typeof item === 'string' && item.startsWith('/api/media/')) {
+        if ((key === 'image' || key === 'previewImage') && typeof item === 'string' && item.startsWith('/api/media/')) {
             value[key] = new URL(item, new URL(apiBaseUrl, window.location.origin)).href;
         } else if (item && typeof item === 'object') {
             resolveMediaImages(item, apiBaseUrl);

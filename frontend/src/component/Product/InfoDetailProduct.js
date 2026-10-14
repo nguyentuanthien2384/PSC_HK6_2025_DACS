@@ -11,8 +11,10 @@ const validPrice = (value) => value !== null && value !== undefined && value !==
 
 function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
     const details = dataProduct?.productDetail || emptyDetails;
-    const [detailId, setDetailId] = useState(null);
-    const [sizeId, setSizeId] = useState(null);
+    const initialDetail = details.find((item) => item.productDetailSize?.some((option) => Number(option.stock) > 0)) || details[0];
+    const initialSize = initialDetail?.productDetailSize?.find((option) => Number(option.stock) > 0) || initialDetail?.productDetailSize?.[0];
+    const [detailId, setDetailId] = useState(initialDetail?.id || null);
+    const [sizeId, setSizeId] = useState(initialSize?.id || null);
     const [quantity, setQuantity] = useState(1);
     const [imageIndex, setImageIndex] = useState(0);
     const [imageFailed, setImageFailed] = useState(false);
@@ -138,4 +140,4 @@ function InfoDetailProduct({ dataProduct, userId, sendDataFromInforDetail }) {
     );
 }
 
-export default InfoDetailProduct;
+export default React.memo(InfoDetailProduct);

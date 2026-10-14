@@ -1,90 +1,33 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useState } from 'react';
 import { DeleteAllcodeService, getListAllCodeService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import FormSearch from '../../../component/Search/FormSearch';
+import usePagedAdminList from '../usePagedAdminList';
 
 const ManageCategory = () => {
 
-    const [dataCategory, setdataCategory] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-       
-            fetchData(keyword);
-        
-
-    }, [])
-    let fetchData = async (keyword) => {
-        let arrData = await getListAllCodeService({
-
-            type: 'CATEGORY',
-            limit: PAGINATION.pagerow,
-            offset: 0,
-            keyword:keyword
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataCategory(arrData.data)
-            setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-        }
-    }
+    const { data: dataCategory, count, page: numberPage, setPage, loading, error, reload } = usePagedAdminList(getListAllCodeService, { type: 'CATEGORY', keyword });
     let handleDeleteCategory = async (event, id) => {
         event.preventDefault();
         let res = await DeleteAllcodeService(id)
         if (res && res.errCode === 0) {
             toast.success("Xóa danh mục thành công")
-            let arrData = await getListAllCodeService({
-
-                type: 'CATEGORY',
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow,
-                keyword:keyword
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataCategory(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            reload();
 
         } else toast.error("Xóa danh mục thất bại")
     }
-    let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
-        let arrData = await getListAllCodeService({
-
-            type: 'CATEGORY',
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            keyword:keyword
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataCategory(arrData.data)
-
-        }
-    }
+    let handleChangePage = number => { if (!loading) setPage(number.selected); };
     let handleSearchCategory = (keyword) =>{
-        fetchData(keyword)
-        setkeyword(keyword)
+        setkeyword(keyword.trim()); setPage(0);
     }
     let handleOnchangeSearch = (keyword) =>{
         if(keyword === ''){
-            fetchData(keyword)
-            setkeyword(keyword)
+            setkeyword(''); setPage(0);
         }
     }
     let handleOnClickExport =async () =>{
@@ -94,7 +37,7 @@ const ManageCategory = () => {
             offset: '',
             keyword:''
         })
-        if(res && res.errCode == 0){
+        if(res && res.errCode === 0){
             await CommonUtils.exportExcel(res.data,"Danh sách danh mục","ListCategory")
         }
        
@@ -116,11 +59,13 @@ const ManageCategory = () => {
                     <FormSearch title={"tên danh mục"}  handleOnchange={handleOnchangeSearch} handleSearch={handleSearchCategory} />
                     </div>
                     <div className='col-8'>
-                    <button  style={{float:'right'}} onClick={() => handleOnClickExport()} className="btn btn-success" >Xuất excel <i class="fa-solid fa-file-excel"></i></button>
+                    <button  style={{float:'right'}} onClick={() => handleOnClickExport()} className="btn btn-success" >Xuất excel <i className="fa-solid fa-file-excel"></i></button>
                     </div>
                     </div>
-                    <div className="table-responsive">
-                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
+                    <p role="status" style={{ minHeight: 24 }}>{loading ? 'Đang tải danh mục…' : ''}</p>
+                    {error && <p role="alert">{error} <button type="button" onClick={reload}>Thử lại</button></p>}
+                    <div className="table-responsive" aria-busy={loading}>
+                        <table className="table table-bordered" inert={loading ? true : undefined} style={{ border: '1' }} width="100%" cellSpacing="0">
                             <thead>
                                 <tr>
                                     <th>STT</th>
@@ -134,14 +79,14 @@ const ManageCategory = () => {
                                 {dataCategory && dataCategory.length > 0 &&
                                     dataCategory.map((item, index) => {
                                         return (
-                                            <tr key={index}>
-                                                <td>{index + 1}</td>
+                                            <tr key={item.id}>
+                                                <td>{numberPage * PAGINATION.pagerow + index + 1}</td>
                                                 <td>{item.value}</td>
                                                 <td>{item.code}</td>
                                                 <td>
                                                     <Link to={`/system/home/edit-category/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleDeleteCategory(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" disabled={loading} onClick={(event) => handleDeleteCategory(event, item.id)}>Delete</button>
                                                 </td>
                                             </tr>
                                         )
@@ -155,7 +100,9 @@ const ManageCategory = () => {
                             previousLabel={'Quay lại'}
                             nextLabel={'Tiếp'}
                             breakLabel={'...'}
-                            pageCount={count}
+                            pageCount={Math.max(1, count)}
+                            forcePage={numberPage}
+                            disableInitialCallback
                             marginPagesDisplayed={3}
                             containerClassName={"pagination justify-content-center"}
                             pageClassName={"page-item"}

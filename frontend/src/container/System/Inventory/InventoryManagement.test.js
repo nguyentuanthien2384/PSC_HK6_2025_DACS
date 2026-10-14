@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import InventoryManagement from './InventoryManagement';
 import * as api from '../../../services/adminInventoryService';
 
@@ -24,8 +24,34 @@ test('dashboard low-stock link loads the named inventory filter immediately', as
     mockSearch = 'keyword=%C3%81o%20s%C6%A1%20mi&stock=low';
     render(<InventoryManagement />); await screen.findByRole('button', { name: 'Kiểm kê SKU-8' });
     expect(api.getAdminInventory).toHaveBeenCalledTimes(1);
-    expect(api.getAdminInventory).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'Áo sơ mi', stock: 'low', offset: 0, limit: 25 }));
+    expect(api.getAdminInventory).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'Áo sơ mi', stock: 'low', offset: 0, limit: 25 }), expect.any(AbortSignal));
     expect(screen.getByLabelText('Tìm sản phẩm / SKU')).toHaveValue('Áo sơ mi');
+});
+
+test('refresh preserves the table while obsolete inventory and history requests are aborted', async () => {
+    const view = render(<InventoryManagement />);
+    const count = await screen.findByRole('button', { name: 'Kiểm kê SKU-8' });
+    const table = count.closest('table');
+    let finishRefresh;
+    api.getAdminInventory.mockImplementationOnce(() => new Promise(resolve => { finishRefresh = resolve; }));
+    fireEvent.click(screen.getByRole('button', { name: 'Làm mới tồn kho' }));
+    expect(screen.getByRole('table')).toBe(table);
+    expect(count).toBeDisabled();
+    const obsoleteListSignal = api.getAdminInventory.mock.calls[1][1];
+    fireEvent.change(screen.getByLabelText('Tình trạng tồn'), { target: { value: 'out' } });
+    await waitFor(() => expect(obsoleteListSignal.aborted).toBe(true));
+    await waitFor(() => expect(count).toBeEnabled());
+    await act(async () => finishRefresh(response({ ...variant, productName: 'Dữ liệu cũ' })));
+    expect(screen.queryByText('Dữ liệu cũ')).not.toBeInTheDocument();
+
+    api.getInventoryHistory.mockImplementationOnce(() => new Promise(() => {}));
+    fireEvent.click(screen.getByRole('button', { name: 'Lịch sử SKU-8' }));
+    const historySignal = api.getInventoryHistory.mock.calls[0][2];
+    fireEvent.click(screen.getByRole('button', { name: 'Đóng lịch sử' }));
+    expect(historySignal.aborted).toBe(true);
+    const lastListSignal = api.getAdminInventory.mock.calls.at(-1)[1];
+    view.unmount();
+    expect(lastListSignal.aborted).toBe(true);
 });
 
 test('a stale count refreshes the open snapshot and key, and requires operator confirmation of the revised stock', async () => {

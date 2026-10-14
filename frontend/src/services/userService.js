@@ -59,7 +59,7 @@ const getAllCategoryBlogService = (type, { signal } = {}) => {
 
 }
 const getListAllCodeService = (data) => {
-    return axios.get(`/api/get-list-allcode`, { params: { type: data.type, limit: data.limit, offset: data.offset, keyword: data.keyword } })
+    return axios.get(`/api/get-list-allcode`, { signal: data.signal, params: { type: data.type, limit: data.limit, offset: data.offset, keyword: data.keyword } })
 
 }
 const createAllCodeService = (data) => {
@@ -107,13 +107,13 @@ const UpdateProductService = (data) => {
     return axios.put(`/api/update-product`, data)
 }
 const getAllProductDetailByIdService = (data) => {
-    return axios.get(`/api/get-all-product-detail-by-id`, { params: { id: data.id, limit: data.limit, offset: data.offset } })
+    return axios.get(`/api/get-all-product-detail-by-id`, { signal: data.signal, params: { id: data.id, limit: data.limit, offset: data.offset } })
 }
 const getAllProductDetailImageByIdService = (data) => {
-    return axios.get(`/api/get-all-product-detail-image-by-id`, { params: { id: data.id, limit: data.limit, offset: data.offset } })
+    return axios.get(`/api/get-all-product-detail-image-by-id`, { signal: data.signal, params: { id: data.id, limit: data.limit, offset: data.offset } })
 }
 const getAllProductDetailSizeByIdService = (data) => {
-    return axios.get(`/api/get-all-product-detail-size-by-id`, { params: { id: data.id, limit: data.limit, offset: data.offset } })
+    return axios.get(`/api/get-all-product-detail-size-by-id`, { signal: data.signal, params: { id: data.id, limit: data.limit, offset: data.offset } })
 }
 const CreateNewProductDetailService = (data) => {
     return axios.post(`/api/create-new-product-detail`, data)

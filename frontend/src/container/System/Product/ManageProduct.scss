@@ -10,6 +10,7 @@
   &__search div { display: flex; gap: 8px; } &__search button { white-space: nowrap; }
   &__reset { align-self: end; }
   &__list { background: white; border: 1px solid #e3e8f1; border-radius: 12px; overflow: hidden; }
+  .table-responsive.is-updating { opacity: .55; }
   &__toolbar { display: flex; justify-content: space-between; align-items: center; padding: 20px; gap: 16px; border-bottom: 1px solid #edf0f6; font-size: 14px; }
   &__actions { display: flex; gap: 8px; flex-wrap: wrap; } .btn { font-size: 13px; font-weight: 500; }
   .table { font-size: 13px; margin: 0; } th { background: #f6f8fc; white-space: nowrap; font-size: 11px; text-transform: uppercase; color: #6c7890; padding: 13px 14px; } td { padding: 15px 14px; border-color: #edf0f6; } td small { display: block; color: #8190a5; margin-top: 5px; font-size: 11px; }

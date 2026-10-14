@@ -41,10 +41,15 @@ function fixture(detailCount = 1) {
         ProductImage: { ...children('ProductImage', images), async findOne(options) {
             calls.push({ name: 'ProductImage', options });
             return { ...images.find(row => row.id === options.where.id) };
+        }, async findAndCountAll(options) {
+            calls.push({ name: 'ProductImage', options });
+            const selected = images.filter(row => row.productdetailId === Number(options.where.productdetailId));
+            return { count: selected.length, rows: selected.slice(options.offset, options.offset + options.limit)
+                .map(row => Object.fromEntries(options.attributes.map(field => [field, row[field]]))) };
         } },
         ProductDetailSize: children('ProductDetailSize', sizes)
     };
-    return { service: loadService(db), calls, details };
+    return { service: loadService(db), calls, details, db, images, sizes };
 }
 
 test('admin variant lists batch child relations once and keep metadata with lightweight media URLs', async () => {
@@ -100,4 +105,67 @@ test('image editor still fetches the original upload required when saving a capt
     const result = await f.service.getDetailProductImageById(100);
     assert.equal(result.errCode, 0);
     assert.equal(result.data.image, sourceImage);
+});
+
+test('seller gallery lists use small thumbnails and full preview URLs without reading original blobs', async () => {
+    const f = fixture(30);
+    const result = await f.service.getAllProductDetailImageById({ id: 10, limit: 1, offset: 1 });
+    assert.equal(result.count, 2);
+    assert.equal(result.data.length, 1);
+    assert.equal(result.data[0].id, 101);
+    assert.equal(result.data[0].caption, 'Back');
+    assert.equal(result.data[0].image, `/api/media/product-images/101/${'b'.repeat(64)}/card`);
+    assert.equal(result.data[0].previewImage, `/api/media/product-images/101/${'b'.repeat(64)}/detail`);
+    assert.equal(f.calls[0].options.attributes.includes('image'), false);
+    assert.deepEqual(f.calls[0].options.order, [['id', 'ASC']]);
+    assert.ok(Buffer.byteLength(JSON.stringify(result)) < 1000);
+    assert.equal(JSON.stringify(result).includes('base64'), false);
+});
+
+test('seller gallery validates ids and bounds pagination before database reads', async () => {
+    const f = fixture();
+    for (const id of [undefined, null, true, {}, [], -1, 0, 'invalid', 0.5]) {
+        assert.equal((await f.service.getAllProductDetailImageById({ id })).errCode, 1);
+    }
+    assert.equal(f.calls.length, 0);
+    await f.service.getAllProductDetailImageById({ id: '10', limit: Infinity, offset: Infinity });
+    assert.equal(f.calls[0].options.limit, 20);
+    assert.equal(f.calls[0].options.offset, 0);
+    await f.service.getAllProductDetailImageById({ id: '10', limit: 500, offset: 1.9 });
+    assert.equal(f.calls[1].options.limit, 100);
+    assert.equal(f.calls[1].options.offset, 1);
+});
+
+test('public details keep live price, stock and gallery metadata while counting views once', async () => {
+    const f = fixture(2);
+    const product = { id: 1, name: 'Current product', statusId: 'S1', view: 5 };
+    const views = [];
+    f.db.Product = {
+        async findOne() { return { ...product }; },
+        async update(values, options) { views.push({ values, options }); },
+    };
+    f.db.ProductDetail.findAll = async () => f.details.map(row => ({ ...row }));
+    let onHand = 10;
+    f.db.ReceiptDetail = { async findAll() { return f.sizes.map(row => ({ productDetailSizeId: row.id, quantity: onHand })); } };
+    f.db.OrderDetail = { async findAll() { return [{ productId: f.sizes[0].id, orderId: 1, quantity: 2 }]; } };
+    f.db.OrderProduct = { async findAll() { return [{ id: 1 }]; } };
+    f.db.PaymentSession = { async findAll() { return [{ checkoutData: JSON.stringify({ lines: [{ productId: f.sizes[0].id, quantity: 3 }] }) }]; } };
+    const service = loadService(f.db);
+    const first = await service.getDetailProductById(1);
+    assert.equal(first.errCode, 0);
+    assert.equal(first.data.productDetail[0].discountPrice, 100000);
+    assert.deepEqual(first.data.productDetail.map(row => row.productDetailSize[0].stock), [5, 10]);
+    assert.equal(first.data.productDetail[0].productImage[0].image, `/api/media/product-images/100/${'a'.repeat(64)}/detail`);
+    assert.equal(views.length, 1);
+    assert.match(views[0].values.view.val, /COALESCE\(`view`, 0\) \+ 1/);
+    assert.deepEqual(views[0].options.where, { id: 1 });
+    onHand = 7;
+    f.details[0].discountPrice = 90000;
+    const next = await service.getDetailProductById(1);
+    assert.equal(next.data.productDetail[0].discountPrice, 90000);
+    assert.equal(next.data.productDetail[0].productDetailSize[0].stock, 2);
+    product.statusId = 'S2';
+    assert.equal((await service.getDetailProductById(1)).errCode, 2);
+    assert.equal(views.length, 2, 'hidden product reads do not count views or expose details to shoppers');
+    assert.equal((await service.getDetailProductById(1, { roleId: 'R1' })).errCode, 0);
 });

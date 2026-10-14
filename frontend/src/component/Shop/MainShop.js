@@ -7,31 +7,36 @@ import './MainShop.scss';
 import useRefreshOnReturn from '../../hooks/useRefreshOnReturn';
 
 function MainShop({ categoryId, brandId, myRef }) {
-    const [dataProduct, setDataProduct] = useState([]);
-    const [totalResults, setTotalResults] = useState(0);
+    const [result, setResult] = useState({ key: null, products: [], count: 0 });
     const [pagination, setPagination] = useState({ page: 0, categoryId, brandId });
     const numberPage = pagination.categoryId === categoryId && pagination.brandId === brandId ? pagination.page : 0;
+    // Record each filter change before committing children, so returning to a
+    // previous category cannot restore that category's old page number.
+    if (pagination.categoryId !== categoryId || pagination.brandId !== brandId) {
+        setPagination({ page: 0, categoryId, brandId });
+    }
     const setNumberPage = (page) => setPagination({ page, categoryId, brandId });
     const [limitPage, setLimitPage] = useState(PAGINATION.pagerow);
     const [sort, setSort] = useState('1');
     const [searchInput, setSearchInput] = useState('');
     const [keyword, setKeyword] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
+    const [request, setRequest] = useState({ key: null, loading: true, error: false });
     const [retry, setRetry] = useState(0);
-    const [loaded, setLoaded] = useState(false);
+    const queryKey = JSON.stringify([limitPage, sort, numberPage, categoryId, brandId, keyword]);
+    // Keep cards during a refresh of this selection, but never show a previous
+    // category or page under a newly selected filter while its request is pending.
+    const loaded = result.key === queryKey;
+    const dataProduct = loaded ? result.products : [];
+    const totalResults = loaded ? result.count : 0;
+    const loading = request.key !== queryKey || request.loading;
+    const error = request.key === queryKey && request.error;
     useRefreshOnReturn(() => setRetry(value => value + 1), !loading);
-
-    useEffect(() => {
-        setPagination({ page: 0, categoryId, brandId });
-    }, [categoryId, brandId]);
 
     useEffect(() => {
         let active = true;
         const controller = new AbortController();
         const fetchProducts = async () => {
-            setLoading(true);
-            setError(false);
+            setRequest({ key: queryKey, loading: true, error: false });
             try {
                 const response = await getAllProductUser({
                     sortPrice: sort === '2' ? true : '',
@@ -49,20 +54,17 @@ function MainShop({ categoryId, brandId, myRef }) {
                 }
                 const products = Array.isArray(response.data) ? response.data : [];
                 const count = Number(response.count);
-                setDataProduct(products);
-                setLoaded(true);
-                setTotalResults(Number.isFinite(count) ? Math.max(0, count) : products.length);
+                setResult({ key: queryKey, products, count: Number.isFinite(count) ? Math.max(0, count) : products.length });
+                setRequest({ key: queryKey, loading: false, error: false });
             } catch (fetchError) {
                 if (active) {
-                    setError(true);
+                    setRequest({ key: queryKey, loading: false, error: true });
                 }
-            } finally {
-                if (active) setLoading(false);
             }
         };
         fetchProducts();
         return () => { active = false; controller.abort(); };
-    }, [limitPage, sort, numberPage, categoryId, brandId, keyword, retry]);
+    }, [limitPage, sort, numberPage, categoryId, brandId, keyword, queryKey, retry]);
 
     const handleChangePage = ({ selected }) => {
         setNumberPage(selected);
@@ -161,7 +163,7 @@ function MainShop({ categoryId, brandId, myRef }) {
                     </div>
                 ) : dataProduct.length > 0 ? (
                     <div className="shop-product-grid">
-                        {dataProduct.map((item) => {
+                        {dataProduct.map((item, index) => {
                             const detail = item.productDetail && item.productDetail[0];
                             const productImage = detail && detail.productImage && detail.productImage[0];
                             return (
@@ -174,6 +176,7 @@ function MainShop({ categoryId, brandId, myRef }) {
                                     img={productImage && productImage.image}
                                     discountPrice={detail && detail.discountPrice}
                                     price={detail && detail.originalPrice}
+                                    eager={index < 3}
                                 />
                             );
                         })}

@@ -205,7 +205,7 @@ npm test
 npm run build
 ```
 
-Frontend có 220 kiểm thử; backend có 206 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 7 bộ MySQL opt-in.
+Frontend có 284 kiểm thử; backend có 231 kiểm thử logic và HTTP, không yêu cầu MySQL/SMTP. Lệnh backend mặc định bỏ qua 7 bộ MySQL opt-in.
 
 Bộ tích hợp có 52 kịch bản dùng MySQL thật, gồm checkout/shipper đồng thời, địa chỉ, trả hàng/hoàn kho, đối soát/hoàn tiền, vận đơn GHN/GHTK, phân trang/tồn kho catalog, phân quyền admin, xử lý nhiều đơn, kiểm kê đồng thời và thu hồi phiên đăng nhập/socket. Đã chạy đạt trên database riêng `dacs_ecommerce_integration_20261012`. Phản hồi API nhà cung cấp được kiểm soát trong test; không chuyển tiền hoặc tạo vận đơn ngoài hệ thống. Chỉ chạy trên database kiểm thử riêng có tên chứa `test` hoặc `integration`; không xóa dữ liệu hiện có. Fixture catalog chạy trong transaction và rollback. Migration database này trước khi chạy.
 
@@ -240,6 +240,19 @@ npm --prefix backend run test:integration
 VNPay trong bộ test dùng chữ ký thử nghiệm do test tạo; PayPal/GHN/GHTK dùng phản hồi API kiểm soát. Kết quả xác minh nghiệp vụ, HTTP, transaction và chống lặp, không thay thế việc thử trực tiếp tài khoản sandbox của nhà cung cấp.
 
 Bản production build tạo bundle thành công, còn các cảnh báo ESLint từ giao diện cũ và dependency động của react-datepicker. Cần tiếp tục cải thiện các liên kết/biến không dùng, hook dependency và kích thước bundle. Đã kiểm tra giao diện trực tiếp bằng trình duyệt với backend/MySQL local; chưa kiểm thử email hoặc giao dịch thanh toán thật.
+
+## Tối ưu chuyển mục và tải ảnh ngày 14/10/2026
+
+- Mã trang cửa hàng/chi tiết và các trang catalog quản trị được tải trước khi người dùng giữ con trỏ trên liên kết, dùng bàn phím hoặc chạm để mở. Chỉ tải mã của trang được chọn; giá và tồn kho vẫn lấy mới. Bỏ qua tải trước khi bật tiết kiệm dữ liệu hoặc dùng mạng 2G. Lỗi tải mã có giao diện tải lại, giữ khung trang.
+- Khi đổi bộ lọc/trang/sản phẩm, kết quả cũ không hiện dưới lựa chọn mới. Làm mới cùng lựa chọn giữ thẻ/bảng để giảm nhấp nháy; các thao tác quản trị bị khóa trong khi bảng đang cập nhật. Yêu cầu cũ bị hủy và không ghi đè kết quả mới.
+- Danh mục, chi tiết, ảnh và kích cỡ quản trị chỉ gửi một yêu cầu ban đầu thay vì cả effect lẫn callback khởi tạo phân trang. Trang ảnh/kích cỡ có phân trang độc lập; form thêm/sửa và trình xem ảnh chỉ tải khi mở.
+- Danh sách ảnh quản trị trả thumbnail và URL xem lớn, giữ ảnh gốc ở endpoint chỉnh sửa. Trên biến thể local được đo, JSON giảm từ **1.243.459 xuống 889 byte**; ảnh tải riêng và có cache. Ảnh đã có trên disk trả ngay, không phải chờ hàng đợi chuyển đổi ảnh mới.
+- Chi tiết sản phẩm đọc ảnh và các nguồn tồn kho song song. Đo 20 lượt luân phiên trên sản phẩm local có 24 kích cỡ: trung vị dịch vụ **9,32 → 7,28 ms**, p95 **12,83 → 10,19 ms**. Phép đo bỏ qua ghi lượt xem và không bao gồm mạng/render; không phải thời gian tải trang toàn bộ.
+- Thẻ sản phẩm dùng thumbnail có kích thước dự trữ; hàng đầu tải ảnh sớm. Gallery chọn biến thể còn hàng ngay lần render đầu. Banner chỉ dựng ảnh đang xem thay vì cả 6 ảnh; tạm dừng tự chuyển khi tab bị ẩn hoặc người dùng yêu cầu giảm chuyển động.
+
+Kiểm thử bổ sung xác minh hủy yêu cầu, đổi bộ lọc nhanh, chuyển A → B → A, phân trang độc lập, giữ giá/tồn kho đúng, ảnh gốc chỉnh sửa và phục hồi lỗi tải mã. Kiểm thử MySQL catalog chạy trên database riêng với fixture rollback. Dùng `npm run build` rồi `npm run preview` để đánh giá bản tối ưu; `npm start` vẫn dành cho phát triển.
+
+Đã kiểm tra bản build ngày 14/10 trực tiếp trên trình duyệt: đổi nhanh danh mục giày/đồng hồ, chi tiết sản phẩm có giá/tồn kho, tìm sản phẩm quản trị, mở biến thể/thumbnail/ảnh lớn và bảng tồn kho. Không có lỗi console trong các luồng này. Build thành công, còn cảnh báo lint/dependency ở mã giao diện cũ. Chưa đo FPS hay thời gian tải từ thiết bị di động/mạng Internet thực tế.
 
 ## Lưu ý Git
 

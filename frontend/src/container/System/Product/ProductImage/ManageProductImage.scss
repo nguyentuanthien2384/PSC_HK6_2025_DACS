@@ -4,7 +4,10 @@
     width: 100px;
     
     height: 40px;
+    object-fit: cover;
 }
+.product-image-preview { padding: 0; border: 0; background: none; display: block; cursor: pointer; }
+.product-image-management .table-responsive[aria-busy="true"] { opacity: .55; }
 .img-review{
     background: no-repeat center center;
     background-size: cover;

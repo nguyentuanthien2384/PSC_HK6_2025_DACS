@@ -82,9 +82,12 @@ function createProductMediaService(db, options = {}) {
             const cached = memory.get(filename); memory.delete(filename); memory.set(filename, cached); return cached;
         }
         if (pending.has(filename)) return pending.get(filename);
-        const task = limited(async () => {
+        // Cached files need no encoder slot. Returning to a category must not
+        // wait behind another page's cold image conversions.
+        const task = (async () => {
             let body = await fs.readFile(path.join(cacheDir, filename)).catch(() => null);
-            if (!body) {
+            if (body) return remember(filename, { body, etag: `"${imageDigest(body)}"`, contentType: 'image/webp' });
+            return limited(async () => {
                 const row = await db[models[type]].findOne({ where: { id }, attributes: ['id', 'image', 'imageVersion', 'updatedAt'], raw: true });
                 if (!row) throw mediaError(404, 'Không tìm thấy ảnh.');
                 if (imageVersion(row) !== version) return { redirect: type === 'product-images' ? productImageUrl(row, variant) : contentImageUrl(row, type.replace('-images', ''), variant) };
@@ -101,9 +104,9 @@ function createProductMediaService(db, options = {}) {
                     } finally { await fs.unlink(temporary).catch(() => {}); }
                     schedulePrune();
                 } catch (_) { /* Memory/browser cache still works. */ }
-            }
-            return remember(filename, { body, etag: `"${imageDigest(body)}"`, contentType: 'image/webp' });
-        });
+                return remember(filename, { body, etag: `"${imageDigest(body)}"`, contentType: 'image/webp' });
+            });
+        })();
         pending.set(filename, task);
         try { return await task; } finally { pending.delete(filename); }
     }

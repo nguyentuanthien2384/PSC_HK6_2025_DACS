@@ -38,3 +38,23 @@ test('empty variant sets need no stock queries', async () => {
     assert.deepEqual([...await catalogStocks(db, [])], []);
     assert.equal(reads(), 0);
 });
+
+test('independent inventory reads start together and order statuses wait only for sold lines', async () => {
+    const started = [], resolve = {};
+    const names = ['ReceiptDetail', 'OrderDetail', 'OrderProduct', 'InventoryAdjustment', 'StockMovement', 'PaymentSession'];
+    const db = Object.fromEntries(names.map(name => [name, { findAll() {
+        started.push(name);
+        return new Promise(done => { resolve[name] = done; });
+    } }]));
+    const result = catalogStocks(db, [1]);
+    assert.deepEqual(started, ['ReceiptDetail', 'OrderDetail', 'InventoryAdjustment', 'StockMovement', 'PaymentSession']);
+    resolve.OrderDetail([{ productId: 1, orderId: 9, quantity: 2 }]);
+    await new Promise(done => setImmediate(done));
+    assert.equal(started.at(-1), 'OrderProduct', 'order status lookup should not wait for receipt or reservation reads');
+    resolve.OrderProduct([{ id: 9 }]);
+    resolve.ReceiptDetail([{ productDetailSizeId: 1, quantity: 10 }]);
+    resolve.InventoryAdjustment([{ productDetailSizeId: 1, quantity: 1 }]);
+    resolve.StockMovement([{ productDetailSizeId: 1, quantity: -1 }]);
+    resolve.PaymentSession([{ checkoutData: JSON.stringify({ lines: [{ productId: 1, quantity: 3 }] }) }]);
+    assert.deepEqual([...await result], [[1, 5]]);
+});

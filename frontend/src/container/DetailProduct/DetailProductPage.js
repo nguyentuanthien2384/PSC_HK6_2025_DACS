@@ -13,11 +13,12 @@ const tabs = [{ key: 'description', label: 'Mô tả sản phẩm' }, { key: 'sp
 
 function DetailProductPage() {
     const { id } = useParams();
-    const [product, setProduct] = useState(null);
+    const [productResult, setProductResult] = useState({ id: null, product: null, error: '' });
+    const product = productResult.id === id ? productResult.product : null;
     const [selectedSize, setSelectedSize] = useState({});
     const [user, setUser] = useState(null);
     const [recommendations, setRecommendations] = useState([]);
-    const [loadError, setLoadError] = useState('');
+    const loadError = productResult.id === id ? productResult.error : '';
     const [activeTab, setActiveTab] = useState('description');
     const [retry, setRetry] = useState(0);
 
@@ -26,17 +27,16 @@ function DetailProductPage() {
         const controller = new AbortController();
         const account = getUser();
         setUser(account);
-        setProduct(null);
+        setProductResult({ id, product: null, error: '' });
         setSelectedSize({});
-        setLoadError('');
         setActiveTab('description');
         setRecommendations([]);
         window.scrollTo(0, 0);
         getDetailProductByIdService(id, { signal: controller.signal }).then((response) => {
             if (!active) return;
             if (response?.errCode !== 0 || !response.data) throw new Error(response?.errMessage || 'Không tìm thấy sản phẩm.');
-            setProduct(response.data);
-        }).catch((error) => { if (active) setLoadError(error.message); });
+            setProductResult({ id, product: response.data, error: '' });
+        }).catch((error) => { if (active) setProductResult({ id, product: null, error: error.message }); });
         if (account) {
             getProductRecommendService({ limit: 12, userId: account.id, signal: controller.signal })
                 .then((response) => { if (active && response?.errCode === 0) setRecommendations((response.data || []).filter((item) => String(item.id) !== String(id))); })

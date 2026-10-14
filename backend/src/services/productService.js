@@ -99,19 +99,28 @@ const getDetailProductById = async (id, actor) => {
         ], raw: true, nest: true,
     });
     if (!product || (product.statusId !== 'S1' && !['R1', 'R4'].includes(actor?.roleId))) return { errCode: 2, errMessage: 'Sản phẩm không tồn tại' };
-    await db.Product.update({ view: literal('COALESCE(`view`, 0) + 1') }, { where: { id } });
-    const details = await db.ProductDetail.findAll({ where: { productId: product.id }, order: [['id', 'ASC']], raw: true });
+    const [, details] = await Promise.all([
+        db.Product.update({ view: literal('COALESCE(`view`, 0) + 1') }, { where: { id } }),
+        db.ProductDetail.findAll({ where: { productId: product.id }, order: [['id', 'ASC']], raw: true }),
+    ]);
     const detailIds = details.map(detail => detail.id);
-    const images = detailIds.length ? await db.ProductImage.findAll({
-        where: { productdetailId: { [Op.in]: detailIds } },
-        attributes: ['id', 'productdetailId', 'caption', 'imageVersion', 'updatedAt'], order: [['id', 'ASC']], raw: true,
-    }) : [];
-    const sizes = detailIds.length ? await db.ProductDetailSize.findAll({
-        where: { productdetailId: { [Op.in]: detailIds } },
-        include: [{ model: db.Allcode, as: 'sizeData', attributes: ['value', 'code'] }],
-        order: [['id', 'ASC']], raw: true, nest: true,
-    }) : [];
-    const stocks = await catalogStocks(db, sizes.map(size => size.id));
+    // Gallery reads and live stock do not depend on one another. Start inventory
+    // as soon as sizes arrive instead of waiting for every gallery row first.
+    const [images, inventory] = detailIds.length ? await Promise.all([
+        db.ProductImage.findAll({
+            where: { productdetailId: { [Op.in]: detailIds } },
+            attributes: ['id', 'productdetailId', 'caption', 'imageVersion', 'updatedAt'], order: [['id', 'ASC']], raw: true,
+        }),
+        (async () => {
+            const sizes = await db.ProductDetailSize.findAll({
+                where: { productdetailId: { [Op.in]: detailIds } },
+                include: [{ model: db.Allcode, as: 'sizeData', attributes: ['value', 'code'] }],
+                order: [['id', 'ASC']], raw: true, nest: true,
+            });
+            return { sizes, stocks: await catalogStocks(db, sizes.map(size => size.id)) };
+        })(),
+    ]) : [[], { sizes: [], stocks: new Map() }];
+    const { sizes, stocks } = inventory;
     const byDetail = new Map(details.map(detail => [Number(detail.id), { ...detail, productImage: [], productDetailSize: [] }]));
     for (const image of images) byDetail.get(Number(image.productdetailId))?.productImage.push({ ...image, image: productImageUrl(image, 'detail') });
     for (const size of sizes) byDetail.get(Number(size.productdetailId))?.productDetailSize.push({ ...size, stock: stocks.get(Number(size.id)) || 0 });
@@ -177,36 +186,22 @@ const getAllProductDetailById = async (data = {}) => {
     for (const size of sizes) byDetail.get(Number(size.productdetailId))?.productsize.push(size);
     return { errCode: 0, data: productdetail.rows.map(detail => byDetail.get(Number(detail.id))), count: productdetail.count };
 };
-let getAllProductDetailImageById = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.id) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter!'
-                })
-            } else {
-                let productImage = await db.ProductImage.findAndCountAll({
-                    where: { productdetailId: data.id },
-                    limit: Math.min(100, Math.max(1, Number(data.limit) || 20)),
-                    offset: Math.max(0, Number(data.offset) || 0),
-                })
-                if (productImage.rows && productImage.rows.length > 0) {
-                    productImage.rows.map(item => item.image = decodeImage(item.image))
-                }
-
-                resolve({
-                    errCode: 0,
-                    data: productImage.rows,
-                    count: productImage.count
-                })
-            }
-
-        } catch (error) {
-            reject(error)
-        }
-    })
-}
+const getAllProductDetailImageById = async (data = {}) => {
+    if (!['number', 'string'].includes(typeof data.id) || !positiveInteger(data.id)) {
+        return { errCode: 1, errMessage: 'Missing required parameter!' };
+    }
+    const requestedLimit = Number(data.limit), requestedOffset = Number(data.offset);
+    const productImage = await db.ProductImage.findAndCountAll({
+        where: { productdetailId: data.id },
+        attributes: ['id', 'productdetailId', 'caption', 'imageVersion', 'createdAt', 'updatedAt'],
+        limit: Number.isFinite(requestedLimit) ? Math.min(100, Math.max(1, Math.trunc(requestedLimit || 20))) : 20,
+        offset: Number.isFinite(requestedOffset) ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.trunc(requestedOffset))) : 0,
+        order: [['id', 'ASC']], raw: true,
+    });
+    return { errCode: 0, count: productImage.count, data: productImage.rows.map(image => ({
+        ...image, image: productImageUrl(image, 'card'), previewImage: productImageUrl(image, 'detail'),
+    })) };
+};
 let createNewProductDetail = (data) => {
     return new Promise(async (resolve, reject) => {
         try {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CommonUtils from '../../utils/CommonUtils';
+import { productThumbnail } from '../../utils/media';
 import './ItemProduct.scss';
 
 const priceFormatter = new Intl.NumberFormat('vi-VN', CommonUtils.formatter.resolvedOptions());
@@ -11,7 +12,7 @@ function parsePrice(value) {
     return Number.isFinite(price) && price >= 0 ? price : null;
 }
 
-function ItemProduct({ id, type, name, brand, img, discountPrice, price, badge }) {
+function ItemProduct({ id, type, name, brand, img, discountPrice, price, badge, eager = false }) {
     const [imageFailed, setImageFailed] = useState(false);
 
     useEffect(() => {
@@ -34,10 +35,12 @@ function ItemProduct({ id, type, name, brand, img, discountPrice, price, badge }
                 <div className="ecommerce-product-card__image">
                     {img && !imageFailed ? (
                         <img
-                            src={img}
+                            src={productThumbnail(img)}
                             alt={productName}
-                            loading="lazy"
+                            loading={eager ? 'eager' : 'lazy'}
                             decoding="async"
+                            width="480"
+                            height="480"
                             onError={() => setImageFailed(true)}
                         />
                     ) : (

@@ -164,3 +164,41 @@ test('a superseded category request is aborted and cannot overwrite newer produc
     await act(async () => finishOld(products()));
     expect(screen.queryByRole('article', { name: 'Sản phẩm 1' })).not.toBeInTheDocument();
 });
+
+test('switching categories immediately hides the previous collection and pagination throughout a slow request', async () => {
+    let finishCategory;
+    getAllProductUser.mockResolvedValueOnce(products(1, 'Danh mục A'))
+        .mockImplementationOnce(() => new Promise(resolve => { finishCategory = resolve; }));
+    const { rerender, container } = render(<MainShop {...defaultFilters} categoryId="A" />);
+    await screen.findByRole('article', { name: 'Sản phẩm 1' });
+    rerender(<MainShop {...defaultFilters} categoryId="B" />);
+
+    expect(screen.queryByRole('article', { name: 'Sản phẩm 1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Phân trang sản phẩm' })).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.shop-product-skeleton')).toHaveLength(6);
+    await act(async () => finishCategory(products(2, 'Danh mục B')));
+    expect(screen.getByRole('article', { name: 'Sản phẩm 2' })).toHaveTextContent('Danh mục B');
+});
+
+test('a failed new filter offers a retry without showing products from the previous filter', async () => {
+    getAllProductUser.mockResolvedValueOnce(products()).mockRejectedValueOnce(new Error('Offline'));
+    const { rerender } = render(<MainShop {...defaultFilters} categoryId="A" />);
+    await screen.findByRole('article', { name: 'Sản phẩm 1' });
+    rerender(<MainShop {...defaultFilters} categoryId="B" />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa thể tải sản phẩm');
+    expect(screen.queryByRole('article', { name: 'Sản phẩm 1' })).not.toBeInTheDocument();
+    getAllProductUser.mockResolvedValueOnce(products(2, 'Danh mục B'));
+    fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
+    expect(await screen.findByRole('article', { name: 'Sản phẩm 2' })).toHaveTextContent('Danh mục B');
+});
+
+test('returning to a previously paginated category always starts at its first page', async () => {
+    const { rerender } = render(<MainShop {...defaultFilters} categoryId="A" />);
+    await goToSecondPage();
+    rerender(<MainShop {...defaultFilters} categoryId="B" />);
+    await screen.findByRole('article', { name: 'Sản phẩm 1' });
+    rerender(<MainShop {...defaultFilters} categoryId="A" />);
+    await screen.findByRole('article', { name: 'Sản phẩm 1' });
+    expect(getAllProductUser).toHaveBeenLastCalledWith(expect.objectContaining({ categoryId: 'A', offset: 0 }));
+    expect(screen.getByTestId('active-page')).toHaveTextContent('1');
+});

@@ -47,8 +47,9 @@ export default function InventoryManagement() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyError, setHistoryError] = useState('');
     const sequence = useRef(0), historySequence = useRef(0), pending = useRef(false), mounted = useRef(true);
-    const invalidateList = useCallback(() => { sequence.current += 1; }, []);
-    const invalidateHistory = useCallback(() => { historySequence.current += 1; }, []);
+    const listController = useRef(null), historyController = useRef(null);
+    const invalidateList = useCallback(() => { sequence.current += 1; listController.current?.abort(); }, []);
+    const invalidateHistory = useCallback(() => { historySequence.current += 1; historyController.current?.abort(); }, []);
     const unmount = useCallback(() => { mounted.current = false; invalidateList(); invalidateHistory(); }, [invalidateList, invalidateHistory]);
     useEffect(() => { mounted.current = true; return unmount; }, [unmount]);
     useEffect(() => {
@@ -58,24 +59,29 @@ export default function InventoryManagement() {
         setPage(0);
     }, [urlFilters]);
     const load = useCallback(async () => {
+        listController.current?.abort();
+        const controller = new AbortController();
+        listController.current = controller;
         const ticket = ++sequence.current;
         setLoading(true); setError('');
         try {
-            const response = checked(await getAdminInventory({ ...filters, limit: pageSize, offset: page * pageSize }));
-            if (ticket !== sequence.current || !mounted.current) return;
+            const response = checked(await getAdminInventory({ ...filters, limit: pageSize, offset: page * pageSize }, controller.signal));
+            if (controller.signal.aborted || ticket !== sequence.current || !mounted.current) return;
             setRows(response.data || []); setTotal(Number(response.count) || 0); setCategories(response.categories || []); setSummary(response.summary || {});
-        } catch (failure) { if (ticket === sequence.current && mounted.current) setError(failure.message); }
-        finally { if (ticket === sequence.current && mounted.current) setLoading(false); }
+        } catch (failure) { if (!controller.signal.aborted && ticket === sequence.current && mounted.current) setError(failure.message); }
+        finally { if (!controller.signal.aborted && ticket === sequence.current && mounted.current) setLoading(false); }
     }, [filters, page]);
     useEffect(() => { load(); return invalidateList; }, [load, invalidateList]);
     useEffect(() => {
         if (!history) return undefined;
+        const controller = new AbortController();
+        historyController.current = controller;
         const ticket = ++historySequence.current;
         setHistoryLoading(true); setHistoryError('');
-        getInventoryHistory(history.variantId, { limit: pageSize, offset: historyPage * pageSize }).then(checked).then(response => {
-            if (ticket === historySequence.current && mounted.current) { setHistoryRows(response.data || []); setHistoryCount(Number(response.count) || 0); }
-        }).catch(failure => { if (ticket === historySequence.current && mounted.current) setHistoryError(failure.message); })
-            .finally(() => { if (ticket === historySequence.current && mounted.current) setHistoryLoading(false); });
+        getInventoryHistory(history.variantId, { limit: pageSize, offset: historyPage * pageSize }, controller.signal).then(checked).then(response => {
+            if (!controller.signal.aborted && ticket === historySequence.current && mounted.current) { setHistoryRows(response.data || []); setHistoryCount(Number(response.count) || 0); }
+        }).catch(failure => { if (!controller.signal.aborted && ticket === historySequence.current && mounted.current) setHistoryError(failure.message); })
+            .finally(() => { if (!controller.signal.aborted && ticket === historySequence.current && mounted.current) setHistoryLoading(false); });
         return invalidateHistory;
     }, [history, historyPage, invalidateHistory]);
     const filter = (field, value) => {
@@ -126,9 +132,9 @@ export default function InventoryManagement() {
             <button className="btn btn-success" type="submit">Tìm kiếm</button>
         </form>
         {notice && <p role="status" className="alert alert-success">{notice}</p>}
-        {loading && <p role="status">Đang tải tồn kho…</p>}
+        <p className="inventory-loading" role="status">{loading ? 'Đang tải tồn kho…' : ''}</p>
         {error && <div role="alert" className="alert alert-danger">{error} <button type="button" className="btn btn-sm btn-outline-danger" onClick={load}>Thử lại</button></div>}
-        {!loading && !error && <><div className="inventory-table-wrap"><table className="table inventory-table"><thead><tr><th>Sản phẩm / biến thể</th><th>Tồn sổ sách</th><th>Giữ thanh toán</th><th>Có thể bán</th><th>Thao tác</th></tr></thead><tbody>{rows.map(row => <tr key={row.variantId}><td><strong>{row.productName}</strong><small>{row.variantName} · {row.size} · {row.sku}</small><small>{row.categoryName} · {row.statusId === 'S1' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}</small></td><td>{row.onHand}</td><td>{row.reserved}</td><td><span className={`inventory-stock ${row.available <= 0 ? 'empty' : row.available <= 5 ? 'low' : ''}`}>{row.available}</span></td><td><div className="inventory-actions"><button type="button" className="btn btn-sm btn-success" disabled={busy} aria-label={`Kiểm kê ${row.sku}`} onClick={() => openCount(row)}>Kiểm kê</button><button type="button" className="btn btn-sm btn-outline-secondary" aria-label={`Lịch sử ${row.sku}`} onClick={() => { setHistory({ ...row }); setHistoryPage(0); }}>Lịch sử</button></div></td></tr>)}</tbody></table></div>{!rows.length && <p>Không tìm thấy biến thể theo bộ lọc.</p>}<nav className="inventory-pagination" aria-label="Phân trang tồn kho"><span>{total} biến thể · Trang {page + 1}/{Math.max(1, Math.ceil(total / pageSize))}</span><button type="button" className="btn btn-sm btn-outline-secondary" disabled={page === 0 || busy} onClick={() => setPage(page - 1)}>Trang trước</button><button type="button" className="btn btn-sm btn-outline-secondary" disabled={(page + 1) * pageSize >= total || busy} onClick={() => setPage(page + 1)}>Trang sau</button></nav></>}
+        {!error && (!loading || rows.length > 0) && <><div className="inventory-table-wrap" aria-busy={loading}><table className="table inventory-table"><thead><tr><th>Sản phẩm / biến thể</th><th>Tồn sổ sách</th><th>Giữ thanh toán</th><th>Có thể bán</th><th>Thao tác</th></tr></thead><tbody>{rows.map(row => <tr key={row.variantId}><td><strong>{row.productName}</strong><small>{row.variantName} · {row.size} · {row.sku}</small><small>{row.categoryName} · {row.statusId === 'S1' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}</small></td><td>{row.onHand}</td><td>{row.reserved}</td><td><span className={`inventory-stock ${row.available <= 0 ? 'empty' : row.available <= 5 ? 'low' : ''}`}>{row.available}</span></td><td><div className="inventory-actions"><button type="button" className="btn btn-sm btn-success" disabled={busy || loading} aria-label={`Kiểm kê ${row.sku}`} onClick={() => openCount(row)}>Kiểm kê</button><button type="button" className="btn btn-sm btn-outline-secondary" disabled={loading} aria-label={`Lịch sử ${row.sku}`} onClick={() => { setHistory({ ...row }); setHistoryPage(0); }}>Lịch sử</button></div></td></tr>)}</tbody></table></div>{!rows.length && <p>Không tìm thấy biến thể theo bộ lọc.</p>}<nav className="inventory-pagination" aria-label="Phân trang tồn kho"><span>{total} biến thể · Trang {page + 1}/{Math.max(1, Math.ceil(total / pageSize))}</span><button type="button" className="btn btn-sm btn-outline-secondary" disabled={page === 0 || busy || loading} onClick={() => setPage(page - 1)}>Trang trước</button><button type="button" className="btn btn-sm btn-outline-secondary" disabled={(page + 1) * pageSize >= total || busy || loading} onClick={() => setPage(page + 1)}>Trang sau</button></nav></>}
         <p className="inventory-help">Tồn sổ sách đã trừ hàng phân bổ cho đơn chưa hủy. Hàng đang chờ thanh toán vẫn nằm trong tồn sổ sách; có thể bán = tồn sổ sách − giữ thanh toán. Đối chiếu hàng chưa phân bổ khi kiểm kê.</p>
         {selected && <section className="inventory-panel" aria-label="Phiếu kiểm kê"><div className="inventory-heading"><h2 className="h5">Kiểm kê {selected.sku} · {selected.productName}</h2><button className="btn btn-sm btn-outline-secondary" type="button" disabled={busy} onClick={() => setSelected(null)}>Đóng kiểm kê</button></div><p>Tồn khi mở phiếu: <strong>{selected.onHand}</strong> · Đang giữ thanh toán: <strong>{selected.reserved}</strong>. Phiếu chỉ lưu khi tồn chưa thay đổi.</p><form onSubmit={save}><label>Tồn sau kiểm kê<input className="form-control" type="number" min={selected.reserved} max="2147483647" step="1" value={target} disabled={busy} onChange={event => setTarget(event.target.value)} /></label>{validTarget && <p>Điều chỉnh: <strong>{Number(target) - selected.onHand > 0 ? '+' : ''}{Number(target) - selected.onHand}</strong> · Có thể bán sau kiểm kê: {Math.max(0, Number(target) - selected.reserved)}</p>}{validTarget && Number(target) < selected.reserved && <p role="alert">Không thể giảm tồn xuống dưới {selected.reserved} sản phẩm đang giữ cho thanh toán.</p>}<label>Lý do kiểm kê<textarea className="form-control" value={reason} maxLength={1000} disabled={busy} rows={3} placeholder="Ví dụ: kiểm kê cuối ngày, thất thoát hoặc hàng hỏng" onChange={event => setReason(event.target.value)} /></label>{actionError && <p role="alert" className="text-danger">{actionError}</p>}<button className="btn btn-success" type="submit" disabled={busy || !canSave}>{busy ? 'Đang lưu kiểm kê…' : 'Xác nhận kiểm kê'}</button></form></section>}
         {history && <section className="inventory-panel" aria-label="Lịch sử kiểm kê"><div className="inventory-heading"><h2 className="h5">Lịch sử {history.sku} · {history.productName}</h2><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setHistory(null)}>Đóng lịch sử</button></div>{historyLoading && <p role="status">Đang tải lịch sử…</p>}{historyError && <p role="alert" className="text-danger">{historyError}</p>}{!historyLoading && !historyError && <>{!historyRows.length && <p>Chưa có lần kiểm kê. Nhập hàng và hoàn kho được giữ trong chứng từ gốc.</p>}{historyRows.map(item => <article className="inventory-history" key={item.id}><strong>{item.quantity > 0 ? '+' : ''}{item.quantity} · {item.onHandBefore} → {item.onHandAfter}</strong><p>{item.reason}</p><small>{item.actorName} · {formatOrderDate(item.createdAt)} · Giữ thanh toán khi kiểm kê: {item.reservedAtCount}</small></article>)}<nav className="inventory-pagination" aria-label="Phân trang lịch sử"><span>{historyCount} lần kiểm kê</span><button className="btn btn-sm btn-outline-secondary" type="button" disabled={historyPage === 0} onClick={() => setHistoryPage(historyPage - 1)}>Lịch sử trước</button><button className="btn btn-sm btn-outline-secondary" type="button" disabled={(historyPage + 1) * pageSize >= historyCount} onClick={() => setHistoryPage(historyPage + 1)}>Lịch sử sau</button></nav></>}</section>}
