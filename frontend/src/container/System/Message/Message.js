@@ -16,6 +16,7 @@ import {
 } from "react-router-dom";
 import MessageDisscution from "../../Message/MessageDisscution";
 import ChatWindow from "../../Message/ChatWindow";
+import "../../Message/MessagePage.scss";
 import socketIOClient from "socket.io-client";
 
 const Message = () => {
