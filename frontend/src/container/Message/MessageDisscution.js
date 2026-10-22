@@ -79,7 +79,23 @@ handleSearchRoom(roomList)
                   <li onClick={() => handleClickRoom(item.id)} key={index} className="ks-item">
                   <a href="#">
                     <span className="ks-avatar">
-                      <img src={userData.image} width={36} height={36} />
+                      {userData && userData.image ? (
+                        <img
+                          src={userData.image}
+                          width={36}
+                          height={36}
+                          alt={userData.firstName || 'Avatar'}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              e.currentTarget.nextElementSibling.style.display = 'inline';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <span style={{ display: userData && userData.image ? 'none' : 'inline' }}>
+                        {[userData?.firstName, userData?.lastName].filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+                      </span>
                       <span className="badge badge-pill badge-danger ks-badge ks-notify">{count && count > 0 ? count : ''}</span>
                     </span>
                     <div className="ks-body">

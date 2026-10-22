@@ -91,14 +91,29 @@
 .ks-messenger .ks-discussions>.ks-body .ks-items>.ks-item>a>.ks-avatar {
     position: relative;
     top: 3px;
-    margin-right: 12px
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #eaf0fc;
+    color: #3863b0;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .ks-messenger .ks-discussions>.ks-body .ks-items>.ks-item>a>.ks-avatar>img {
     width: 36px;
     height: 36px;
+    object-fit: cover;
     -webkit-border-radius: 50%;
-    border-radius: 50%
+    border-radius: 50%;
+    display: block;
 }
 
 .ks-messenger .ks-discussions>.ks-body .ks-items>.ks-item>a>.ks-avatar>.ks-badge {
@@ -252,160 +267,198 @@
 .ks-messenger .ks-messages>.ks-body .ks-items,
 .ks-messenger__messages>.ks-body .ks-items {
     list-style: none;
-    padding: 0;
+    padding: 20px 24px;
     margin: 0;
-    padding: 20px
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #f8fafc;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-separator,
 .ks-messenger__messages>.ks-body .ks-items>.ks-separator {
-    color: #858585;
-    font-size: 10px;
+    color: #94a3b8;
+    font-size: 11px;
     text-align: center;
     text-transform: uppercase;
-    margin-bottom: 15px;
-    margin-top: 15px
+    margin: 12px 0;
+    letter-spacing: 0.5px;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    -js-display: flex;
     display: flex;
-    margin-bottom: 12px
+    align-items: flex-end;
+    width: 100%;
+    margin-bottom: 2px;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item:last-child,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item:last-child {
-    margin-bottom: 0
+    margin-bottom: 0;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-body,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-body {
-    font-size: 12px;
-    -webkit-box-flex: 1;
-    -webkit-flex-grow: 1;
-    -ms-flex-positive: 1;
-    flex-grow: 1;
-    padding: 12px 15px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
-    position: relative
+    position: relative;
+    max-width: 72%;
+    width: fit-content;
+    flex-grow: 0;
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-break: break-word;
+    border: none;
+
+    &:before,
+    &:after {
+        display: none !important;
+    }
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    -js-display: flex;
     display: flex;
-    -webkit-box-pack: justify;
-    -webkit-justify-content: space-between;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    margin-bottom: 2px
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header>.ks-name,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header>.ks-name {
-    font-weight: 500
+    font-weight: 600;
+    font-size: 11.5px;
+    line-height: 1.2;
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header>.ks-datetime,
 .ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-header>.ks-datetime {
     font-size: 10px;
+    line-height: 1.2;
     text-transform: uppercase;
-    color: #858585
+    letter-spacing: 0.3px;
 }
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-self>.ks-avatar,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-self>.ks-avatar {
-    -webkit-box-ordinal-group: 2;
-    -webkit-order: 1;
-    -ms-flex-order: 1;
-    order: 1
+.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-message,
+.ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-body>.ks-message {
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body {
-    -webkit-box-ordinal-group: 3;
-    -webkit-order: 2;
-    -ms-flex-order: 2;
-    order: 2;
-    border: solid 1px #dee0e1;
-    -webkit-border-top-left-radius: 0;
-    border-top-left-radius: 0;
-    margin-left: 14px;
-    margin-right: 50px
+.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item>.ks-avatar,
+.ks-messenger__messages>.ks-body .ks-items>.ks-item>.ks-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    max-width: 34px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    overflow: hidden;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    img {
+        width: 34px;
+        height: 34px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+    }
 }
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body:before,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body:before {
-    content: '';
-    display: block;
-    position: absolute;
-    left: -10px;
-    top: -1px;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #dee0e1;
-    border-right: 0 solid transparent;
-    border-bottom: 0 solid transparent;
-    border-left: 10px solid transparent
+/* ----------------------------------------------------
+   1. NGƯỜI HỎI (CUSTOMER / INCOMING) -> BÊN TRÁI
+   ---------------------------------------------------- */
+.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-self,
+.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-self {
+    justify-content: flex-start;
+
+    >.ks-avatar {
+        order: 1;
+        margin-right: 10px;
+        margin-left: 0;
+    }
+
+    >.ks-body {
+        order: 2;
+        margin-left: 0;
+        margin-right: auto;
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px 18px 18px 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+        .ks-header {
+            justify-content: flex-start;
+
+            .ks-name {
+                color: #334155;
+            }
+
+            .ks-datetime {
+                color: #94a3b8;
+            }
+        }
+
+        .ks-message {
+            color: #1e293b;
+        }
+    }
 }
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body:after,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-self>.ks-body:after {
-    content: '';
-    display: block;
-    position: absolute;
-    left: -8px;
-    top: 0;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #fff;
-    border-right: 0 solid transparent;
-    border-bottom: 0 solid transparent;
-    border-left: 10px solid transparent
-}
+/* ----------------------------------------------------
+   2. TÔI TRẢ LỜI (SHOP / ME / OUTGOING) -> BÊN PHẢI
+   ---------------------------------------------------- */
+.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-from,
+.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-from {
+    justify-content: flex-end;
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-from>.ks-avatar,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-from>.ks-avatar {
-    -webkit-box-ordinal-group: 3;
-    -webkit-order: 2;
-    -ms-flex-order: 2;
-    order: 2
-}
+    >.ks-avatar {
+        order: 2;
+        margin-left: 10px;
+        margin-right: 0;
+    }
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-from>.ks-body,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-from>.ks-body {
-    -webkit-box-ordinal-group: 2;
-    -webkit-order: 1;
-    -ms-flex-order: 1;
-    order: 1;
-    background-color: #eff1f7;
-    -webkit-border-top-right-radius: 0;
-    border-top-right-radius: 0;
-    margin-right: 14px;
-    margin-left: 50px
-}
+    >.ks-body {
+        order: 1;
+        margin-right: 0;
+        margin-left: auto;
+        background: linear-gradient(135deg, #1877f2, #0066f6);
+        color: #ffffff;
+        border: none;
+        border-radius: 18px 18px 4px 18px;
+        box-shadow: 0 2px 6px rgba(24, 119, 242, 0.28);
 
-.ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-from>.ks-body:before,
-.ks-messenger__messages>.ks-body .ks-items>.ks-item.ks-from>.ks-body:before {
-    content: '';
-    display: block;
-    position: absolute;
-    right: -10px;
-    top: 0;
-    width: 0;
-    height: 0;
-    border-top: 0 solid transparent;
-    border-right: 0 solid transparent;
-    border-bottom: 10px solid transparent;
-    border-left: 10px solid #eff1f7
+        .ks-header {
+            justify-content: flex-end;
+
+            .ks-name {
+                color: rgba(255, 255, 255, 0.95);
+            }
+
+            .ks-datetime {
+                color: rgba(255, 255, 255, 0.75);
+            }
+        }
+
+        .ks-message {
+            color: #ffffff;
+            text-align: left;
+        }
+    }
 }
 
 .ks-messenger .ks-messages>.ks-body .ks-items>.ks-item.ks-unread>.ks-body,

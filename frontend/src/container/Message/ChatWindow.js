@@ -79,12 +79,29 @@ function ChatWindow(props) {
             setMessage((current) => current.trim() === text ? "" : current);
             currentScope.refresh();
         });
-    };    return (
+    };
+    const isOutgoingMessage = (item) => {
+        if (user?.id && item?.userData?.id && String(item.userData.id) === String(user.id)) {
+            return true;
+        }
+        const myRole = user?.roleId;
+        const senderRole = item?.userData?.roleId;
+        if (['R1', 'R4'].includes(myRole) && ['R1', 'R4'].includes(senderRole)) {
+            return true;
+        }
+        return false;
+    };
+
+    const otherMember = mess.find((m) => m.userData && String(m.userData.id) !== String(user?.id))?.userData;
+    const chatHeaderTitle = otherMember ? `${otherMember.firstName} ${otherMember.lastName}` : "Cuộc trò chuyện";
+    const chatHeaderSubtitle = otherMember?.roleId === 'R2' ? 'Khách hàng' : 'Trực tuyến';
+
+    return (
         <div className="ks-messages ks-messenger__messages">
             <div className="ks-header">
                 <div className="ks-description">
-                    <div className="ks-name">Chat name</div>
-                    <div className="ks-amount">2 members</div>
+                    <div className="ks-name">{chatHeaderTitle}</div>
+                    <div className="ks-amount">{chatHeaderSubtitle}</div>
                 </div>
                 <div className="ks-controls">
                     <div className="dropdown">
@@ -141,23 +158,23 @@ function ChatWindow(props) {
                     height: "480px",
                     overflow: "hidden",
                     padding: "0px",
-                    width: "701px",
+                    width: "100%",
                 }}
                 tabIndex={0}
             >
                 <div
                     className="jspContainer"
-                    style={{ width: "701px", height: "481px" }}
+                    style={{ width: "100%", height: "481px" }}
                 >
                     <div
                         className="jspPane"
-                        style={{ padding: "0px", top: "0px", width: "691px" }}
+                        style={{ padding: "0px", top: "0px", width: "100%" }}
                     >
                         <ul
                             ref={chatList}
                             id="box-chat"
                             className="ks-items"
-                            style={{ overflowY: "scroll", maxHeight: "479px" }}
+                            style={{ overflowY: "auto", width: "100%", maxHeight: "479px" }}
                         >
                             {mess &&
                                 mess.length > 0 &&
@@ -167,20 +184,30 @@ function ChatWindow(props) {
                                             <li
                                                 key={item.id || index}
                                                 className={
-                                                    item.userData.id == user?.id
+                                                    isOutgoingMessage(item)
                                                         ? "ks-item ks-from"
                                                         : "ks-item ks-self"
                                                 }
                                             >
                                                 <span className="ks-avatar ks-offline">
-                                                    <img
-                                                        src={
-                                                            item.userData.image
-                                                        }
-                                                        width={36}
-                                                        height={36}
-                                                        className="rounded-circle"
-                                                    />
+                                                    {item.userData.image ? (
+                                                        <img
+                                                            src={item.userData.image}
+                                                            alt={item.userData.firstName || 'Avatar'}
+                                                            width={36}
+                                                            height={36}
+                                                            className="rounded-circle"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                if (e.currentTarget.nextElementSibling) {
+                                                                    e.currentTarget.nextElementSibling.style.display = 'inline';
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <span style={{ display: item.userData.image ? 'none' : 'inline' }}>
+                                                        {[item.userData.firstName, item.userData.lastName].filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+                                                    </span>
                                                 </span>
                                                 <div className="ks-body">
                                                     <div className="ks-header">

@@ -5,7 +5,7 @@ const admin = user => user && ['R1', 'R4'].includes(user.roleId);
 const missing = () => ({ errCode: 1, errMessage: 'Thiếu thông tin bắt buộc.' });
 const denied = () => ({ errCode: 403, errMessage: 'Bạn không có quyền truy cập cuộc trò chuyện này.' });
 const safeUser = async id => {
-  const user = await db.User.findByPk(id, { attributes: ['id', 'firstName', 'lastName', 'image'], raw: true });
+  const user = await db.User.findByPk(id, { attributes: ['id', 'firstName', 'lastName', 'image', 'roleId'], raw: true });
   if (user?.image) user.image = Buffer.from(user.image).toString('utf8');
   return user;
 };

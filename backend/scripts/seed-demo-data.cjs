@@ -96,9 +96,16 @@ async function seedDemoData({ now = new Date(), password = process.env.SEED_DEMO
         }
       }
       const users = [];
-      const avatar = imageValue({ imagePath: 'frontend/public/resources/img/logo.png' });
-      for (const { key, ...values } of scenarios.buildUsers(now)) {
+      const userAvatars = [
+        'frontend/public/resources/img/product/single-product/review-1.png',
+        'frontend/public/resources/img/product/single-product/review-2.png',
+        'frontend/public/resources/img/product/single-product/review-3.png',
+        'frontend/public/resources/img/elements/user1.png',
+        'frontend/public/resources/img/elements/user2.png',
+      ].map(imagePath => imageValue({ imagePath }));
+      for (const [index, { key, ...values }] of scenarios.buildUsers(now).entries()) {
         if (await db.User.findOne({ where: { email: values.email }, ...opts })) throw new Error(`Demo account ${values.email} already exists without seed marker; no account was overwritten.`);
+        const avatar = userAvatars[index % userAvatars.length];
         users.push({ ...await create('User', { ...values, password: passwordHash, image: avatar, usertoken: '' }), key });
       }
       const admin = users.find(user => user.roleId === 'R1');
